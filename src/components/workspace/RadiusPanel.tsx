@@ -4,18 +4,23 @@ import React, { useState } from "react";
 import { Plus } from "lucide-react";
 import { useRadiusStore } from "@/store/radiusStore";
 import { RadiusItem } from "./RadiusItem";
+import { RadiusEditor } from "./RadiusEditor";
 import { Button } from "@/components/ui/Button";
 import { Radius } from "@/types/radius";
 
 export const RadiusPanel: React.FC = () => {
   const { radii, addRadius, selectedRadiusId } = useRadiusStore();
   const [isAdding, setIsAdding] = useState(false);
+  const [editingRadius, setEditingRadius] = useState<Radius | null>(null);
 
   const handleAddRadius = () => {
-    // Если есть выбранный радиус, добавляем к нему
-    // Иначе создаем корневой радиус
-    const parentId =
-      radii.length > 0 && selectedRadiusId ? selectedRadiusId : null;
+    // Автоматическая цепочка: новый радиус прикрепляется к последнему
+    let parentId: string | null = null;
+
+    if (radii.length > 0) {
+      // Если есть выбранный радиус - к нему, иначе к последнему в списке
+      parentId = selectedRadiusId || radii[radii.length - 1].id;
+    }
 
     addRadius({
       parentId,
@@ -27,8 +32,7 @@ export const RadiusPanel: React.FC = () => {
   };
 
   const handleEdit = (radius: Radius) => {
-    // TODO: Откроем модальное окно для редактирования
-    console.log("Edit radius:", radius);
+    setEditingRadius(radius);
   };
 
   return (
@@ -72,6 +76,14 @@ export const RadiusPanel: React.FC = () => {
             💡 Новый радиус будет добавлен к выбранному радиусу
           </p>
         </div>
+      )}
+
+      {/* Editor Modal */}
+      {editingRadius && (
+        <RadiusEditor
+          radius={editingRadius}
+          onClose={() => setEditingRadius(null)}
+        />
       )}
     </div>
   );

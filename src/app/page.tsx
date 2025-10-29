@@ -2,6 +2,7 @@
 
 import { RadiusPanel } from "@/components/workspace/RadiusPanel";
 import { ControlPanel } from "@/components/workspace/ControlPanel";
+import { VisualizationCanvas } from "@/components/workspace/VisualizationCanvas";
 
 export default function Home() {
   return (
@@ -28,13 +29,9 @@ export default function Home() {
           {/* Control panel */}
           <ControlPanel />
 
-          {/* Visualization placeholder */}
-          <div className="bg-[#1a1a1a] rounded-xl p-8 border border-[#2a2a2a] h-[500px] flex items-center justify-center">
-            <div className="text-center text-gray-500">
-              <div className="text-6xl mb-4">🔄</div>
-              <p className="text-lg">Визуализация радиусов</p>
-              <p className="text-sm mt-2">Canvas будет здесь</p>
-            </div>
+          {/* Visualization Canvas */}
+          <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] h-[500px] overflow-hidden">
+            <VisualizationCanvas />
           </div>
 
           {/* Graph placeholder */}
