@@ -168,9 +168,30 @@ function drawSignal(
 ) {
   if (data.length < 2) return;
 
+  // Находим min/max для автомасштабирования
+  let minY = Infinity;
+  let maxY = -Infinity;
+  for (const point of data) {
+    minY = Math.min(minY, point.y);
+    maxY = Math.max(maxY, point.y);
+  }
+
+  // Добавляем padding 10%
+  const range = maxY - minY;
+  const padding = range * 0.1;
+  minY -= padding;
+  maxY += padding;
+
+  // Если range слишком маленький, используем фиксированный
+  if (range < 10) {
+    minY = -50;
+    maxY = 50;
+  }
+
   const centerY = height / 2;
-  const timeScale = (width - 100) / graphDuration; // pixels per second
-  const currentX = width - 50; // Правая граница графика
+  const timeScale = (width - 100) / graphDuration;
+  const currentX = width - 50;
+  const yScale = height / (maxY - minY);
 
   ctx.strokeStyle = "#667eea";
   ctx.lineWidth = 2;
@@ -180,9 +201,9 @@ function drawSignal(
 
   for (const point of data) {
     const x = currentX - (currentTime - point.time) * timeScale;
-    const y = centerY + point.y;
+    const y = centerY - (point.y - (minY + maxY) / 2) * yScale;
 
-    if (x < 0) continue; // Не рисуем за пределами canvas
+    if (x < 0) continue;
 
     if (firstPoint) {
       ctx.moveTo(x, y);
@@ -198,7 +219,7 @@ function drawSignal(
   if (data.length > 0) {
     const lastPoint = data[data.length - 1];
     const lastX = currentX - (currentTime - lastPoint.time) * timeScale;
-    const lastY = centerY + lastPoint.y;
+    const lastY = centerY - (lastPoint.y - (minY + maxY) / 2) * yScale;
 
     ctx.fillStyle = "#667eea";
     ctx.beginPath();

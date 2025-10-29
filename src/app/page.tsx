@@ -4,6 +4,7 @@ import { RadiusPanel } from "@/components/workspace/RadiusPanel";
 import { ControlPanel } from "@/components/workspace/ControlPanel";
 import { VisualizationCanvas } from "@/components/workspace/VisualizationCanvas";
 import { SignalGraph } from "@/components/workspace/SignalGraph";
+import { SettingsPanel } from "@/components/workspace/SettingsPanel";
 
 export default function Home() {
   return (
@@ -21,8 +22,11 @@ export default function Home() {
       {/* Main layout */}
       <div className="grid grid-cols-[320px_1fr] gap-6 max-w-[1600px] mx-auto">
         {/* Left panel */}
-        <div className="bg-[#1a1a1a] rounded-xl p-5 border border-[#2a2a2a]">
-          <RadiusPanel />
+        <div className="space-y-6">
+          <div className="bg-[#1a1a1a] rounded-xl p-5 border border-[#2a2a2a]">
+            <RadiusPanel />
+          </div>
+          <SettingsPanel />
         </div>
 
         {/* Right workspace */}
