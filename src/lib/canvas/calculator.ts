@@ -28,9 +28,15 @@ export function calculateRadiusPositions(
     };
 
     // Вычисляем текущий угол с учетом времени
-    const direction = radius.direction === "clockwise" ? -1 : 1;
-    const angularVelocity = direction * radius.rotationSpeed * 2 * Math.PI; // rad/s
-    const currentAngle = radius.initialAngle + angularVelocity * currentTime;
+    let currentAngle: number;
+    if (radius.rotationSpeed === 0) {
+      // Если скорость = 0, угол остается фиксированным относительно родителя
+      currentAngle = radius.initialAngle;
+    } else {
+      const direction = radius.direction === "clockwise" ? -1 : 1;
+      const angularVelocity = direction * radius.rotationSpeed * 2 * Math.PI; // rad/s
+      currentAngle = radius.initialAngle + angularVelocity * currentTime;
+    }
 
     // Вычисляем конечную точку
     const endPoint: Point2D = {
