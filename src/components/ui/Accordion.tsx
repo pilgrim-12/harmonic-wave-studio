@@ -20,11 +20,11 @@ export const AccordionItem: React.FC<AccordionItemProps> = ({
   onToggle,
 }) => {
   return (
-    <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] overflow-hidden">
+    <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] overflow-hidden flex flex-col h-full">
       {/* Header */}
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between p-3 hover:bg-[#252525] transition-colors"
+        className="w-full flex items-center justify-between p-3 hover:bg-[#252525] transition-colors flex-shrink-0"
       >
         <div className="flex items-center gap-2">
           {icon}
@@ -40,14 +40,7 @@ export const AccordionItem: React.FC<AccordionItemProps> = ({
       </button>
 
       {/* Content */}
-      <div
-        className={cn(
-          "overflow-hidden transition-all duration-200",
-          isOpen ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
-        )}
-      >
-        <div className="p-3 pt-0">{children}</div>
-      </div>
+      {isOpen && <div className="flex-1 overflow-hidden">{children}</div>}
     </div>
   );
 };

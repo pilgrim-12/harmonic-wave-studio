@@ -12,12 +12,13 @@ export const SignalGraph: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const signalDataRef = useRef<{ time: number; y: number }[]>([]);
   const animationFrameRef = useRef<number | null>(null);
+  const frameCountRef = useRef<number>(0);
 
   const { radii } = useRadiusStore();
   const { isPlaying, currentTime, settings, activeTrackingRadiusId } =
     useSimulationStore();
 
-  // Инициализация canvas
+  // Initialize canvas
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -38,28 +39,28 @@ export const SignalGraph: React.FC = () => {
     };
   }, []);
 
-  // Сброс данных при изменении радиусов или активного радиуса
+  // Reset data when radii or active radius changes
   useEffect(() => {
     signalDataRef.current = [];
   }, [radii, activeTrackingRadiusId]);
 
-  // Отрисовка графика
+  // Drawing loop
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
 
     const draw = () => {
-      // Очистка
-      ctx.fillStyle = "#0a0a0a";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Throttle: Update data every frame, but render every 3rd frame
+      frameCountRef.current++;
+      const shouldRender = frameCountRef.current % 3 === 0;
 
-      // Если анимация играет, добавляем новую точку
+      // ALWAYS collect data (not throttled)
       if (isPlaying && radii.length > 0) {
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
 
-        // Вычисляем позицию всех радиусов
+        // Calculate positions
         const positions = calculateRadiusPositions(
           radii,
           centerX,
@@ -67,22 +68,19 @@ export const SignalGraph: React.FC = () => {
           currentTime
         );
 
-        // Определяем какую точку отслеживать
+        // Determine which point to track
         let finalPoint = null;
 
         if (activeTrackingRadiusId) {
-          // Отслеживаем выбранный радиус
           const trackingPosition = positions.find(
             (pos) => pos.radiusId === activeTrackingRadiusId
           );
           finalPoint = trackingPosition?.endPoint || null;
         } else {
-          // По умолчанию - последний радиус
           finalPoint = getFinalPoint(positions);
         }
 
         if (finalPoint) {
-          // Y координата относительно центра
           const y = centerY - finalPoint.y;
 
           signalDataRef.current.push({
@@ -90,7 +88,7 @@ export const SignalGraph: React.FC = () => {
             y: y,
           });
 
-          // Ограничиваем количество точек по времени
+          // Limit data points by time
           const maxTime = settings.graphDuration;
           signalDataRef.current = signalDataRef.current.filter(
             (point) => currentTime - point.time <= maxTime
@@ -98,22 +96,29 @@ export const SignalGraph: React.FC = () => {
         }
       }
 
-      // Рисуем оси
-      drawAxes(ctx, canvas.width, canvas.height);
+      // RENDER only every 3rd frame (throttled)
+      if (shouldRender) {
+        // Clear
+        ctx.fillStyle = "#0a0a0a";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Рисуем график
-      if (signalDataRef.current.length > 1) {
-        drawSignal(
-          ctx,
-          signalDataRef.current,
-          canvas.width,
-          canvas.height,
-          currentTime,
-          settings.graphDuration
-        );
+        // Draw axes
+        drawAxes(ctx, canvas.width, canvas.height);
+
+        // Draw signal
+        if (signalDataRef.current.length > 1) {
+          drawSignal(
+            ctx,
+            signalDataRef.current,
+            canvas.width,
+            canvas.height,
+            currentTime,
+            settings.graphDuration
+          );
+        }
       }
 
-      // Следующий кадр
+      // Next frame
       if (isPlaying) {
         animationFrameRef.current = requestAnimationFrame(draw);
       }
@@ -143,7 +148,7 @@ export const SignalGraph: React.FC = () => {
   );
 };
 
-// Вспомогательные функции отрисовки
+// Helper drawing functions
 function drawAxes(
   ctx: CanvasRenderingContext2D,
   width: number,
@@ -154,13 +159,13 @@ function drawAxes(
   ctx.strokeStyle = "#444";
   ctx.lineWidth = 2;
 
-  // Горизонтальная ось (Y = 0)
+  // Horizontal axis (Y = 0)
   ctx.beginPath();
   ctx.moveTo(0, centerY);
   ctx.lineTo(width, centerY);
   ctx.stroke();
 
-  // Вертикальная ось (t = now)
+  // Vertical axis (t = now)
   ctx.strokeStyle = "#666";
   ctx.lineWidth = 1;
   ctx.setLineDash([5, 5]);
@@ -170,7 +175,7 @@ function drawAxes(
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // Подписи осей
+  // Axis labels
   ctx.fillStyle = "#888";
   ctx.font = "12px sans-serif";
   ctx.fillText("Y", 10, centerY - 10);
@@ -187,21 +192,22 @@ function drawSignal(
 ) {
   if (data.length < 2) return;
 
-  // Находим min/max для автомасштабирования
+  // Find min/max for autoscaling (sample every 5th point for performance)
   let minY = Infinity;
   let maxY = -Infinity;
-  for (const point of data) {
-    minY = Math.min(minY, point.y);
-    maxY = Math.max(maxY, point.y);
+  const step = Math.max(1, Math.floor(data.length / 100)); // Sample max 100 points
+  for (let i = 0; i < data.length; i += step) {
+    minY = Math.min(minY, data[i].y);
+    maxY = Math.max(maxY, data[i].y);
   }
 
-  // Добавляем padding 10%
+  // Add 10% padding
   const range = maxY - minY;
   const padding = range * 0.1;
   minY -= padding;
   maxY += padding;
 
-  // Если range слишком маленький, используем фиксированный
+  // If range too small, use fixed
   if (range < 10) {
     minY = -50;
     maxY = 50;
@@ -234,7 +240,7 @@ function drawSignal(
 
   ctx.stroke();
 
-  // Точка текущего значения
+  // Current value point
   if (data.length > 0) {
     const lastPoint = data[data.length - 1];
     const lastX = currentX - (currentTime - lastPoint.time) * timeScale;

@@ -83,6 +83,8 @@ export const VisualizationCanvas: React.FC = () => {
       frameCount++;
       fpsTime += deltaTime;
       if (fpsTime >= 1) {
+        const calculatedFps = frameCount / fpsTime;
+        console.log("FPS:", Math.round(calculatedFps)); // DEBUG
         updateFps(frameCount / fpsTime);
         frameCount = 0;
         fpsTime = 0;

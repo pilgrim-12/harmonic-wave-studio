@@ -35,9 +35,9 @@ export const RadiusPanel: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col gap-3">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3 pb-2 border-b-2 border-[#667eea]">
+      <div className="flex items-center justify-between pb-2 border-b-2 border-[#667eea]">
         <h2 className="text-base font-bold text-[#667eea] flex items-center gap-2">
           ⚙️ Radii
         </h2>
@@ -47,7 +47,7 @@ export const RadiusPanel: React.FC = () => {
       </div>
 
       {/* List */}
-      <div className="flex-1 overflow-y-auto space-y-2 mb-3">
+      <div className="space-y-2">
         {radii.length === 0 ? (
           <div className="text-center py-6 text-gray-500">
             <p className="text-xs">No radii</p>
