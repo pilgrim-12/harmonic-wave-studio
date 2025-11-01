@@ -23,7 +23,7 @@ export const RadiusEditor: React.FC<RadiusEditorProps> = ({
   const [formData, setFormData] = useState({
     name: radius.name,
     length: radius.length,
-    initialAngle: Math.round((radius.initialAngle * 180) / Math.PI), // В градусах
+    initialAngle: Math.round((radius.initialAngle * 180) / Math.PI), // In degrees
     rotationSpeed: radius.rotationSpeed,
     direction: radius.direction,
     color: radius.color,
@@ -35,7 +35,7 @@ export const RadiusEditor: React.FC<RadiusEditorProps> = ({
     const updates: UpdateRadiusParams = {
       name: formData.name,
       length: formData.length,
-      initialAngle: (formData.initialAngle * Math.PI) / 180, // В радианы
+      initialAngle: (formData.initialAngle * Math.PI) / 180, // To radians
       rotationSpeed: formData.rotationSpeed,
       direction: formData.direction,
       color: formData.color,
@@ -50,9 +50,7 @@ export const RadiusEditor: React.FC<RadiusEditorProps> = ({
       <div className="bg-[#1a1a1a] rounded-xl p-6 border border-[#2a2a2a] w-full max-w-md">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-[#667eea]">
-            Редактировать радиус
-          </h2>
+          <h2 className="text-xl font-bold text-[#667eea]">Edit Radius</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-[#252525] rounded-lg transition-colors"
@@ -65,14 +63,14 @@ export const RadiusEditor: React.FC<RadiusEditorProps> = ({
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Name */}
           <Input
-            label="Название"
+            label="Name"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           />
 
           {/* Length */}
           <Slider
-            label="Длина (px)"
+            label="Length (px)"
             min={10}
             max={200}
             value={formData.length}
@@ -84,7 +82,7 @@ export const RadiusEditor: React.FC<RadiusEditorProps> = ({
 
           {/* Initial Angle */}
           <Slider
-            label="Начальный угол (°)"
+            label="Initial Angle (°)"
             min={0}
             max={360}
             value={formData.initialAngle}
@@ -96,7 +94,7 @@ export const RadiusEditor: React.FC<RadiusEditorProps> = ({
 
           {/* Rotation Speed */}
           <Slider
-            label="Скорость вращения (об/с)"
+            label="Rotation Speed (rev/s)"
             min={-10}
             max={10}
             step={0.1}
@@ -112,7 +110,7 @@ export const RadiusEditor: React.FC<RadiusEditorProps> = ({
 
           {/* Direction */}
           <Select
-            label="Направление"
+            label="Direction"
             value={formData.direction}
             onChange={(e) =>
               setFormData({
@@ -121,15 +119,15 @@ export const RadiusEditor: React.FC<RadiusEditorProps> = ({
               })
             }
             options={[
-              { value: "counterclockwise", label: "⟲ Против часовой" },
-              { value: "clockwise", label: "⟳ По часовой" },
+              { value: "counterclockwise", label: "⟲ Counterclockwise" },
+              { value: "clockwise", label: "⟳ Clockwise" },
             ]}
           />
 
           {/* Color */}
           <div>
             <label className="block text-sm font-medium text-gray-400 mb-2">
-              Цвет
+              Color
             </label>
             <div className="flex gap-3 items-center">
               <input
@@ -158,10 +156,10 @@ export const RadiusEditor: React.FC<RadiusEditorProps> = ({
               onClick={onClose}
               className="flex-1"
             >
-              Отмена
+              Cancel
             </Button>
             <Button type="submit" variant="primary" className="flex-1">
-              Сохранить
+              Save
             </Button>
           </div>
         </form>

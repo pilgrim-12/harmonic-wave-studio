@@ -18,15 +18,15 @@ export const ControlPanel: React.FC = () => {
             onClick={play}
             variant="primary"
             size="sm"
-            title="Запустить анимацию"
+            title="Start animation"
           >
             <Play size={16} className="mr-1" />
-            {isPaused ? "Продолжить" : "Старт"}
+            {isPaused ? "Resume" : "Start"}
           </Button>
         ) : (
-          <Button onClick={pause} variant="secondary" size="sm" title="Пауза">
+          <Button onClick={pause} variant="secondary" size="sm" title="Pause">
             <Pause size={16} className="mr-1" />
-            Пауза
+            Pause
           </Button>
         )}
 
@@ -34,16 +34,16 @@ export const ControlPanel: React.FC = () => {
           onClick={stop}
           variant="secondary"
           size="sm"
-          title="Остановить"
+          title="Stop"
           disabled={!isPlaying && !isPaused}
         >
           <Square size={16} className="mr-1" />
-          Стоп
+          Stop
         </Button>
 
-        <Button onClick={reset} variant="secondary" size="sm" title="Сбросить">
+        <Button onClick={reset} variant="secondary" size="sm" title="Reset">
           <RotateCcw size={16} className="mr-1" />
-          Сброс
+          Reset
         </Button>
       </div>
 
@@ -53,7 +53,7 @@ export const ControlPanel: React.FC = () => {
       {/* Info */}
       <div className="flex gap-4 text-sm">
         <div>
-          <span className="text-gray-500">Время:</span>{" "}
+          <span className="text-gray-500">Time:</span>{" "}
           <span className="text-[#667eea] font-semibold">
             {currentTime.toFixed(2)}s
           </span>

@@ -35,7 +35,7 @@ export const useRadiusStore = create<RadiusStore>((set, get) => ({
   addRadius: (params) => {
     const radii = get().radii;
     const order = radii.length;
-    const name = params.name || `Радиус ${order + 1}`;
+    const name = params.name || `Radius ${order + 1}`;
 
     const newRadius: Radius = {
       id: generateId(),

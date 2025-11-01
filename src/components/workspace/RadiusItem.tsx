@@ -43,7 +43,7 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
     e.stopPropagation();
     if (
       isRoot &&
-      confirm("Удалить корневой радиус? Это удалит все дочерние радиусы.")
+      confirm("Delete root radius? This will delete all child radii.")
     ) {
       removeRadius(radius.id);
     } else if (!isRoot) {
@@ -51,7 +51,7 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
     }
   };
 
-  // Быстрое редактирование скорости
+  // Quick edit speed
   const handleSpeedClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsEditingSpeed(true);
@@ -79,7 +79,7 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
     }
   };
 
-  // Быстрое переключение направления
+  // Quick toggle direction
   const handleToggleDirection = (e: React.MouseEvent) => {
     e.stopPropagation();
     const newDirection =
@@ -91,7 +91,7 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
     <div
       onClick={handleClick}
       className={cn(
-        "p-3 rounded-lg cursor-pointer transition-all",
+        "p-2.5 rounded-lg cursor-pointer transition-all",
         "border-l-4",
         isSelected
           ? "bg-[#2a2a2a] border-l-[#FF9800]"
@@ -99,15 +99,15 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-1.5">
         <div className="flex items-center gap-2">
           <div
-            className="w-3 h-3 rounded-full"
+            className="w-2.5 h-2.5 rounded-full"
             style={{ backgroundColor: radius.color }}
           />
           <span
             className={cn(
-              "font-semibold text-sm",
+              "font-semibold text-xs",
               isSelected ? "text-[#FF9800]" : "text-[#667eea]"
             )}
           >
@@ -117,7 +117,7 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
         </div>
 
         {/* Action buttons */}
-        <div className="flex gap-1">
+        <div className="flex gap-0.5">
           <button
             onClick={handleSetTracking}
             className={cn(
@@ -126,16 +126,16 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
                 ? "bg-green-500/20 text-green-400"
                 : "hover:bg-[#333] text-gray-400"
             )}
-            title="Отслеживать для графика"
+            title="Track for graph"
           >
-            <Activity size={14} />
+            <Activity size={12} />
           </button>
           <button
             onClick={handleEdit}
             className="p-1 hover:bg-[#333] rounded transition-colors"
-            title="Редактировать"
+            title="Edit"
           >
-            <Edit2 size={14} className="text-gray-400" />
+            <Edit2 size={12} className="text-gray-400" />
           </button>
           <button
             onClick={handleDelete}
@@ -144,21 +144,21 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
               "p-1 rounded transition-colors",
               isRoot ? "opacity-30 cursor-not-allowed" : "hover:bg-red-500/20"
             )}
-            title={isRoot ? "Нельзя удалить корневой" : "Удалить"}
+            title={isRoot ? "Cannot delete root" : "Delete"}
           >
-            <Trash2 size={14} className="text-gray-400" />
+            <Trash2 size={12} className="text-gray-400" />
           </button>
         </div>
       </div>
 
       {/* Parameters */}
-      <div className="grid grid-cols-2 gap-2 text-xs text-gray-400">
+      <div className="grid grid-cols-2 gap-1.5 text-xs text-gray-400">
         <div>
-          <span className="text-gray-500">Длина:</span>{" "}
+          <span className="text-gray-500">Length:</span>{" "}
           <span className="text-gray-300">{radius.length}px</span>
         </div>
         <div className="flex items-center gap-1">
-          <span className="text-gray-500">Скорость:</span>{" "}
+          <span className="text-gray-500">Speed:</span>{" "}
           {isEditingSpeed ? (
             <input
               type="number"
@@ -167,7 +167,7 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
               onBlur={handleSpeedBlur}
               onKeyDown={handleSpeedKeyDown}
               onClick={(e) => e.stopPropagation()}
-              className="w-12 px-1 bg-[#333] text-gray-300 rounded border border-[#667eea] focus:outline-none"
+              className="w-11 px-1 bg-[#333] text-gray-300 rounded border border-[#667eea] focus:outline-none text-xs"
               autoFocus
               step="0.1"
             />
@@ -181,17 +181,17 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
           )}
         </div>
         <div>
-          <span className="text-gray-500">Угол:</span>{" "}
+          <span className="text-gray-500">Angle:</span>{" "}
           <span className="text-gray-300">
             {Math.round((radius.initialAngle * 180) / Math.PI)}°
           </span>
         </div>
         <div className="flex items-center gap-1">
-          <span className="text-gray-500">Направление:</span>{" "}
+          <span className="text-gray-500">Dir:</span>{" "}
           <button
             onClick={handleToggleDirection}
-            className="text-gray-300 hover:text-[#667eea] transition-colors"
-            title="Переключить направление"
+            className="text-gray-300 hover:text-[#667eea] transition-colors text-xs"
+            title="Toggle direction"
           >
             {radius.direction === "counterclockwise" ? "⟲ CCW" : "⟳ CW"}
           </button>

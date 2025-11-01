@@ -13,11 +13,11 @@ export const RadiusPanel: React.FC = () => {
   const [editingRadius, setEditingRadius] = useState<Radius | null>(null);
 
   const handleAddRadius = () => {
-    // ВСЕГДА добавляем к последнему радиусу (только линейная цепочка)
+    // ALWAYS add to the last radius (linear chain only)
     let parentId: string | null = null;
 
     if (radii.length > 0) {
-      // Берем последний радиус в списке
+      // Get the last radius in the list
       parentId = radii[radii.length - 1].id;
     }
 
@@ -37,22 +37,22 @@ export const RadiusPanel: React.FC = () => {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4 pb-3 border-b-2 border-[#667eea]">
-        <h2 className="text-lg font-bold text-[#667eea] flex items-center gap-2">
-          ⚙️ Радиусы
+      <div className="flex items-center justify-between mb-3 pb-2 border-b-2 border-[#667eea]">
+        <h2 className="text-base font-bold text-[#667eea] flex items-center gap-2">
+          ⚙️ Radii
         </h2>
-        <span className="text-sm text-gray-500">
-          {radii.length} {radii.length === 1 ? "радиус" : "радиусов"}
+        <span className="text-xs text-gray-500">
+          {radii.length} {radii.length === 1 ? "radius" : "radii"}
         </span>
       </div>
 
       {/* List */}
-      <div className="flex-1 overflow-y-auto space-y-2 mb-4">
+      <div className="flex-1 overflow-y-auto space-y-2 mb-3">
         {radii.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <p className="text-sm">Нет радиусов</p>
-            <p className="text-xs mt-2">
-              Нажмите кнопку ниже чтобы добавить первый
+          <div className="text-center py-6 text-gray-500">
+            <p className="text-xs">No radii</p>
+            <p className="text-xs mt-1">
+              Click the button below to add the first one
             </p>
           </div>
         ) : (
@@ -63,9 +63,13 @@ export const RadiusPanel: React.FC = () => {
       </div>
 
       {/* Add button */}
-      <Button onClick={handleAddRadius} variant="secondary" className="w-full">
-        <Plus size={16} className="mr-2" />
-        Добавить радиус
+      <Button
+        onClick={handleAddRadius}
+        variant="secondary"
+        className="w-full text-sm"
+      >
+        <Plus size={14} className="mr-1" />
+        Add Radius
       </Button>
 
       {/* Editor Modal */}

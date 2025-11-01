@@ -9,22 +9,22 @@ export const SettingsPanel: React.FC = () => {
   const { settings, updateSettings } = useSimulationStore();
 
   return (
-    <div className="bg-[#1a1a1a] rounded-xl p-5 border border-[#2a2a2a]">
+    <div className="bg-[#1a1a1a] rounded-xl p-4 border border-[#2a2a2a]">
       {/* Header */}
-      <div className="flex items-center gap-2 mb-4 pb-3 border-b-2 border-[#667eea]">
-        <Settings size={20} className="text-[#667eea]" />
-        <h2 className="text-lg font-bold text-[#667eea]">
-          Настройки визуализации
+      <div className="flex items-center gap-2 mb-3 pb-2 border-b-2 border-[#667eea]">
+        <Settings size={16} className="text-[#667eea]" />
+        <h2 className="text-base font-bold text-[#667eea]">
+          Visualization Settings
         </h2>
       </div>
 
       {/* Toggles */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         {/* Show Grid */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Grid3x3 size={18} className="text-gray-400" />
-            <span className="text-sm text-gray-300">Показать сетку</span>
+            <Grid3x3 size={16} className="text-gray-400" />
+            <span className="text-xs text-gray-300">Show Grid</span>
           </div>
           <label className="relative inline-flex items-center cursor-pointer">
             <input
@@ -33,15 +33,15 @@ export const SettingsPanel: React.FC = () => {
               onChange={(e) => updateSettings({ showGrid: e.target.checked })}
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-[#252525] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#667eea] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#667eea]"></div>
+            <div className="w-9 h-5 bg-[#252525] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#667eea] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#667eea]"></div>
           </label>
         </div>
 
         {/* Grid Size */}
         {settings.showGrid && (
-          <div className="ml-7">
+          <div className="ml-6">
             <Slider
-              label="Размер сетки"
+              label="Grid Size"
               min={20}
               max={100}
               step={10}
@@ -57,8 +57,8 @@ export const SettingsPanel: React.FC = () => {
         {/* Show Axes */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Axis3d size={18} className="text-gray-400" />
-            <span className="text-sm text-gray-300">Показать оси</span>
+            <Axis3d size={16} className="text-gray-400" />
+            <span className="text-xs text-gray-300">Show Axes</span>
           </div>
           <label className="relative inline-flex items-center cursor-pointer">
             <input
@@ -67,15 +67,15 @@ export const SettingsPanel: React.FC = () => {
               onChange={(e) => updateSettings({ showAxes: e.target.checked })}
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-[#252525] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#667eea] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#667eea]"></div>
+            <div className="w-9 h-5 bg-[#252525] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#667eea] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#667eea]"></div>
           </label>
         </div>
 
         {/* Show Trail */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <PenLine size={18} className="text-gray-400" />
-            <span className="text-sm text-gray-300">Показать след</span>
+            <PenLine size={16} className="text-gray-400" />
+            <span className="text-xs text-gray-300">Show Trail</span>
           </div>
           <label className="relative inline-flex items-center cursor-pointer">
             <input
@@ -84,15 +84,15 @@ export const SettingsPanel: React.FC = () => {
               onChange={(e) => updateSettings({ showTrail: e.target.checked })}
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-[#252525] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#667eea] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#667eea]"></div>
+            <div className="w-9 h-5 bg-[#252525] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#667eea] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#667eea]"></div>
           </label>
         </div>
 
         {/* Trail Length */}
         {settings.showTrail && (
-          <div className="ml-7">
+          <div className="ml-6">
             <Slider
-              label="Длина следа"
+              label="Trail Length"
               min={50}
               max={500}
               step={50}
@@ -100,7 +100,7 @@ export const SettingsPanel: React.FC = () => {
               onChange={(e) =>
                 updateSettings({ trailLength: Number(e.target.value) })
               }
-              valueFormatter={(v) => `${v} точек`}
+              valueFormatter={(v) => `${v} pts`}
             />
           </div>
         )}
@@ -108,7 +108,7 @@ export const SettingsPanel: React.FC = () => {
         {/* Animation Speed */}
         <div className="pt-2 border-t border-[#2a2a2a]">
           <Slider
-            label="Скорость анимации"
+            label="Animation Speed"
             min={0.1}
             max={3}
             step={0.1}
@@ -123,7 +123,7 @@ export const SettingsPanel: React.FC = () => {
         {/* Graph Duration */}
         <div>
           <Slider
-            label="Длительность графика"
+            label="Graph Duration"
             min={5}
             max={30}
             step={1}
