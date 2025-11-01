@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { RadiusPanel } from "@/components/workspace/RadiusPanel";
 import { ControlPanel } from "@/components/workspace/ControlPanel";
 import { VisualizationCanvas } from "@/components/workspace/VisualizationCanvas";
 import { SignalGraph } from "@/components/workspace/SignalGraph";
