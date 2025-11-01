@@ -15,8 +15,13 @@ export const SignalGraph: React.FC = () => {
   const frameCountRef = useRef<number>(0);
 
   const { radii } = useRadiusStore();
-  const { isPlaying, currentTime, settings, activeTrackingRadiusId } =
-    useSimulationStore();
+  const {
+    isPlaying,
+    currentTime,
+    settings,
+    activeTrackingRadiusId,
+    setSignalData,
+  } = useSimulationStore();
 
   // Initialize canvas
   useEffect(() => {
@@ -42,7 +47,8 @@ export const SignalGraph: React.FC = () => {
   // Reset data when radii or active radius changes
   useEffect(() => {
     signalDataRef.current = [];
-  }, [radii, activeTrackingRadiusId]);
+    setSignalData([]); // ⭐ NEW - Clear store data too
+  }, [radii, activeTrackingRadiusId, setSignalData]);
 
   // Drawing loop
   useEffect(() => {
@@ -93,6 +99,9 @@ export const SignalGraph: React.FC = () => {
           signalDataRef.current = signalDataRef.current.filter(
             (point) => currentTime - point.time <= maxTime
           );
+
+          // ⭐ NEW - Update store with signal data
+          setSignalData(signalDataRef.current);
         }
       }
 
@@ -137,6 +146,7 @@ export const SignalGraph: React.FC = () => {
     currentTime,
     settings.graphDuration,
     activeTrackingRadiusId,
+    setSignalData,
   ]);
 
   return (

@@ -5,6 +5,7 @@ import { Play, Pause, Square, RotateCcw } from "lucide-react";
 import { useSimulationStore } from "@/store/simulationStore";
 import { Button } from "@/components/ui/Button";
 import { ExportPanel } from "./ExportPanel";
+import { AudioPanel } from "./AudioPanel";
 
 export const ControlPanel: React.FC = () => {
   const { isPlaying, isPaused, currentTime, fps, play, pause, stop, reset } =
@@ -66,6 +67,12 @@ export const ControlPanel: React.FC = () => {
           </span>
         </div>
       </div>
+
+      {/* Divider */}
+      <div className="w-px h-8 bg-[#333]" />
+
+      {/* Audio */}
+      <AudioPanel />
 
       {/* Divider */}
       <div className="w-px h-8 bg-[#333]" />

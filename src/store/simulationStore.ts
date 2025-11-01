@@ -1,9 +1,15 @@
 import { create } from "zustand";
 import { SimulationSettings, SimulationState } from "@/types/simulation";
 
+interface SignalDataPoint {
+  time: number;
+  y: number;
+}
+
 interface SimulationStore extends SimulationState {
   settings: SimulationSettings;
   activeTrackingRadiusId: string | null;
+  signalData: SignalDataPoint[]; // ⭐ NEW
 
   // Actions
   play: () => void;
@@ -14,6 +20,7 @@ interface SimulationStore extends SimulationState {
   updateFps: (fps: number) => void;
   updateSettings: (settings: Partial<SimulationSettings>) => void;
   setActiveTrackingRadius: (radiusId: string | null) => void;
+  setSignalData: (data: SignalDataPoint[]) => void; // ⭐ NEW
 }
 
 const DEFAULT_SETTINGS: SimulationSettings = {
@@ -35,6 +42,7 @@ export const useSimulationStore = create<SimulationStore>((set) => ({
   lastUpdateTime: 0,
   settings: DEFAULT_SETTINGS,
   activeTrackingRadiusId: null,
+  signalData: [], // ⭐ NEW
 
   play: () => {
     set({
@@ -63,6 +71,7 @@ export const useSimulationStore = create<SimulationStore>((set) => ({
       currentTime: 0,
       fps: 0,
       lastUpdateTime: 0,
+      signalData: [], // ⭐ NEW - Clear signal data on reset
     });
   },
 
@@ -82,5 +91,9 @@ export const useSimulationStore = create<SimulationStore>((set) => ({
 
   setActiveTrackingRadius: (radiusId) => {
     set({ activeTrackingRadiusId: radiusId });
+  },
+
+  setSignalData: (data) => {
+    set({ signalData: data }); // ⭐ NEW
   },
 }));
