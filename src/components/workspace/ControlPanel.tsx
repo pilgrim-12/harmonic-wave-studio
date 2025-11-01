@@ -6,6 +6,7 @@ import { useSimulationStore } from "@/store/simulationStore";
 import { Button } from "@/components/ui/Button";
 import { ExportPanel } from "./ExportPanel";
 import { AudioPanel } from "./AudioPanel";
+import { PresetPanel } from "./PresetPanel";
 
 export const ControlPanel: React.FC = () => {
   const { isPlaying, isPaused, currentTime, fps, play, pause, stop, reset } =
@@ -67,6 +68,12 @@ export const ControlPanel: React.FC = () => {
           </span>
         </div>
       </div>
+
+      {/* Divider */}
+      <div className="w-px h-8 bg-[#333]" />
+
+      {/* Presets */}
+      <PresetPanel />
 
       {/* Divider */}
       <div className="w-px h-8 bg-[#333]" />

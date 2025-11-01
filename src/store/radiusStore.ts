@@ -6,11 +6,12 @@ interface RadiusStore {
   selectedRadiusId: string | null;
 
   // Actions
-  addRadius: (params: CreateRadiusParams) => void;
+  addRadius: (params: CreateRadiusParams) => string; // ⭐ Return ID
   removeRadius: (id: string) => void;
   updateRadius: (id: string, params: UpdateRadiusParams) => void;
   selectRadius: (id: string | null) => void;
   clearAllRadii: () => void;
+  clearRadii: () => void; // ⭐ Alias
   getRadiusByParentId: (parentId: string | null) => Radius[];
 }
 
@@ -53,6 +54,7 @@ export const useRadiusStore = create<RadiusStore>((set, get) => ({
     };
 
     set({ radii: [...radii, newRadius] });
+    return newRadius.id; // ⭐ Return the ID
   },
 
   removeRadius: (id) => {
@@ -91,6 +93,10 @@ export const useRadiusStore = create<RadiusStore>((set, get) => ({
 
   clearAllRadii: () => {
     set({ radii: [], selectedRadiusId: null });
+  },
+
+  clearRadii: () => {
+    set({ radii: [], selectedRadiusId: null }); // ⭐ Alias
   },
 
   getRadiusByParentId: (parentId) => {
