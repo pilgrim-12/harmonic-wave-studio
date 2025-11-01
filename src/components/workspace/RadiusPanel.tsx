@@ -9,22 +9,21 @@ import { Button } from "@/components/ui/Button";
 import { Radius } from "@/types/radius";
 
 export const RadiusPanel: React.FC = () => {
-  const { radii, addRadius, selectedRadiusId } = useRadiusStore();
-  const [isAdding, setIsAdding] = useState(false);
+  const { radii, addRadius } = useRadiusStore();
   const [editingRadius, setEditingRadius] = useState<Radius | null>(null);
 
   const handleAddRadius = () => {
-    // Автоматическая цепочка: новый радиус прикрепляется к последнему
+    // ВСЕГДА добавляем к последнему радиусу (только линейная цепочка)
     let parentId: string | null = null;
 
     if (radii.length > 0) {
-      // Если есть выбранный радиус - к нему, иначе к последнему в списке
-      parentId = selectedRadiusId || radii[radii.length - 1].id;
+      // Берем последний радиус в списке
+      parentId = radii[radii.length - 1].id;
     }
 
     addRadius({
       parentId,
-      length: 100,
+      length: 30,
       initialAngle: 0,
       rotationSpeed: 1,
       direction: "counterclockwise",
@@ -68,15 +67,6 @@ export const RadiusPanel: React.FC = () => {
         <Plus size={16} className="mr-2" />
         Добавить радиус
       </Button>
-
-      {/* Info */}
-      {selectedRadiusId && radii.length > 0 && (
-        <div className="mt-3 p-3 bg-[#252525] rounded-lg border-l-4 border-[#667eea]">
-          <p className="text-xs text-gray-400">
-            💡 Новый радиус будет добавлен к выбранному радиусу
-          </p>
-        </div>
-      )}
 
       {/* Editor Modal */}
       {editingRadius && (

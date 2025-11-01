@@ -1,9 +1,10 @@
 "use client";
 
-import React from "react";
-import { Trash2, Edit2 } from "lucide-react";
+import React, { useState } from "react";
+import { Trash2, Edit2, Activity } from "lucide-react";
 import { Radius } from "@/types/radius";
 import { useRadiusStore } from "@/store/radiusStore";
+import { useSimulationStore } from "@/store/simulationStore";
 import { cn } from "@/lib/utils";
 
 interface RadiusItemProps {
@@ -12,8 +13,16 @@ interface RadiusItemProps {
 }
 
 export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
-  const { selectedRadiusId, selectRadius, removeRadius } = useRadiusStore();
+  const { selectedRadiusId, selectRadius, removeRadius, updateRadius } =
+    useRadiusStore();
+  const { activeTrackingRadiusId, setActiveTrackingRadius } =
+    useSimulationStore();
+
+  const [isEditingSpeed, setIsEditingSpeed] = useState(false);
+  const [speedValue, setSpeedValue] = useState(radius.rotationSpeed.toString());
+
   const isSelected = selectedRadiusId === radius.id;
+  const isTracking = activeTrackingRadiusId === radius.id;
   const isRoot = radius.parentId === null;
 
   const handleClick = () => {
@@ -23,6 +32,11 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
     onEdit?.(radius);
+  };
+
+  const handleSetTracking = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setActiveTrackingRadius(radius.id);
   };
 
   const handleDelete = (e: React.MouseEvent) => {
@@ -35,6 +49,42 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
     } else if (!isRoot) {
       removeRadius(radius.id);
     }
+  };
+
+  // Быстрое редактирование скорости
+  const handleSpeedClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsEditingSpeed(true);
+    setSpeedValue(radius.rotationSpeed.toString());
+  };
+
+  const handleSpeedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSpeedValue(e.target.value);
+  };
+
+  const handleSpeedBlur = () => {
+    const newSpeed = parseFloat(speedValue);
+    if (!isNaN(newSpeed)) {
+      updateRadius(radius.id, { rotationSpeed: newSpeed });
+    }
+    setIsEditingSpeed(false);
+  };
+
+  const handleSpeedKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSpeedBlur();
+    } else if (e.key === "Escape") {
+      setIsEditingSpeed(false);
+      setSpeedValue(radius.rotationSpeed.toString());
+    }
+  };
+
+  // Быстрое переключение направления
+  const handleToggleDirection = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newDirection =
+      radius.direction === "clockwise" ? "counterclockwise" : "clockwise";
+    updateRadius(radius.id, { direction: newDirection });
   };
 
   return (
@@ -63,11 +113,23 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
           >
             {radius.name}
           </span>
-          {isRoot && <span className="text-xs text-gray-500">(Корневой)</span>}
+          {isTracking && <span className="text-xs text-green-500">📊</span>}
         </div>
 
         {/* Action buttons */}
         <div className="flex gap-1">
+          <button
+            onClick={handleSetTracking}
+            className={cn(
+              "p-1 rounded transition-colors",
+              isTracking
+                ? "bg-green-500/20 text-green-400"
+                : "hover:bg-[#333] text-gray-400"
+            )}
+            title="Отслеживать для графика"
+          >
+            <Activity size={14} />
+          </button>
           <button
             onClick={handleEdit}
             className="p-1 hover:bg-[#333] rounded transition-colors"
@@ -95,11 +157,28 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
           <span className="text-gray-500">Длина:</span>{" "}
           <span className="text-gray-300">{radius.length}px</span>
         </div>
-        <div>
+        <div className="flex items-center gap-1">
           <span className="text-gray-500">Скорость:</span>{" "}
-          <span className="text-gray-300">
-            {radius.rotationSpeed.toFixed(1)}
-          </span>
+          {isEditingSpeed ? (
+            <input
+              type="number"
+              value={speedValue}
+              onChange={handleSpeedChange}
+              onBlur={handleSpeedBlur}
+              onKeyDown={handleSpeedKeyDown}
+              onClick={(e) => e.stopPropagation()}
+              className="w-12 px-1 bg-[#333] text-gray-300 rounded border border-[#667eea] focus:outline-none"
+              autoFocus
+              step="0.1"
+            />
+          ) : (
+            <span
+              onClick={handleSpeedClick}
+              className="text-gray-300 cursor-pointer hover:text-[#667eea] underline decoration-dotted"
+            >
+              {radius.rotationSpeed.toFixed(1)}
+            </span>
+          )}
         </div>
         <div>
           <span className="text-gray-500">Угол:</span>{" "}
@@ -107,11 +186,15 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
             {Math.round((radius.initialAngle * 180) / Math.PI)}°
           </span>
         </div>
-        <div>
+        <div className="flex items-center gap-1">
           <span className="text-gray-500">Направление:</span>{" "}
-          <span className="text-gray-300">
+          <button
+            onClick={handleToggleDirection}
+            className="text-gray-300 hover:text-[#667eea] transition-colors"
+            title="Переключить направление"
+          >
             {radius.direction === "counterclockwise" ? "⟲ CCW" : "⟳ CW"}
-          </span>
+          </button>
         </div>
       </div>
     </div>

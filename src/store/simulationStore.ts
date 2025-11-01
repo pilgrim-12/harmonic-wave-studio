@@ -3,6 +3,7 @@ import { SimulationSettings, SimulationState } from "@/types/simulation";
 
 interface SimulationStore extends SimulationState {
   settings: SimulationSettings;
+  activeTrackingRadiusId: string | null;
 
   // Actions
   play: () => void;
@@ -12,6 +13,7 @@ interface SimulationStore extends SimulationState {
   setCurrentTime: (time: number) => void;
   updateFps: (fps: number) => void;
   updateSettings: (settings: Partial<SimulationSettings>) => void;
+  setActiveTrackingRadius: (radiusId: string | null) => void;
 }
 
 const DEFAULT_SETTINGS: SimulationSettings = {
@@ -32,6 +34,7 @@ export const useSimulationStore = create<SimulationStore>((set) => ({
   fps: 0,
   lastUpdateTime: 0,
   settings: DEFAULT_SETTINGS,
+  activeTrackingRadiusId: null,
 
   play: () => {
     set({
@@ -75,5 +78,9 @@ export const useSimulationStore = create<SimulationStore>((set) => ({
     set((state) => ({
       settings: { ...state.settings, ...newSettings },
     }));
+  },
+
+  setActiveTrackingRadius: (radiusId) => {
+    set({ activeTrackingRadiusId: radiusId });
   },
 }));

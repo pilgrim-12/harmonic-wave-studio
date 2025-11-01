@@ -85,18 +85,43 @@ export function drawCenterPoint(
 }
 
 /**
+ * Получает путь от корня до указанного радиуса
+ */
+function getPathToRadius(targetRadiusId: string, radii: Radius[]): Set<string> {
+  const path = new Set<string>();
+  const radiusMap = new Map(radii.map((r) => [r.id, r]));
+
+  let currentId: string | null = targetRadiusId;
+
+  while (currentId !== null) {
+    path.add(currentId);
+    const radius = radiusMap.get(currentId);
+    currentId = radius?.parentId || null;
+  }
+
+  return path;
+}
+
+/**
  * Рисует один радиус
  */
 export function drawRadius(
   ctx: CanvasRenderingContext2D,
   position: RadiusPosition,
-  radius: Radius
+  radius: Radius,
+  isActive: boolean = true
 ) {
   const { startPoint, endPoint } = position;
 
+  // Применяем затемнение если радиус не активен
+  const opacity = isActive ? 1.0 : 0.3;
+  const lineWidth = isActive ? 3 : 2;
+
+  ctx.globalAlpha = opacity;
+
   // Линия радиуса
   ctx.strokeStyle = radius.color;
-  ctx.lineWidth = 3;
+  ctx.lineWidth = lineWidth;
   ctx.beginPath();
   ctx.moveTo(startPoint.x, startPoint.y);
   ctx.lineTo(endPoint.x, endPoint.y);
@@ -104,11 +129,12 @@ export function drawRadius(
 
   // Начальная точка (меньше)
   ctx.fillStyle = radius.color;
-  ctx.globalAlpha = 0.5;
+  ctx.globalAlpha = opacity * 0.5;
   ctx.beginPath();
   ctx.arc(startPoint.x, startPoint.y, 4, 0, 2 * Math.PI);
   ctx.fill();
-  ctx.globalAlpha = 1;
+
+  ctx.globalAlpha = opacity;
 
   // Конечная точка (больше)
   ctx.fillStyle = radius.color;
@@ -122,22 +148,42 @@ export function drawRadius(
   ctx.beginPath();
   ctx.arc(endPoint.x, endPoint.y, 6, 0, 2 * Math.PI);
   ctx.stroke();
+
+  // Дополнительное свечение для активной конечной точки
+  if (isActive) {
+    ctx.strokeStyle = radius.color;
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = 0.5;
+    ctx.beginPath();
+    ctx.arc(endPoint.x, endPoint.y, 10, 0, 2 * Math.PI);
+    ctx.stroke();
+  }
+
+  ctx.globalAlpha = 1;
 }
 
 /**
- * Рисует все радиусы
+ * Рисует все радиусы с выделением активной ветки
  */
 export function drawAllRadii(
   ctx: CanvasRenderingContext2D,
   positions: RadiusPosition[],
-  radii: Radius[]
+  radii: Radius[],
+  activeTrackingRadiusId?: string | null
 ) {
   const radiusMap = new Map(radii.map((r) => [r.id, r]));
+
+  // Получаем путь активной ветки (от корня до активного радиуса)
+  const activePath = activeTrackingRadiusId
+    ? getPathToRadius(activeTrackingRadiusId, radii)
+    : null;
 
   for (const position of positions) {
     const radius = radiusMap.get(position.radiusId);
     if (radius) {
-      drawRadius(ctx, position, radius);
+      // Радиус активен если он в пути к активному радиусу, или если нет активного радиуса
+      const isActive = activePath ? activePath.has(radius.id) : true;
+      drawRadius(ctx, position, radius, isActive);
     }
   }
 }

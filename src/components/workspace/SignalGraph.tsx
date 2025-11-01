@@ -7,7 +7,6 @@ import {
   calculateRadiusPositions,
   getFinalPoint,
 } from "@/lib/canvas/calculator";
-import { Point2D } from "@/types/radius";
 
 export const SignalGraph: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -15,7 +14,8 @@ export const SignalGraph: React.FC = () => {
   const animationFrameRef = useRef<number | null>(null);
 
   const { radii } = useRadiusStore();
-  const { isPlaying, currentTime, settings } = useSimulationStore();
+  const { isPlaying, currentTime, settings, activeTrackingRadiusId } =
+    useSimulationStore();
 
   // Инициализация canvas
   useEffect(() => {
@@ -38,10 +38,10 @@ export const SignalGraph: React.FC = () => {
     };
   }, []);
 
-  // Сброс данных при изменении радиусов
+  // Сброс данных при изменении радиусов или активного радиуса
   useEffect(() => {
     signalDataRef.current = [];
-  }, [radii]);
+  }, [radii, activeTrackingRadiusId]);
 
   // Отрисовка графика
   useEffect(() => {
@@ -59,17 +59,30 @@ export const SignalGraph: React.FC = () => {
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
 
-        // Вычисляем позицию последнего радиуса
+        // Вычисляем позицию всех радиусов
         const positions = calculateRadiusPositions(
           radii,
           centerX,
           centerY,
           currentTime
         );
-        const finalPoint = getFinalPoint(positions);
+
+        // Определяем какую точку отслеживать
+        let finalPoint = null;
+
+        if (activeTrackingRadiusId) {
+          // Отслеживаем выбранный радиус
+          const trackingPosition = positions.find(
+            (pos) => pos.radiusId === activeTrackingRadiusId
+          );
+          finalPoint = trackingPosition?.endPoint || null;
+        } else {
+          // По умолчанию - последний радиус
+          finalPoint = getFinalPoint(positions);
+        }
 
         if (finalPoint) {
-          // Y координата относительно центра (инвертируем для правильного отображения)
+          // Y координата относительно центра
           const y = centerY - finalPoint.y;
 
           signalDataRef.current.push({
@@ -113,7 +126,13 @@ export const SignalGraph: React.FC = () => {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [isPlaying, radii, currentTime, settings.graphDuration]);
+  }, [
+    isPlaying,
+    radii,
+    currentTime,
+    settings.graphDuration,
+    activeTrackingRadiusId,
+  ]);
 
   return (
     <canvas

@@ -23,8 +23,14 @@ export const VisualizationCanvas: React.FC = () => {
   const animationFrameRef = useRef<number | null>(null);
 
   const { radii } = useRadiusStore();
-  const { isPlaying, currentTime, setCurrentTime, updateFps, settings } =
-    useSimulationStore();
+  const {
+    isPlaying,
+    currentTime,
+    setCurrentTime,
+    updateFps,
+    settings,
+    activeTrackingRadiusId,
+  } = useSimulationStore();
 
   // Инициализация canvas
   useEffect(() => {
@@ -119,7 +125,20 @@ export const VisualizationCanvas: React.FC = () => {
 
       // Обновляем след
       if (settings.showTrail) {
-        const finalPoint = getFinalPoint(positions);
+        // Определяем какую точку отслеживать для следа
+        let finalPoint = null;
+
+        if (activeTrackingRadiusId) {
+          // Отслеживаем выбранный радиус
+          const trackingPosition = positions.find(
+            (pos) => pos.radiusId === activeTrackingRadiusId
+          );
+          finalPoint = trackingPosition?.endPoint || null;
+        } else {
+          // По умолчанию - последний радиус
+          finalPoint = getFinalPoint(positions);
+        }
+
         if (finalPoint) {
           trailRef.current.push(finalPoint);
 
@@ -135,8 +154,8 @@ export const VisualizationCanvas: React.FC = () => {
         trailRef.current = [];
       }
 
-      // Рисуем радиусы
-      drawAllRadii(ctx, positions, radii);
+      // Рисуем радиусы с выделением активной ветки
+      drawAllRadii(ctx, positions, radii, activeTrackingRadiusId);
 
       // Следующий кадр
       animationFrameRef.current = requestAnimationFrame(animate);
@@ -149,12 +168,20 @@ export const VisualizationCanvas: React.FC = () => {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [isPlaying, radii, currentTime, settings, setCurrentTime, updateFps]);
+  }, [
+    isPlaying,
+    radii,
+    currentTime,
+    settings,
+    setCurrentTime,
+    updateFps,
+    activeTrackingRadiusId,
+  ]);
 
-  // Сброс следа при изменении радиусов
+  // Сброс следа при изменении радиусов или активного радиуса
   useEffect(() => {
     trailRef.current = [];
-  }, [radii]);
+  }, [radii, activeTrackingRadiusId]);
 
   return (
     <canvas
