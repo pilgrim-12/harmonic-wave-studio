@@ -1,0 +1,305 @@
+"use client";
+
+import React, { useState } from "react";
+import { BarChart3, Sparkles, Info } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { useSimulationStore } from "@/store/simulationStore";
+import { analyzeSignal } from "@/lib/fourier/analyzer";
+import { generateRadiiFromFFT } from "@/lib/fourier/epicycleGenerator";
+import { useRadiusStore } from "@/store/radiusStore";
+import { FFTAnalysisResult } from "@/types/fourier";
+
+export const FrequencyPanel: React.FC = () => {
+  const { signalData } = useSimulationStore();
+  const { clearRadii, addRadius, selectRadius } = useRadiusStore();
+  const { setActiveTrackingRadius } = useSimulationStore();
+
+  const [analysisResult, setAnalysisResult] =
+    useState<FFTAnalysisResult | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+
+  /**
+   * Analyze current signal with FFT
+   */
+  const handleAnalyze = () => {
+    if (signalData.length === 0) {
+      alert("No signal data available. Please start the animation first!");
+      return;
+    }
+
+    setIsAnalyzing(true);
+
+    // Extract Y values from signal data
+    const yValues = signalData.map((point) => point.y);
+
+    // Estimate sample rate from time data
+    const sampleRate =
+      signalData.length > 1
+        ? signalData.length /
+          (signalData[signalData.length - 1].time - signalData[0].time)
+        : 60; // Default to 60 Hz
+
+    try {
+      // Run FFT analysis
+      const result = analyzeSignal(yValues, sampleRate, {
+        threshold: 0.05,
+        minFrequency: 0.1,
+        maxFrequency: sampleRate / 2,
+        maxPeaks: 20,
+        minPeakDistance: 0.2,
+      });
+
+      setAnalysisResult(result);
+      console.log("FFT Analysis Result:", result);
+    } catch (error) {
+      console.error("FFT Analysis Error:", error);
+      alert("Error analyzing signal. Check console for details.");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  /**
+   * Generate epicycles from FFT analysis
+   */
+  const handleGenerateEpicycles = () => {
+    if (!analysisResult) {
+      alert("Please analyze the signal first!");
+      return;
+    }
+
+    if (analysisResult.peaks.length === 0) {
+      alert("No significant frequency peaks found in the signal!");
+      return;
+    }
+
+    // Generate radius parameters from FFT
+    const radiiParams = generateRadiiFromFFT(analysisResult, {
+      maxRadii: 10,
+      minAmplitude: 0.05,
+      scaleFactor: 50,
+      sortBy: "amplitude",
+      includeDC: false,
+      normalizeToMaxLength: 120,
+    });
+
+    if (radiiParams.length === 0) {
+      alert("No radii generated. Try adjusting settings.");
+      return;
+    }
+
+    // Clear existing radii
+    clearRadii();
+
+    // Create radii in chain (each child of previous)
+    let parentId: string | null = null;
+    let lastRadiusId: string | null = null;
+
+    for (const params of radiiParams) {
+      const newRadiusId = addRadius({
+        ...params,
+        parentId,
+      });
+
+      lastRadiusId = newRadiusId;
+      parentId = newRadiusId; // Next radius will be child of this one
+    }
+
+    // Auto-select and track the last radius
+    if (lastRadiusId) {
+      selectRadius(lastRadiusId);
+      setActiveTrackingRadius(lastRadiusId);
+    }
+
+    alert(
+      `Generated ${radiiParams.length} epicycles from FFT analysis! 🎉\nPress Start to see the result.`
+    );
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-2 border-b-2 border-[#667eea]">
+        <h2 className="text-base font-bold text-[#667eea] flex items-center gap-2">
+          <BarChart3 size={16} />
+          Frequency Analysis
+        </h2>
+      </div>
+
+      {/* Analyze Button */}
+      <Button
+        onClick={handleAnalyze}
+        disabled={isAnalyzing || signalData.length === 0}
+        variant="primary"
+        className="w-full"
+      >
+        {isAnalyzing ? (
+          <>⏳ Analyzing...</>
+        ) : (
+          <>
+            <BarChart3 size={14} className="mr-1" />
+            Analyze Signal
+          </>
+        )}
+      </Button>
+
+      {/* Analysis Results */}
+      {analysisResult && (
+        <div className="space-y-3">
+          {/* Metrics */}
+          <div className="bg-[#252525] rounded-lg p-3 space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-gray-400">Fundamental Frequency:</span>
+              <span className="text-[#667eea] font-semibold">
+                {analysisResult.fundamentalFrequency
+                  ? `${analysisResult.fundamentalFrequency.toFixed(2)} Hz`
+                  : "N/A"}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-gray-400">Peaks Detected:</span>
+              <span className="text-[#667eea] font-semibold">
+                {analysisResult.peaks.length}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-gray-400">THD:</span>
+              <span className="text-[#667eea] font-semibold">
+                {analysisResult.thd.toFixed(1)}%
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-gray-400">DC Offset:</span>
+              <span className="text-[#667eea] font-semibold">
+                {analysisResult.dcOffset.toFixed(4)}
+              </span>
+            </div>
+          </div>
+
+          {/* Top Peaks */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-gray-400">
+                Top Frequencies:
+              </span>
+              <button
+                onClick={() => setShowDetails(!showDetails)}
+                className="text-xs text-[#667eea] hover:underline flex items-center gap-1"
+              >
+                <Info size={12} />
+                {showDetails ? "Hide" : "Show"} Details
+              </button>
+            </div>
+
+            <div className="space-y-1.5">
+              {analysisResult.peaks.slice(0, 5).map((peak, index) => (
+                <div
+                  key={index}
+                  className="bg-[#252525] rounded p-2 flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-2 h-2 rounded-full"
+                      style={{
+                        backgroundColor: `hsl(${240 - index * 40}, 70%, 60%)`,
+                      }}
+                    />
+                    <span className="text-xs font-medium text-white">
+                      {peak.frequency.toFixed(2)} Hz
+                    </span>
+                  </div>
+
+                  {showDetails && (
+                    <div className="flex gap-3 text-xs text-gray-400">
+                      <span>Amp: {peak.amplitude.toFixed(4)}</span>
+                      <span>
+                        Phase: {((peak.phase * 180) / Math.PI).toFixed(0)}°
+                      </span>
+                    </div>
+                  )}
+
+                  {!showDetails && (
+                    <span className="text-xs text-gray-400">
+                      {(peak.relativeAmplitude * 100).toFixed(0)}%
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Harmonics (if detected) */}
+          {analysisResult.harmonics.length > 0 && (
+            <div>
+              <span className="text-xs font-semibold text-gray-400 block mb-2">
+                Harmonics:
+              </span>
+              <div className="space-y-1">
+                {analysisResult.harmonics.slice(0, 5).map((harmonic) => (
+                  <div
+                    key={harmonic.order}
+                    className="bg-[#252525] rounded px-2 py-1.5 flex items-center justify-between text-xs"
+                  >
+                    <span className="text-gray-300">
+                      {harmonic.order === 1
+                        ? "Fundamental"
+                        : `${harmonic.order}${getOrdinalSuffix(
+                            harmonic.order
+                          )} Harmonic`}
+                    </span>
+                    <span className="text-[#667eea]">
+                      {harmonic.energyPercentage.toFixed(1)}%
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Generate Button */}
+          <Button
+            onClick={handleGenerateEpicycles}
+            variant="primary"
+            className="w-full"
+          >
+            <Sparkles size={14} className="mr-1" />
+            Generate Epicycles from FFT
+          </Button>
+
+          {/* Info */}
+          <div className="bg-[#252525] rounded-lg p-2 flex items-start gap-2">
+            <Info size={14} className="text-[#667eea] mt-0.5 flex-shrink-0" />
+            <p className="text-xs text-gray-400">
+              This will replace current radii with epicycles generated from the
+              frequency analysis.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!analysisResult && !isAnalyzing && (
+        <div className="text-center py-6 text-gray-500">
+          <BarChart3 size={32} className="mx-auto mb-2 opacity-50" />
+          <p className="text-xs">No analysis yet</p>
+          <p className="text-xs mt-1">
+            Run the animation, then click Analyze Signal
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+/**
+ * Helper: Get ordinal suffix (1st, 2nd, 3rd, etc.)
+ */
+function getOrdinalSuffix(n: number): string {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return s[(v - 20) % 10] || s[v] || s[0];
+}

@@ -3,11 +3,11 @@
 **Visualize, Analyze, Filter - Signal Processing with Epicycles**
 
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://harmonic-wave-studio.vercel.app)
-[![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-An interactive web application for visualizing and analyzing signals through rotating epicycles and Fourier decomposition. Create complex waveforms, hear them as audio, and export your work - all in your browser!
+An interactive web application for visualizing and analyzing signals through rotating epicycles and Fourier decomposition. Create complex waveforms, **analyze them with FFT**, **auto-generate epicycles**, hear them as audio, and export your work - all in your browser!
 
 **🔗 Live Demo:** [harmonic-wave-studio.vercel.app](https://harmonic-wave-studio.vercel.app)
 
@@ -22,6 +22,16 @@ An interactive web application for visualizing and analyzing signals through rot
 - **Customizable radii** - adjust length, speed, direction, and color
 - **Visual branch tracking** - highlight active radius chains
 - **Trail visualization** - see the path traced by epicycles
+
+### 📊 FFT Analysis ⭐ NEW!
+
+- **Real-time frequency analysis** - FFT (Fast Fourier Transform) of any signal
+- **Frequency spectrum** - visualize dominant frequencies and amplitudes
+- **Peak detection** - automatic identification of significant components
+- **Harmonic analysis** - find fundamental frequency and harmonics
+- **THD calculation** - Total Harmonic Distortion metrics
+- **Auto-generate epicycles** - reverse engineer signals into rotating radii! ✨
+- **One-click generation** - from any signal to perfect epicycle reconstruction
 
 ### 🎵 Audio Synthesis
 
@@ -114,6 +124,22 @@ npm start
 2. Choose from 6 classic waveforms
 3. Experiment and modify as needed
 
+### Analyzing Signals with FFT ⭐ NEW!
+
+1. **Create a signal** - Use presets (Square Wave recommended) or add custom radii
+2. **Run animation** - Press Start and let it run for 5-10 seconds
+3. **Open Analysis panel** - Click "Analysis" in the left sidebar
+4. **Analyze Signal** - Click the purple button to run FFT analysis
+5. **View results:**
+   - Fundamental frequency
+   - Top 5 frequency peaks
+   - Harmonics breakdown
+   - THD (Total Harmonic Distortion)
+6. **Generate Epicycles** - Click "Generate Epicycles from FFT"
+7. **See the magic!** - Auto-generated radii perfectly recreate your signal! ✨
+
+**This is Fourier transform magic** - any complex signal decomposed into simple rotating circles!
+
 ### Playing Audio
 
 1. Run the animation to generate signal data
@@ -137,6 +163,7 @@ npm start
 - **Visualize harmonics** - Observe frequency relationships
 - **Explore waveforms** - Compare sine, square, sawtooth waves
 - **Learn through sound** - Connect visual and audio representations
+- **FFT Analysis** - See frequency domain representation in real-time ⭐
 
 ### For Teachers
 
@@ -144,6 +171,7 @@ npm start
 - **Real-time experimentation** - Instant feedback on parameter changes
 - **Cross-disciplinary** - Math, physics, music, engineering
 - **Share examples** - Export and distribute projects easily
+- **Reverse engineering** - Show how any signal = sum of frequencies ⭐
 
 ### For Researchers
 
@@ -151,17 +179,19 @@ npm start
 - **Export data** - Integrate with MATLAB, Python, etc.
 - **Custom patterns** - Create specific test signals
 - **Educational outreach** - Explain concepts intuitively
+- **FFT prototyping** - Fast frequency analysis tool ⭐
 
 ---
 
-## 🏗️ Technology Stack
+## �️ Technology Stack
 
 **Frontend:**
 
-- [Next.js 14](https://nextjs.org/) - React framework with App Router
+- [Next.js 16](https://nextjs.org/) - React framework with App Router
 - [TypeScript](https://www.typescriptlang.org/) - Type-safe JavaScript
 - [Tailwind CSS](https://tailwindcss.com/) - Utility-first styling
 - [Zustand](https://github.com/pmndrs/zustand) - State management
+- [fft.js](https://github.com/indutny/fft.js) - Fast Fourier Transform ⭐
 - Canvas API - High-performance rendering
 - Web Audio API - Audio synthesis
 
@@ -172,7 +202,6 @@ npm start
 **Development:**
 
 - ESLint - Code linting
-- Prettier - Code formatting
 - Git - Version control
 
 ---
@@ -184,39 +213,54 @@ harmonic-wave-studio/
 ├── src/
 │   ├── app/              # Next.js app router
 │   ├── components/       # React components
-│   │   ├── ui/          # Reusable UI components
-│   │   └── workspace/   # Main application components
-│   ├── lib/             # Utilities and logic
-│   │   ├── audio/       # Audio synthesis
-│   │   ├── canvas/      # Rendering and calculations
-│   │   ├── export/      # Export utilities
-│   │   └── presets/     # Waveform presets
-│   ├── store/           # Zustand state management
-│   ├── types/           # TypeScript definitions
-│   └── hooks/           # Custom React hooks
-└── public/              # Static assets
+│   │   ├── analysis/     # ⭐ FFT Analysis components
+│   │   ├── ui/           # Reusable UI components
+│   │   └── workspace/    # Main application components
+│   ├── lib/              # Utilities and logic
+│   │   ├── audio/        # Audio synthesis
+│   │   ├── canvas/       # Rendering and calculations
+│   │   ├── export/       # Export utilities
+│   │   ├── fourier/      # ⭐ FFT, analyzer, generator
+│   │   └── presets/      # Waveform presets
+│   ├── store/            # Zustand state management
+│   ├── types/            # TypeScript definitions
+│   └── hooks/            # Custom React hooks
+└── public/               # Static assets
 ```
 
 ---
 
 ## 🎯 Roadmap
 
-### Phase 2 - Advanced Analysis (Planned)
+### Phase 1 - MVP ✅ COMPLETE
 
-- [ ] FFT Analysis - reverse engineer signals
-- [ ] Signal import from CSV/audio files
-- [ ] Automatic epicycle generation from FFT
-- [ ] Frequency spectrum visualization
+- ✅ Real-time epicycle visualization
+- ✅ Signal graph with auto-scaling
+- ✅ Radius management (CRUD)
+- ✅ Audio synthesis
+- ✅ Export (JSON, CSV, PNG)
+- ✅ 6 preset waveforms
+- ✅ Keyboard shortcuts
+
+### Phase 2 - FFT Analysis (IN PROGRESS)
+
+- ✅ **FFT library integration** ⭐ NEW!
+- ✅ **Frequency spectrum analyzer** ⭐ NEW!
+- ✅ **Auto-generate epicycles from FFT** ⭐ NEW!
+- ✅ **Peak detection and harmonic analysis** ⭐ NEW!
+- [ ] Spectrum visualization (bar chart canvas)
+- [ ] Generation options dialog
+- [ ] CSV/audio signal import
 - [ ] Signal reconstruction comparison
 
-### Phase 3 - DSP Features (Planned)
+### Phase 3 - DSP Features (PLANNED)
 
 - [ ] Noise generation (white, pink, gaussian)
 - [ ] Digital filters (low-pass, high-pass, band-pass)
 - [ ] SNR and quality metrics
 - [ ] Before/after signal comparison
 
-### Phase 4 - Enhanced UX (Planned)
+### Phase 4 - Enhanced UX (PLANNED)
 
 - [ ] Dark/Light theme toggle
 - [ ] Mobile-optimized interface
@@ -249,6 +293,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Inspired by the beauty of Fourier decomposition
 - Built with modern web technologies
 - Designed for education and exploration
+- FFT magic powered by [fft.js](https://github.com/indutny/fft.js) ⭐
 
 ---
 
@@ -261,3 +306,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 **Made with ❤️ for signal processing enthusiasts**
+
+**Latest Update:** Phase 2.1 Complete - FFT Analysis & Auto-Generate Epicycles! ⭐

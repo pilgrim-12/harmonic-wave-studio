@@ -5,8 +5,9 @@ import { ControlPanel } from "@/components/workspace/ControlPanel";
 import { VisualizationCanvas } from "@/components/workspace/VisualizationCanvas";
 import { SignalGraph } from "@/components/workspace/SignalGraph";
 import { SettingsPanel } from "@/components/workspace/SettingsPanel";
+import { FrequencyPanel } from "@/components/analysis/FrequencyPanel";
 import { AccordionItem } from "@/components/ui/Accordion";
-import { Settings, Plus } from "lucide-react";
+import { Settings, Plus, BarChart3 } from "lucide-react";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useRadiusStore } from "@/store/radiusStore";
 import { useSimulationStore } from "@/store/simulationStore";
@@ -117,6 +118,20 @@ export default function Home() {
             >
               <div className="px-3 pb-3">
                 <SettingsPanel />
+              </div>
+            </AccordionItem>
+          </div>
+
+          {/* Analysis Panel ⭐ NEW! */}
+          <div className="flex-shrink-0">
+            <AccordionItem
+              title="Analysis"
+              icon={<BarChart3 size={16} className="text-[#667eea]" />}
+              isOpen={openPanel === "analysis"}
+              onToggle={() => handleToggle("analysis")}
+            >
+              <div className="px-3 pb-3">
+                <FrequencyPanel />
               </div>
             </AccordionItem>
           </div>
