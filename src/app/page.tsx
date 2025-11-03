@@ -7,6 +7,7 @@ import { SignalGraph } from "@/components/workspace/SignalGraph";
 import { SettingsPanel } from "@/components/workspace/SettingsPanel";
 import { AccordionItem } from "@/components/ui/Accordion";
 import { Settings, Plus } from "lucide-react";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useRadiusStore } from "@/store/radiusStore";
 import { RadiusItem } from "@/components/workspace/RadiusItem";
 import { RadiusEditor } from "@/components/workspace/RadiusEditor";
@@ -17,6 +18,8 @@ export default function Home() {
   const [openPanel, setOpenPanel] = useState<string>("radii");
   const [editingRadius, setEditingRadius] = useState<Radius | null>(null);
   const { radii, addRadius } = useRadiusStore();
+
+  useKeyboardShortcuts();
 
   const handleToggle = (panelId: string) => {
     setOpenPanel(openPanel === panelId ? "" : panelId);

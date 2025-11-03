@@ -1,307 +1,263 @@
 # 🌊 Harmonic Wave Studio
 
-**Визуализация, анализ и фильтрация сигналов через эпициклы**
+**Visualize, Analyze, Filter - Signal Processing with Epicycles**
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Next.js](https://img.shields.io/badge/Next.js-14-black)
-![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
-![Tailwind](https://img.shields.io/badge/Tailwind-3-38bdf8)
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://harmonic-wave-studio.vercel.app)
+[![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
----
+An interactive web application for visualizing and analyzing signals through rotating epicycles and Fourier decomposition. Create complex waveforms, hear them as audio, and export your work - all in your browser!
 
-## 📖 О проекте
-
-**Harmonic Wave Studio** — это интерактивное веб-приложение для визуализации и анализа сигналов с помощью эпициклов (вращающихся радиусов). Проект демонстрирует принципы **разложения Фурье** и позволяет создавать сложные сигналы путем комбинирования простых гармонических колебаний.
-
-### ✨ Ключевые возможности
-
-- 🎨 **Интерактивная визуализация** — Real-time анимация вращающихся радиусов на Canvas
-- 📊 **График сигнала** — Отображение результирующего сигнала Y(t) с автомасштабированием
-- ⚙️ **Редактор параметров** — Настройка длины, скорости, направления и угла каждого радиуса
-- 🔗 **Цепочки радиусов** — Создание иерархических структур радиусов
-- 🎛️ **Панель настроек** — Управление сеткой, осями, следом и скоростью анимации
-- 🎨 **Кастомные цвета** — Визуальное различие между радиусами
+**🔗 Live Demo:** [harmonic-wave-studio.vercel.app](https://harmonic-wave-studio.vercel.app)
 
 ---
 
-## 🚀 Быстрый старт
+## ✨ Features
 
-### Требования
+### 🎨 Interactive Visualization
+
+- **Real-time epicycle animation** with smooth 60 FPS rendering
+- **Dynamic signal graph** with auto-scaling and time tracking
+- **Customizable radii** - adjust length, speed, direction, and color
+- **Visual branch tracking** - highlight active radius chains
+- **Trail visualization** - see the path traced by epicycles
+
+### 🎵 Audio Synthesis
+
+- **Signal-to-sound conversion** using Web Audio API
+- **Musical note selection** (C4 through C5)
+- **Hear your waveforms** - transform visual patterns into audio
+- **Real-time playback** with periodic wave generation
+
+### 📦 Export & Import
+
+- **JSON export** - save complete projects with all parameters
+- **CSV export** - export signal data for analysis
+- **PNG export** - capture beautiful screenshots
+- **One-click downloads** - no server required
+
+### ⚡ Preset Waveforms
+
+- **Sine Wave** - pure fundamental frequency
+- **Square Wave** - odd harmonics (1, 3, 5, 7...)
+- **Sawtooth Wave** - all harmonics (1, 2, 3, 4...)
+- **Triangle Wave** - odd harmonics with alternating phase
+- **Complex Patterns** - multi-frequency combinations
+- **Beating Frequencies** - interference patterns
+
+### ⌨️ Keyboard Shortcuts
+
+- **Space** - Play/Pause animation
+- **S** - Stop
+- **R** - Reset
+- **Delete** - Remove selected radius
+- **Escape** - Close modals
+
+### 🎛️ Advanced Controls
+
+- **Grid and axes** - toggle reference lines
+- **Animation speed** - control playback rate
+- **Trail length** - adjust visual persistence
+- **Graph duration** - customize time window
+- **Performance optimizations** - smooth rendering even with many radii
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
 
 - Node.js 18+
-- npm или yarn
+- npm or yarn
 
-### Установка
+### Installation
 
 ```bash
-# Клонировать репозиторий
+# Clone the repository
 git clone https://github.com/pilgrim-12/harmonic-wave-studio.git
 cd harmonic-wave-studio
 
-# Установить зависимости
+# Install dependencies
 npm install
 
-# Запустить dev сервер
+# Run development server
 npm run dev
 ```
 
-Откройте [http://localhost:3000](http://localhost:3000) в браузере.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Build for Production
+
+```bash
+# Create optimized production build
+npm run build
+
+# Start production server
+npm start
+```
 
 ---
 
-## 🏗️ Технологический стек
+## 📖 How to Use
 
-| Технология       | Назначение                    |
-| ---------------- | ----------------------------- |
-| **Next.js 14**   | React фреймворк с App Router  |
-| **TypeScript**   | Типизация и безопасность кода |
-| **Tailwind CSS** | Utility-first CSS фреймворк   |
-| **Zustand**      | Легковесный state management  |
-| **Canvas API**   | Рендеринг графики и анимации  |
-| **Lucide React** | Иконки                        |
+### Creating Your First Signal
+
+1. **Add Radii** - Click "Add Radius" to create rotating vectors
+2. **Adjust Parameters** - Edit length, speed, and direction inline
+3. **Start Animation** - Press "Start" or hit **Space**
+4. **Watch the Magic** - See your signal form in real-time!
+
+### Loading Presets
+
+1. Click **"Presets"** button
+2. Choose from 6 classic waveforms
+3. Experiment and modify as needed
+
+### Playing Audio
+
+1. Run the animation to generate signal data
+2. Select a musical note (e.g., A4 = 440 Hz)
+3. Click **"Play"** to hear your waveform!
+4. Different waveforms = different timbres 🎵
+
+### Exporting Your Work
+
+- **JSON** - Save complete project with all radii
+- **CSV** - Export time-series data for analysis
+- **PNG** - Capture beautiful visualizations
 
 ---
 
-## 📂 Структура проекта
+## 🎓 Educational Use Cases
+
+### For Students
+
+- **Understand Fourier Series** - See how complex signals decompose
+- **Visualize harmonics** - Observe frequency relationships
+- **Explore waveforms** - Compare sine, square, sawtooth waves
+- **Learn through sound** - Connect visual and audio representations
+
+### For Teachers
+
+- **Interactive demonstrations** - Engage students visually
+- **Real-time experimentation** - Instant feedback on parameter changes
+- **Cross-disciplinary** - Math, physics, music, engineering
+- **Share examples** - Export and distribute projects easily
+
+### For Researchers
+
+- **Signal visualization** - Quick prototyping and exploration
+- **Export data** - Integrate with MATLAB, Python, etc.
+- **Custom patterns** - Create specific test signals
+- **Educational outreach** - Explain concepts intuitively
+
+---
+
+## 🏗️ Technology Stack
+
+**Frontend:**
+
+- [Next.js 14](https://nextjs.org/) - React framework with App Router
+- [TypeScript](https://www.typescriptlang.org/) - Type-safe JavaScript
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first styling
+- [Zustand](https://github.com/pmndrs/zustand) - State management
+- Canvas API - High-performance rendering
+- Web Audio API - Audio synthesis
+
+**Deployment:**
+
+- [Vercel](https://vercel.com/) - Serverless deployment with CI/CD
+
+**Development:**
+
+- ESLint - Code linting
+- Prettier - Code formatting
+- Git - Version control
+
+---
+
+## 📁 Project Structure
 
 ```
 harmonic-wave-studio/
 ├── src/
-│   ├── app/                    # Next.js App Router
-│   │   └── page.tsx           # Главная страница
-│   ├── components/
-│   │   ├── ui/                # Базовые UI компоненты
-│   │   │   ├── Button.tsx
-│   │   │   ├── Input.tsx
-│   │   │   ├── Slider.tsx
-│   │   │   └── Select.tsx
-│   │   └── workspace/         # Компоненты рабочей области
-│   │       ├── RadiusPanel.tsx          # Панель радиусов
-│   │       ├── RadiusItem.tsx           # Карточка радиуса
-│   │       ├── RadiusEditor.tsx         # Редактор параметров
-│   │       ├── ControlPanel.tsx         # Управление анимацией
-│   │       ├── VisualizationCanvas.tsx  # Canvas визуализация
-│   │       ├── SignalGraph.tsx          # График сигнала
-│   │       └── SettingsPanel.tsx        # Панель настроек
-│   ├── store/                 # Zustand stores
-│   │   ├── radiusStore.ts     # Управление радиусами
-│   │   └── simulationStore.ts # Управление симуляцией
-│   ├── types/                 # TypeScript типы
-│   │   ├── radius.ts
-│   │   ├── signal.ts
-│   │   └── simulation.ts
-│   └── lib/                   # Утилиты
-│       ├── canvas/
-│       │   ├── calculator.ts  # Расчет позиций радиусов
-│       │   └── renderer.ts    # Рендеринг на Canvas
-│       └── utils.ts           # Общие утилиты
-├── public/                    # Статические файлы
-├── package.json
-└── README.md
+│   ├── app/              # Next.js app router
+│   ├── components/       # React components
+│   │   ├── ui/          # Reusable UI components
+│   │   └── workspace/   # Main application components
+│   ├── lib/             # Utilities and logic
+│   │   ├── audio/       # Audio synthesis
+│   │   ├── canvas/      # Rendering and calculations
+│   │   ├── export/      # Export utilities
+│   │   └── presets/     # Waveform presets
+│   ├── store/           # Zustand state management
+│   ├── types/           # TypeScript definitions
+│   └── hooks/           # Custom React hooks
+└── public/              # Static assets
 ```
 
 ---
 
-## 🎯 Реализованные функции (MVP — 80%)
+## 🎯 Roadmap
 
-### ✅ Завершено
+### Phase 2 - Advanced Analysis (Planned)
 
-- [x] **Управление радиусами**
+- [ ] FFT Analysis - reverse engineer signals
+- [ ] Signal import from CSV/audio files
+- [ ] Automatic epicycle generation from FFT
+- [ ] Frequency spectrum visualization
+- [ ] Signal reconstruction comparison
 
-  - Добавление/удаление радиусов
-  - Редактирование параметров (длина, скорость, угол, направление, цвет)
-  - Создание цепочек (дочерние радиусы)
-  - Выбор активного радиуса
+### Phase 3 - DSP Features (Planned)
 
-- [x] **Canvas визуализация**
+- [ ] Noise generation (white, pink, gaussian)
+- [ ] Digital filters (low-pass, high-pass, band-pass)
+- [ ] SNR and quality metrics
+- [ ] Before/after signal comparison
 
-  - Real-time анимация вращающихся радиусов
-  - Отображение траектории (след)
-  - Сетка и координатные оси
-  - Центральная точка и конечные точки радиусов
+### Phase 4 - Enhanced UX (Planned)
 
-- [x] **График сигнала Y(t)**
-
-  - Отображение результирующего сигнала в реальном времени
-  - Автомасштабирование по оси Y
-  - Настраиваемая длительность отображения
-
-- [x] **Панель настроек**
-
-  - Переключатель сетки (с настройкой размера)
-  - Переключатель осей координат
-  - Переключатель следа (с настройкой длины)
-  - Скорость анимации (0.1x - 3x)
-  - Длительность графика (5-30 секунд)
-
-- [x] **Управление анимацией**
-
-  - Play/Pause/Stop/Reset
-  - Отображение текущего времени
-  - Счетчик FPS
-
-- [x] **State Management**
-  - Zustand store для радиусов
-  - Zustand store для симуляции
-  - Персистентность настроек
-
-### 🚧 В разработке (20% до завершения MVP)
-
-- [ ] **Preset примеры**
-
-  - Квадратная волна
-  - Треугольная волна
-  - Пилообразная волна
-  - Синусоида
-  - Сложные сигналы
-
-- [ ] **Сохранение/загрузка**
-  - Export в JSON
-  - Import из JSON
-  - Сохранение в LocalStorage
+- [ ] Dark/Light theme toggle
+- [ ] Mobile-optimized interface
+- [ ] Tutorial and onboarding
+- [ ] Project library and favorites
+- [ ] Community gallery
 
 ---
 
-## 🔮 Планируемые функции (Roadmap)
+## 🤝 Contributing
 
-### Фаза 2: DSP ядро (Digital Signal Processing)
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-- [ ] **FFT анализ**
-
-  - Быстрое преобразование Фурье
-  - Спектр частот
-  - Спектрограмма
-
-- [ ] **Генерация шумов**
-
-  - Белый шум
-  - Розовый шум
-  - Коричневый шум
-  - Синий шум
-
-- [ ] **Фильтры**
-
-  - Low-pass фильтр
-  - High-pass фильтр
-  - Band-pass фильтр
-  - Notch фильтр
-
-- [ ] **Метрики качества**
-  - SNR (Signal-to-Noise Ratio)
-  - THD (Total Harmonic Distortion)
-  - SINAD
-  - ENOB
-
-### Фаза 3: Продвинутые функции
-
-- [ ] **Импорт данных**
-
-  - Загрузка аудио файлов (WAV, MP3)
-  - Парсинг CSV данных
-  - API для внешних источников
-
-- [ ] **Экспорт**
-
-  - Сохранение анимации в видео (WebM, MP4)
-  - Export графика в PNG/SVG
-  - Export данных в CSV
-
-- [ ] **Облачное хранилище**
-
-  - Firebase интеграция
-  - Сохранение симуляций в облако
-  - Публичная галерея симуляций
-  - Sharing через ссылку
-
-- [ ] **UI улучшения**
-  - Темная/светлая тема
-  - Горячие клавиши
-  - Drag & drop для радиусов
-  - Undo/Redo
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ---
 
-## 🎓 Использование
+## 📄 License
 
-### Создание простого сигнала
-
-1. Нажмите **"Добавить радиус"** для создания корневого радиуса
-2. Настройте параметры через кнопку ✏️ (редактировать)
-3. Нажмите **"Старт"** для запуска анимации
-4. Наблюдайте за вращением радиуса и графиком сигнала
-
-### Создание сложного сигнала
-
-1. Создайте первый радиус (корневой)
-2. **Выберите** его (кликните на карточку)
-3. Добавьте второй радиус — он автоматически прикрепится к первому
-4. Настройте разные скорости вращения для создания биений
-5. Добавьте третий радиус для еще более сложного сигнала
-
-### Настройка визуализации
-
-- Включите/выключите **сетку** для лучшей ориентации
-- Включите **след** для отображения траектории движения
-- Измените **скорость анимации** для замедления/ускорения
-- Настройте **длительность графика** для просмотра большего периода
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🧮 Математика
+## 🙏 Acknowledgments
 
-Проект базируется на принципах **ряда Фурье** — любой периодический сигнал можно разложить на сумму простых гармонических колебаний:
-
-```
-f(t) = a₀ + Σ[aₙ·cos(nωt) + bₙ·sin(nωt)]
-```
-
-Каждый радиус представляет одну гармонику с:
-
-- **Амплитудой** (длина радиуса)
-- **Частотой** (скорость вращения)
-- **Фазой** (начальный угол)
-
-Конечная точка последнего радиуса в цепочке рисует результирующий сигнал.
+- Inspired by the beauty of Fourier decomposition
+- Built with modern web technologies
+- Designed for education and exploration
 
 ---
 
-## 🤝 Вклад в проект
+## 📧 Contact
 
-Мы приветствуем любой вклад! Если вы хотите помочь:
+**Project Link:** [https://github.com/pilgrim-12/harmonic-wave-studio](https://github.com/pilgrim-12/harmonic-wave-studio)
 
-1. Fork репозиторий
-2. Создайте feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit изменения (`git commit -m 'Add some AmazingFeature'`)
-4. Push в branch (`git push origin feature/AmazingFeature`)
-5. Откройте Pull Request
+**Live Demo:** [https://harmonic-wave-studio.vercel.app](https://harmonic-wave-studio.vercel.app)
 
 ---
 
-## 📝 Лицензия
-
-Этот проект распространяется под лицензией MIT. См. файл `LICENSE` для подробностей.
-
----
-
-## 👨‍💻 Автор
-
-**Pilgrim** - [GitHub](https://github.com/pilgrim-12)
-
----
-
-## 🙏 Благодарности
-
-- 3Blue1Brown за вдохновляющие видео о рядах Фурье
-- Сообщество Next.js за отличный фреймворк
-- Всем контрибьюторам open-source проектов
-
----
-
-## 📞 Контакты
-
-- GitHub Issues: [harmonic-wave-studio/issues](https://github.com/pilgrim-12/harmonic-wave-studio/issues)
-- Email: your-email@example.com
-
----
-
-**⭐ Если проект вам понравился, поставьте звезду на GitHub!**
+**Made with ❤️ for signal processing enthusiasts**

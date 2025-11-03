@@ -4,12 +4,16 @@ import React from "react";
 import { FileJson, FileSpreadsheet, Image as ImageIcon } from "lucide-react";
 import { useRadiusStore } from "@/store/radiusStore";
 import { useSimulationStore } from "@/store/simulationStore";
-import { exportProjectJSON, exportCanvasPNG } from "@/lib/export/exporter";
+import {
+  exportProjectJSON,
+  exportCanvasPNG,
+  exportSignalCSV,
+} from "@/lib/export/exporter";
 import { Button } from "@/components/ui/Button";
 
 export const ExportPanel: React.FC = () => {
   const { radii } = useRadiusStore();
-  const { settings } = useSimulationStore();
+  const { settings, signalData } = useSimulationStore();
 
   const handleExportJSON = () => {
     if (radii.length === 0) {
@@ -20,11 +24,11 @@ export const ExportPanel: React.FC = () => {
   };
 
   const handleExportCSV = () => {
-    // We'll need to get signal data from SignalGraph
-    // For now, show a message
-    alert(
-      "CSV export will be available after running simulation. Feature coming soon!"
-    );
+    if (signalData.length === 0) {
+      alert("No signal data to export. Please start the animation first!");
+      return;
+    }
+    exportSignalCSV(signalData);
   };
 
   const handleExportPNG = () => {
