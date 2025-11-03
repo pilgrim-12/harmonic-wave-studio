@@ -3,12 +3,14 @@
 import React, { useState } from "react";
 import { Sparkles } from "lucide-react";
 import { useRadiusStore } from "@/store/radiusStore";
+import { useSimulationStore } from "@/store/simulationStore";
 import { WAVEFORM_PRESETS, WaveformPreset } from "@/lib/presets/waveforms";
 import { Button } from "@/components/ui/Button";
 
 export const PresetPanel: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { clearRadii, addRadius } = useRadiusStore();
+  const { clearRadii, addRadius, selectRadius } = useRadiusStore();
+  const { setActiveTrackingRadius } = useSimulationStore();
 
   const loadPreset = (preset: WaveformPreset) => {
     // Clear existing radii
@@ -16,6 +18,7 @@ export const PresetPanel: React.FC = () => {
 
     // Add radii from preset sequentially (linear chain)
     let parentId: string | null = null;
+    let lastRadiusId: string | null = null;
 
     preset.radii.forEach((radiusData) => {
       const newRadiusId = addRadius({
@@ -27,9 +30,18 @@ export const PresetPanel: React.FC = () => {
         color: radiusData.color,
       });
 
+      // Track last radius
+      lastRadiusId = newRadiusId;
+
       // Next radius will be child of this one
       parentId = newRadiusId;
     });
+
+    // Auto-select and track the last radius from preset
+    if (lastRadiusId) {
+      selectRadius(lastRadiusId);
+      setActiveTrackingRadius(lastRadiusId);
+    }
 
     // Close dropdown
     setIsOpen(false);

@@ -9,6 +9,7 @@ import { AccordionItem } from "@/components/ui/Accordion";
 import { Settings, Plus } from "lucide-react";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useRadiusStore } from "@/store/radiusStore";
+import { useSimulationStore } from "@/store/simulationStore";
 import { RadiusItem } from "@/components/workspace/RadiusItem";
 import { RadiusEditor } from "@/components/workspace/RadiusEditor";
 import { Button } from "@/components/ui/Button";
@@ -17,7 +18,8 @@ import { Radius } from "@/types/radius";
 export default function Home() {
   const [openPanel, setOpenPanel] = useState<string>("radii");
   const [editingRadius, setEditingRadius] = useState<Radius | null>(null);
-  const { radii, addRadius } = useRadiusStore();
+  const { radii, addRadius, selectRadius } = useRadiusStore();
+  const { setActiveTrackingRadius } = useSimulationStore();
 
   useKeyboardShortcuts();
 
@@ -30,13 +32,17 @@ export default function Home() {
     if (radii.length > 0) {
       parentId = radii[radii.length - 1].id;
     }
-    addRadius({
+    const newRadiusId = addRadius({
       parentId,
       length: 30,
       initialAngle: 0,
       rotationSpeed: 1,
       direction: "counterclockwise",
     });
+
+    // Auto-select and track the newly added radius
+    selectRadius(newRadiusId);
+    setActiveTrackingRadius(newRadiusId);
   };
 
   return (
