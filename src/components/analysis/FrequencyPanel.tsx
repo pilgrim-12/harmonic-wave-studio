@@ -34,6 +34,7 @@ export const FrequencyPanel: React.FC = () => {
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [realTimeFft, setRealTimeFft] = useState(false); // ⭐ NEW
   const [updateCounter, setUpdateCounter] = useState(0); // ⭐ Force re-render
+  const [showFloatingSpectrum, setShowFloatingSpectrum] = useState(false); // ⭐ Floating panel
 
   /**
    * Perform FFT analysis on signal data
@@ -107,6 +108,20 @@ export const FrequencyPanel: React.FC = () => {
 
     return () => clearInterval(interval);
   }, [realTimeFft, isPlaying]);
+
+  /**
+   * ESC key to close floating spectrum
+   */
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && showFloatingSpectrum) {
+        setShowFloatingSpectrum(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [showFloatingSpectrum]);
 
   /**
    * Show settings dialog before generating epicycles
@@ -232,6 +247,13 @@ export const FrequencyPanel: React.FC = () => {
               <span className="text-xs font-semibold text-gray-400">
                 Frequency Spectrum:
               </span>
+              <button
+                onClick={() => setShowFloatingSpectrum(true)}
+                className="text-xs text-[#667eea] hover:underline flex items-center gap-1"
+                title="Expand spectrum"
+              >
+                🔍 Expand
+              </button>
             </div>
             <SpectrumCanvas
               key={updateCounter}
@@ -394,6 +416,75 @@ export const FrequencyPanel: React.FC = () => {
           onGenerate={handleGenerateEpicycles}
           onClose={() => setShowSettingsDialog(false)}
         />
+      )}
+
+      {/* Floating Spectrum Panel ⭐ NEW! */}
+      {showFloatingSpectrum && analysisResult && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          onClick={() => setShowFloatingSpectrum(false)}
+        >
+          <div
+            className="bg-[#1a1a1a] rounded-xl border-2 border-[#667eea] p-6 shadow-2xl w-[800px] max-w-[90vw]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-[#667eea]">
+                📊 Frequency Spectrum
+              </h3>
+              <button
+                onClick={() => setShowFloatingSpectrum(false)}
+                className="text-gray-400 hover:text-white text-2xl leading-none"
+                title="Close (ESC)"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Large Spectrum */}
+            <SpectrumCanvas
+              key={`floating-${updateCounter}`}
+              spectrum={analysisResult.spectrum}
+              maxFrequency={10}
+              height={400}
+              showGrid={true}
+            />
+
+            {/* Quick Stats */}
+            <div className="mt-4 grid grid-cols-4 gap-3">
+              <div className="bg-[#252525] rounded p-2 text-center">
+                <div className="text-xs text-gray-400">Fundamental</div>
+                <div className="text-sm font-bold text-[#667eea]">
+                  {analysisResult.fundamentalFrequency?.toFixed(2) || "N/A"} Hz
+                </div>
+              </div>
+              <div className="bg-[#252525] rounded p-2 text-center">
+                <div className="text-xs text-gray-400">Peaks</div>
+                <div className="text-sm font-bold text-[#667eea]">
+                  {analysisResult.peaks.length}
+                </div>
+              </div>
+              <div className="bg-[#252525] rounded p-2 text-center">
+                <div className="text-xs text-gray-400">THD</div>
+                <div className="text-sm font-bold text-[#667eea]">
+                  {analysisResult.thd.toFixed(1)}%
+                </div>
+              </div>
+              <div className="bg-[#252525] rounded p-2 text-center">
+                <div className="text-xs text-gray-400">DC Offset</div>
+                <div className="text-sm font-bold text-[#667eea]">
+                  {analysisResult.dcOffset.toFixed(3)}
+                </div>
+              </div>
+            </div>
+
+            {/* Close hint */}
+            <div className="mt-4 text-center text-xs text-gray-500">
+              Press ESC or click outside to close
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
