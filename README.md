@@ -26,12 +26,13 @@ An interactive web application for visualizing and analyzing signals through rot
 ### 📊 FFT Analysis ⭐ NEW!
 
 - **Real-time frequency analysis** - FFT (Fast Fourier Transform) of any signal
-- **Frequency spectrum** - visualize dominant frequencies and amplitudes
+- **Frequency spectrum visualization** - interactive bar chart with color-coded frequencies ⭐
 - **Peak detection** - automatic identification of significant components
 - **Harmonic analysis** - find fundamental frequency and harmonics
 - **THD calculation** - Total Harmonic Distortion metrics
+- **Customizable generation** - dialog with adjustable settings for epicycle generation ⭐
 - **Auto-generate epicycles** - reverse engineer signals into rotating radii! ✨
-- **One-click generation** - from any signal to perfect epicycle reconstruction
+- **Manual zoom control** - adjust visualization scale (10%-200%) ⭐
 
 ### 🎵 Audio Synthesis
 
@@ -70,6 +71,7 @@ An interactive web application for visualizing and analyzing signals through rot
 - **Animation speed** - control playback rate
 - **Trail length** - adjust visual persistence
 - **Graph duration** - customize time window
+- **Manual zoom** - scale visualization 10%-200% ⭐ NEW!
 - **Performance optimizations** - smooth rendering even with many radii
 
 ---
@@ -128,15 +130,23 @@ npm start
 
 1. **Create a signal** - Use presets (Square Wave recommended) or add custom radii
 2. **Run animation** - Press Start and let it run for 5-10 seconds
-3. **Open Analysis panel** - Click "Analysis" in the left sidebar
-4. **Analyze Signal** - Click the purple button to run FFT analysis
-5. **View results:**
+3. **Stop animation** - Press Stop to capture the signal
+4. **Open Analysis panel** - Click "Analysis" in the left sidebar
+5. **Analyze Signal** - Click the purple button to run FFT analysis
+6. **View spectrum visualization** - Interactive bar chart shows frequency components ⭐
+7. **Review metrics:**
    - Fundamental frequency
-   - Top 5 frequency peaks
+   - Top 5 frequency peaks with color indicators
    - Harmonics breakdown
    - THD (Total Harmonic Distortion)
-6. **Generate Epicycles** - Click "Generate Epicycles from FFT"
-7. **See the magic!** - Auto-generated radii perfectly recreate your signal! ✨
+8. **Customize generation** - Click "Generate Epicycles from FFT" to open settings dialog ⭐
+9. **Adjust settings:**
+   - Number of radii (3-20)
+   - Scale factor (20-150px)
+   - Minimum amplitude threshold (1-30%)
+   - Include DC offset option
+10. **Preview & Generate** - See preview stats and generate optimized epicycles! ✨
+11. **Adjust zoom** - Use Visualization panel zoom slider (10-200%) for perfect viewing ⭐
 
 **This is Fourier transform magic** - any complex signal decomposed into simple rotating circles!
 
@@ -242,14 +252,15 @@ harmonic-wave-studio/
 - ✅ 6 preset waveforms
 - ✅ Keyboard shortcuts
 
-### Phase 2 - FFT Analysis (IN PROGRESS)
+### Phase 2 - FFT Analysis (IN PROGRESS - 70% Complete)
 
-- ✅ **FFT library integration** ⭐ NEW!
-- ✅ **Frequency spectrum analyzer** ⭐ NEW!
-- ✅ **Auto-generate epicycles from FFT** ⭐ NEW!
-- ✅ **Peak detection and harmonic analysis** ⭐ NEW!
-- [ ] Spectrum visualization (bar chart canvas)
-- [ ] Generation options dialog
+- ✅ **FFT library integration** ⭐
+- ✅ **Frequency spectrum analyzer** ⭐
+- ✅ **Auto-generate epicycles from FFT** ⭐
+- ✅ **Peak detection and harmonic analysis** ⭐
+- ✅ **Spectrum visualization (bar chart canvas)** ⭐ NEW!
+- ✅ **Generation options dialog** ⭐ NEW!
+- ✅ **Manual zoom control** ⭐ NEW!
 - [ ] CSV/audio signal import
 - [ ] Signal reconstruction comparison
 
@@ -307,4 +318,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Made with ❤️ for signal processing enthusiasts**
 
-**Latest Update:** Phase 2.1 Complete - FFT Analysis & Auto-Generate Epicycles! ⭐
+**Latest Update:** Phase 2.2 Complete - Spectrum Visualization, Generation Settings & Manual Zoom! ⭐  
+**Progress:** Phase 2 = 70% Complete 🚀

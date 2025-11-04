@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Settings, Grid3x3, Axis3d, PenLine } from "lucide-react";
+import { Grid3x3, Axis3d, PenLine } from "lucide-react";
 import { useSimulationStore } from "@/store/simulationStore";
 import { Slider } from "@/components/ui/Slider";
 
@@ -9,15 +9,7 @@ export const SettingsPanel: React.FC = () => {
   const { settings, updateSettings } = useSimulationStore();
 
   return (
-    <div className="bg-[#1a1a1a] rounded-xl p-4 border border-[#2a2a2a]">
-      {/* Header */}
-      <div className="flex items-center gap-2 mb-3 pb-2 border-b-2 border-[#667eea]">
-        <Settings size={16} className="text-[#667eea]" />
-        <h2 className="text-base font-bold text-[#667eea]">
-          Visualization Settings
-        </h2>
-      </div>
-
+    <div className="space-y-3">
       {/* Toggles */}
       <div className="space-y-3">
         {/* Show Grid */}
@@ -132,6 +124,19 @@ export const SettingsPanel: React.FC = () => {
               updateSettings({ graphDuration: Number(e.target.value) })
             }
             valueFormatter={(v) => `${v}s`}
+          />
+        </div>
+
+        {/* Zoom ⭐ NEW */}
+        <div className="pt-2 border-t border-[#2a2a2a]">
+          <Slider
+            label="Zoom"
+            min={0.1}
+            max={2.0}
+            step={0.1}
+            value={settings.zoom}
+            onChange={(e) => updateSettings({ zoom: Number(e.target.value) })}
+            valueFormatter={(v) => `${(v * 100).toFixed(0)}%`}
           />
         </div>
       </div>

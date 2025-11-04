@@ -9,7 +9,7 @@ interface SignalDataPoint {
 interface SimulationStore extends SimulationState {
   settings: SimulationSettings;
   activeTrackingRadiusId: string | null;
-  signalData: SignalDataPoint[]; // ⭐ NEW
+  signalData: SignalDataPoint[];
 
   // Actions
   play: () => void;
@@ -20,7 +20,7 @@ interface SimulationStore extends SimulationState {
   updateFps: (fps: number) => void;
   updateSettings: (settings: Partial<SimulationSettings>) => void;
   setActiveTrackingRadius: (radiusId: string | null) => void;
-  setSignalData: (data: SignalDataPoint[]) => void; // ⭐ NEW
+  setSignalData: (data: SignalDataPoint[]) => void;
 }
 
 const DEFAULT_SETTINGS: SimulationSettings = {
@@ -31,6 +31,7 @@ const DEFAULT_SETTINGS: SimulationSettings = {
   showAxes: true,
   showGrid: true,
   gridSize: 50,
+  zoom: 1.0, // ⭐ NEW - Default zoom 100%
 };
 
 export const useSimulationStore = create<SimulationStore>((set) => ({
@@ -42,7 +43,7 @@ export const useSimulationStore = create<SimulationStore>((set) => ({
   lastUpdateTime: 0,
   settings: DEFAULT_SETTINGS,
   activeTrackingRadiusId: null,
-  signalData: [], // ⭐ NEW
+  signalData: [],
 
   play: () => {
     set({
@@ -71,7 +72,7 @@ export const useSimulationStore = create<SimulationStore>((set) => ({
       currentTime: 0,
       fps: 0,
       lastUpdateTime: 0,
-      signalData: [], // ⭐ NEW - Clear signal data on reset
+      signalData: [],
     });
   },
 
@@ -94,6 +95,6 @@ export const useSimulationStore = create<SimulationStore>((set) => ({
   },
 
   setSignalData: (data) => {
-    set({ signalData: data }); // ⭐ NEW
+    set({ signalData: data });
   },
 }));

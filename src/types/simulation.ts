@@ -24,6 +24,9 @@ export interface SimulationSettings {
 
   /** Размер сетки в пикселях */
   gridSize: number;
+
+  /** Zoom level (0.1 - 2.0) ⭐ NEW */
+  zoom: number;
 }
 
 /**

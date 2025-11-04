@@ -83,8 +83,6 @@ export const VisualizationCanvas: React.FC = () => {
       frameCount++;
       fpsTime += deltaTime;
       if (fpsTime >= 1) {
-        const calculatedFps = frameCount / fpsTime;
-        console.log("FPS:", Math.round(calculatedFps)); // DEBUG
         updateFps(frameCount / fpsTime);
         frameCount = 0;
         fpsTime = 0;
@@ -97,7 +95,7 @@ export const VisualizationCanvas: React.FC = () => {
       // Очистка
       clearCanvas(ctx, canvas.width, canvas.height);
 
-      // Сетка (опционально)
+      // Сетка (опционально) - БЕЗ zoom
       if (settings.showGrid) {
         drawGrid(
           ctx,
@@ -109,10 +107,16 @@ export const VisualizationCanvas: React.FC = () => {
         );
       }
 
-      // Оси (опционально)
+      // Оси (опционально) - БЕЗ zoom
       if (settings.showAxes) {
         drawAxes(ctx, centerX, centerY, canvas.width, canvas.height);
       }
+
+      // Apply zoom transform ТОЛЬКО для радиусов и следа
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.scale(settings.zoom, settings.zoom);
+      ctx.translate(-centerX, -centerY);
 
       // Центральная точка
       drawCenterPoint(ctx, centerX, centerY);
@@ -158,6 +162,9 @@ export const VisualizationCanvas: React.FC = () => {
 
       // Рисуем радиусы с выделением активной ветки
       drawAllRadii(ctx, positions, radii, activeTrackingRadiusId);
+
+      // Restore transform
+      ctx.restore();
 
       // Следующий кадр
       animationFrameRef.current = requestAnimationFrame(animate);

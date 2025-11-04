@@ -9,6 +9,10 @@ import { generateRadiiFromFFT } from "@/lib/fourier/epicycleGenerator";
 import { useRadiusStore } from "@/store/radiusStore";
 import { FFTAnalysisResult } from "@/types/fourier";
 import { SpectrumCanvas } from "./SpectrumCanvas";
+import {
+  GenerationSettingsDialog,
+  GenerationSettings,
+} from "./GenerationSettingsDialog";
 
 export const FrequencyPanel: React.FC = () => {
   const { signalData } = useSimulationStore();
@@ -19,6 +23,7 @@ export const FrequencyPanel: React.FC = () => {
     useState<FFTAnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [showSettingsDialog, setShowSettingsDialog] = useState(false);
 
   /**
    * Analyze current signal with FFT
@@ -62,9 +67,9 @@ export const FrequencyPanel: React.FC = () => {
   };
 
   /**
-   * Generate epicycles from FFT analysis
+   * Show settings dialog before generating epicycles
    */
-  const handleGenerateEpicycles = () => {
+  const handleShowGenerationDialog = () => {
     if (!analysisResult) {
       alert("Please analyze the signal first!");
       return;
@@ -75,13 +80,22 @@ export const FrequencyPanel: React.FC = () => {
       return;
     }
 
-    // Generate radius parameters from FFT
+    setShowSettingsDialog(true);
+  };
+
+  /**
+   * Generate epicycles from FFT analysis with custom settings
+   */
+  const handleGenerateEpicycles = (settings: GenerationSettings) => {
+    if (!analysisResult) return;
+
+    // Generate radius parameters from FFT with user settings
     const radiiParams = generateRadiiFromFFT(analysisResult, {
-      maxRadii: 10,
-      minAmplitude: 0.05,
-      scaleFactor: 50,
-      sortBy: "amplitude",
-      includeDC: false,
+      maxRadii: settings.maxRadii,
+      minAmplitude: settings.minAmplitude,
+      scaleFactor: settings.scaleFactor,
+      sortBy: settings.sortBy,
+      includeDC: settings.includeDC,
       normalizeToMaxLength: 120,
     });
 
@@ -278,7 +292,7 @@ export const FrequencyPanel: React.FC = () => {
 
           {/* Generate Button */}
           <Button
-            onClick={handleGenerateEpicycles}
+            onClick={handleShowGenerationDialog}
             variant="primary"
             className="w-full"
           >
@@ -306,6 +320,15 @@ export const FrequencyPanel: React.FC = () => {
             Run the animation, then click Analyze Signal
           </p>
         </div>
+      )}
+
+      {/* Generation Settings Dialog */}
+      {showSettingsDialog && analysisResult && (
+        <GenerationSettingsDialog
+          analysisResult={analysisResult}
+          onGenerate={handleGenerateEpicycles}
+          onClose={() => setShowSettingsDialog(false)}
+        />
       )}
     </div>
   );
