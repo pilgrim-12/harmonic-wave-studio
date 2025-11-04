@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { BarChart3, Sparkles, Info } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useSimulationStore } from "@/store/simulationStore";
@@ -16,34 +16,45 @@ import {
 
 export const FrequencyPanel: React.FC = () => {
   const { signalData } = useSimulationStore();
+  const { isPlaying } = useSimulationStore(); // ⭐ NEW - для real-time FFT
   const { clearRadii, addRadius, selectRadius } = useRadiusStore();
   const { setActiveTrackingRadius } = useSimulationStore();
+
+  const signalDataRef = useRef(signalData); // ⭐ Ref для актуальных данных
+
+  // Update ref when signalData changes
+  useEffect(() => {
+    signalDataRef.current = signalData;
+  }, [signalData]);
 
   const [analysisResult, setAnalysisResult] =
     useState<FFTAnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
+  const [realTimeFft, setRealTimeFft] = useState(false); // ⭐ NEW
+  const [updateCounter, setUpdateCounter] = useState(0); // ⭐ Force re-render
 
   /**
-   * Analyze current signal with FFT
+   * Perform FFT analysis on signal data
    */
-  const handleAnalyze = () => {
-    if (signalData.length === 0) {
-      alert("No signal data available. Please start the animation first!");
+  const performFFT = () => {
+    const currentSignalData = signalDataRef.current;
+
+    if (currentSignalData.length < 100) {
+      // Need at least 100 points for meaningful FFT
       return;
     }
 
-    setIsAnalyzing(true);
-
     // Extract Y values from signal data
-    const yValues = signalData.map((point) => point.y);
+    const yValues = currentSignalData.map((point) => point.y);
 
     // Estimate sample rate from time data
     const sampleRate =
-      signalData.length > 1
-        ? signalData.length /
-          (signalData[signalData.length - 1].time - signalData[0].time)
+      currentSignalData.length > 1
+        ? currentSignalData.length /
+          (currentSignalData[currentSignalData.length - 1].time -
+            currentSignalData[0].time)
         : 60; // Default to 60 Hz
 
     try {
@@ -56,15 +67,50 @@ export const FrequencyPanel: React.FC = () => {
         minPeakDistance: 0.2,
       });
 
-      setAnalysisResult(result);
-      console.log("FFT Analysis Result:", result);
+      // Create new object to trigger React re-render
+      setAnalysisResult({ ...result });
+      setUpdateCounter((prev) => prev + 1);
     } catch (error) {
       console.error("FFT Analysis Error:", error);
-      alert("Error analyzing signal. Check console for details.");
-    } finally {
-      setIsAnalyzing(false);
     }
   };
+
+  /**
+   * Analyze current signal with FFT (manual button)
+   */
+  const handleAnalyze = () => {
+    if (signalData.length === 0) {
+      alert("No signal data available. Please start the animation first!");
+      return;
+    }
+
+    setIsAnalyzing(true);
+    performFFT();
+    setIsAnalyzing(false);
+  };
+
+  /**
+   * Real-time FFT update (when enabled)
+   */
+  useEffect(() => {
+    if (!realTimeFft || !isPlaying) {
+      return;
+    }
+
+    // Initial FFT when enabled
+    if (signalDataRef.current.length >= 100) {
+      performFFT();
+    }
+
+    // Update FFT every 1 second
+    const interval = setInterval(() => {
+      if (signalDataRef.current.length >= 100) {
+        performFFT();
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [realTimeFft, isPlaying]);
 
   /**
    * Show settings dialog before generating epicycles
@@ -142,15 +188,37 @@ export const FrequencyPanel: React.FC = () => {
         </h2>
       </div>
 
+      {/* Real-time FFT Toggle ⭐ NEW */}
+      <div className="flex items-center justify-between bg-[#252525] rounded-lg p-2">
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-300">Real-time FFT</span>
+          <span className="text-xs text-gray-500">(updates live)</span>
+        </div>
+        <label className="relative inline-flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            checked={realTimeFft}
+            onChange={(e) => setRealTimeFft(e.target.checked)}
+            className="sr-only peer"
+          />
+          <div className="w-9 h-5 bg-[#1a1a1a] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#667eea] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#667eea]"></div>
+        </label>
+      </div>
+
       {/* Analyze Button */}
       <Button
         onClick={handleAnalyze}
-        disabled={isAnalyzing || signalData.length === 0}
+        disabled={isAnalyzing || signalData.length === 0 || realTimeFft}
         variant="primary"
         className="w-full"
       >
         {isAnalyzing ? (
           <>⏳ Analyzing...</>
+        ) : realTimeFft ? (
+          <>
+            <BarChart3 size={14} className="mr-1" />
+            Auto-updating...
+          </>
         ) : (
           <>
             <BarChart3 size={14} className="mr-1" />
@@ -170,6 +238,7 @@ export const FrequencyPanel: React.FC = () => {
               </span>
             </div>
             <SpectrumCanvas
+              key={updateCounter}
               spectrum={analysisResult.spectrum}
               maxFrequency={10}
               height={180}
