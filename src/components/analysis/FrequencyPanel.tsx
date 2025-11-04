@@ -49,13 +49,9 @@ export const FrequencyPanel: React.FC = () => {
     // Extract Y values from signal data
     const yValues = currentSignalData.map((point) => point.y);
 
-    // Estimate sample rate from time data
-    const sampleRate =
-      currentSignalData.length > 1
-        ? currentSignalData.length /
-          (currentSignalData[currentSignalData.length - 1].time -
-            currentSignalData[0].time)
-        : 60; // Default to 60 Hz
+    // Use fixed sample rate based on typical FPS (60 Hz)
+    // This is more stable than calculating from timestamps
+    const sampleRate = 60; // Fixed at 60 Hz (animation FPS)
 
     try {
       // Run FFT analysis
