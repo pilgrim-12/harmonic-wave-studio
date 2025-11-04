@@ -8,6 +8,7 @@ import { analyzeSignal } from "@/lib/fourier/analyzer";
 import { generateRadiiFromFFT } from "@/lib/fourier/epicycleGenerator";
 import { useRadiusStore } from "@/store/radiusStore";
 import { FFTAnalysisResult } from "@/types/fourier";
+import { SpectrumCanvas } from "./SpectrumCanvas";
 
 export const FrequencyPanel: React.FC = () => {
   const { signalData } = useSimulationStore();
@@ -147,6 +148,21 @@ export const FrequencyPanel: React.FC = () => {
       {/* Analysis Results */}
       {analysisResult && (
         <div className="space-y-3">
+          {/* Spectrum Visualization ⭐ NEW! */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-gray-400">
+                Frequency Spectrum:
+              </span>
+            </div>
+            <SpectrumCanvas
+              spectrum={analysisResult.spectrum}
+              maxFrequency={10}
+              height={180}
+              showGrid={true}
+            />
+          </div>
+
           {/* Metrics */}
           <div className="bg-[#252525] rounded-lg p-3 space-y-2">
             <div className="flex items-center justify-between text-xs">
