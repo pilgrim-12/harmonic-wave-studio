@@ -13,7 +13,7 @@ export const ControlPanel: React.FC = () => {
     useSimulationStore();
 
   return (
-    <div className="flex items-center gap-3 p-4 bg-[#1a1a1a] rounded-lg border border-[#2a2a2a]">
+    <div className="flex items-center gap-2 p-2.5 bg-[#1a1a1a] rounded-lg border border-[#2a2a2a]">
       {/* Playback controls */}
       <div className="flex gap-2">
         {!isPlaying ? (

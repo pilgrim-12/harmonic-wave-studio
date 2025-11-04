@@ -48,14 +48,11 @@ export default function Home() {
 
   return (
     <div className="h-screen bg-[#0f0f0f] flex flex-col p-3">
-      {/* Compact Header */}
-      <header className="mb-3 text-center flex-shrink-0">
-        <h1 className="text-xl font-bold bg-gradient-to-r from-[#667eea] to-[#764ba2] bg-clip-text text-transparent">
+      {/* Compact Header ⭐ UPDATED */}
+      <header className="mb-2 text-center flex-shrink-0">
+        <h1 className="text-base font-semibold bg-gradient-to-r from-[#667eea] to-[#764ba2] bg-clip-text text-transparent">
           🌊 Harmonic Wave Studio
         </h1>
-        <p className="text-gray-500 text-xs mt-0.5">
-          Visualize, Analyze, Filter - Signal Processing with Epicycles
-        </p>
       </header>
 
       {/* Main layout */}
