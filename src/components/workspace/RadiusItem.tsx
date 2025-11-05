@@ -18,12 +18,14 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
   const { activeTrackingRadiusId, setActiveTrackingRadius } =
     useSimulationStore();
 
-  const [isEditingSpeed, setIsEditingSpeed] = useState(false);
-  const [speedValue, setSpeedValue] = useState(radius.rotationSpeed.toString());
+  const [showColorPicker, setShowColorPicker] = useState(false);
 
   const isSelected = selectedRadiusId === radius.id;
   const isTracking = activeTrackingRadiusId === radius.id;
   const isRoot = radius.parentId === null;
+
+  // ⭐ Auto-expand when selected!
+  const isExpanded = isSelected;
 
   const handleClick = () => {
     selectRadius(radius.id);
@@ -51,35 +53,22 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
     }
   };
 
-  // Quick edit speed
-  const handleSpeedClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsEditingSpeed(true);
-    setSpeedValue(radius.rotationSpeed.toString());
+  // Slider handlers
+  const handleLengthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateRadius(radius.id, { length: parseFloat(e.target.value) });
   };
 
   const handleSpeedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSpeedValue(e.target.value);
+    updateRadius(radius.id, { rotationSpeed: parseFloat(e.target.value) });
   };
 
-  const handleSpeedBlur = () => {
-    const newSpeed = parseFloat(speedValue);
-    if (!isNaN(newSpeed)) {
-      updateRadius(radius.id, { rotationSpeed: newSpeed });
-    }
-    setIsEditingSpeed(false);
+  const handleAngleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const degrees = parseFloat(e.target.value);
+    const radians = (degrees * Math.PI) / 180;
+    updateRadius(radius.id, { initialAngle: radians });
   };
 
-  const handleSpeedKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleSpeedBlur();
-    } else if (e.key === "Escape") {
-      setIsEditingSpeed(false);
-      setSpeedValue(radius.rotationSpeed.toString());
-    }
-  };
-
-  // Quick toggle direction
+  // Toggle direction
   const handleToggleDirection = (e: React.MouseEvent) => {
     e.stopPropagation();
     const newDirection =
@@ -87,11 +76,36 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
     updateRadius(radius.id, { direction: newDirection });
   };
 
+  // Color picker
+  const handleColorClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowColorPicker(!showColorPicker);
+  };
+
+  const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateRadius(radius.id, { color: e.target.value });
+  };
+
+  const commonColors = [
+    "#667eea",
+    "#764ba2",
+    "#f093fb",
+    "#4facfe",
+    "#43e97b",
+    "#fa709a",
+    "#fee140",
+    "#30cfd0",
+    "#a8edea",
+    "#fed6e3",
+    "#c471ed",
+    "#f64f59",
+  ];
+
   return (
     <div
       onClick={handleClick}
       className={cn(
-        "p-2.5 rounded-lg cursor-pointer transition-all",
+        "rounded-lg cursor-pointer transition-all",
         "border-l-4",
         isSelected
           ? "bg-[#2a2a2a] border-l-[#FF9800]"
@@ -99,104 +113,212 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-1.5">
-        <div className="flex items-center gap-2">
-          <div
-            className="w-2.5 h-2.5 rounded-full"
-            style={{ backgroundColor: radius.color }}
-          />
-          <span
-            className={cn(
-              "font-semibold text-xs",
-              isSelected ? "text-[#FF9800]" : "text-[#667eea]"
-            )}
-          >
-            {radius.name}
-          </span>
-          {isTracking && <span className="text-xs text-green-500">📊</span>}
-        </div>
+      <div className="p-2.5 pb-2">
+        <div className="flex items-center justify-between mb-1.5">
+          <div className="flex items-center gap-2">
+            {/* Color dot with picker */}
+            <div className="relative">
+              <div
+                onClick={handleColorClick}
+                className="w-3 h-3 rounded-full cursor-pointer ring-1 ring-white/20 hover:ring-white/40 transition-all"
+                style={{ backgroundColor: radius.color }}
+                title="Change color"
+              />
+              {showColorPicker && (
+                <div
+                  className="absolute top-6 left-0 z-50 bg-[#1a1a1a] border border-[#333] rounded-lg p-2 shadow-xl"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Color grid */}
+                  <div className="grid grid-cols-4 gap-1.5 mb-2">
+                    {commonColors.map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => {
+                          updateRadius(radius.id, { color });
+                          setShowColorPicker(false);
+                        }}
+                        className="w-6 h-6 rounded hover:scale-110 transition-transform ring-1 ring-white/20"
+                        style={{ backgroundColor: color }}
+                      />
+                    ))}
+                  </div>
+                  {/* Custom color picker */}
+                  <input
+                    type="color"
+                    value={radius.color}
+                    onChange={handleColorChange}
+                    className="w-full h-8 rounded cursor-pointer"
+                  />
+                </div>
+              )}
+            </div>
 
-        {/* Action buttons */}
-        <div className="flex gap-0.5">
-          <button
-            onClick={handleSetTracking}
-            className={cn(
-              "p-1 rounded transition-colors",
-              isTracking
-                ? "bg-green-500/20 text-green-400"
-                : "hover:bg-[#333] text-gray-400"
-            )}
-            title="Track for graph"
-          >
-            <Activity size={12} />
-          </button>
-          <button
-            onClick={handleEdit}
-            className="p-1 hover:bg-[#333] rounded transition-colors"
-            title="Edit"
-          >
-            <Edit2 size={12} className="text-gray-400" />
-          </button>
-          <button
-            onClick={handleDelete}
-            disabled={isRoot}
-            className={cn(
-              "p-1 rounded transition-colors",
-              isRoot ? "opacity-30 cursor-not-allowed" : "hover:bg-red-500/20"
-            )}
-            title={isRoot ? "Cannot delete root" : "Delete"}
-          >
-            <Trash2 size={12} className="text-gray-400" />
-          </button>
-        </div>
-      </div>
-
-      {/* Parameters */}
-      <div className="grid grid-cols-2 gap-1.5 text-xs text-gray-400">
-        <div>
-          <span className="text-gray-500">Length:</span>{" "}
-          <span className="text-gray-300">{radius.length}px</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="text-gray-500">Speed:</span>{" "}
-          {isEditingSpeed ? (
-            <input
-              type="number"
-              value={speedValue}
-              onChange={handleSpeedChange}
-              onBlur={handleSpeedBlur}
-              onKeyDown={handleSpeedKeyDown}
-              onClick={(e) => e.stopPropagation()}
-              className="w-11 px-1 bg-[#333] text-gray-300 rounded border border-[#667eea] focus:outline-none text-xs"
-              autoFocus
-              step="0.1"
-            />
-          ) : (
             <span
-              onClick={handleSpeedClick}
-              className="text-gray-300 cursor-pointer hover:text-[#667eea] underline decoration-dotted"
+              className={cn(
+                "font-semibold text-xs",
+                isSelected ? "text-[#FF9800]" : "text-[#667eea]"
+              )}
             >
-              {radius.rotationSpeed.toFixed(1)}
+              {radius.name}
             </span>
-          )}
+            {isTracking && <span className="text-xs text-green-500">📊</span>}
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex gap-0.5">
+            <button
+              onClick={handleSetTracking}
+              className={cn(
+                "p-1 rounded transition-colors",
+                isTracking
+                  ? "bg-green-500/20 text-green-400"
+                  : "hover:bg-[#333] text-gray-400"
+              )}
+              title="Track for graph"
+            >
+              <Activity size={12} />
+            </button>
+            <button
+              onClick={handleEdit}
+              className="p-1 hover:bg-[#333] rounded transition-colors"
+              title="Edit in modal"
+            >
+              <Edit2 size={12} className="text-gray-400" />
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={isRoot}
+              className={cn(
+                "p-1 rounded transition-colors",
+                isRoot ? "opacity-30 cursor-not-allowed" : "hover:bg-red-500/20"
+              )}
+              title={isRoot ? "Cannot delete root" : "Delete"}
+            >
+              <Trash2 size={12} className="text-gray-400" />
+            </button>
+          </div>
         </div>
-        <div>
-          <span className="text-gray-500">Angle:</span>{" "}
-          <span className="text-gray-300">
-            {Math.round((radius.initialAngle * 180) / Math.PI)}°
-          </span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="text-gray-500">Dir:</span>{" "}
-          <button
-            onClick={handleToggleDirection}
-            className="text-gray-300 hover:text-[#667eea] transition-colors text-xs"
-            title="Toggle direction"
-          >
-            {radius.direction === "counterclockwise" ? "⟲ CCW" : "⟳ CW"}
-          </button>
-        </div>
+
+        {/* Compact view */}
+        {!isExpanded && (
+          <div className="grid grid-cols-2 gap-1.5 text-[10px] text-gray-400">
+            <div>
+              <span className="text-gray-500">Len:</span>{" "}
+              <span className="text-gray-300">{radius.length}px</span>
+            </div>
+            <div>
+              <span className="text-gray-500">Spd:</span>{" "}
+              <span className="text-gray-300">
+                {radius.rotationSpeed.toFixed(1)}
+              </span>
+            </div>
+            <div>
+              <span className="text-gray-500">Ang:</span>{" "}
+              <span className="text-gray-300">
+                {Math.round((radius.initialAngle * 180) / Math.PI)}°
+              </span>
+            </div>
+            <div>
+              <span className="text-gray-500">Dir:</span>{" "}
+              <button
+                onClick={handleToggleDirection}
+                className="text-gray-300 hover:text-[#667eea] transition-colors text-[10px]"
+              >
+                {radius.direction === "counterclockwise" ? "⟲ CCW" : "⟳ CW"}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Expanded sliders */}
+      {isExpanded && (
+        <div
+          className="px-2.5 pb-2.5 space-y-2 border-t border-[#333] pt-2"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Length slider */}
+          <div>
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-[10px] text-gray-500">Length</label>
+              <span className="text-[10px] font-semibold text-[#667eea]">
+                {radius.length}px
+              </span>
+            </div>
+            <input
+              type="range"
+              min="5"
+              max="200"
+              step="1"
+              value={radius.length}
+              onChange={handleLengthChange}
+              className="w-full h-1.5 bg-[#1a1a1a] rounded-lg appearance-none cursor-pointer
+                [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3
+                [&::-webkit-slider-thumb]:bg-[#667eea] [&::-webkit-slider-thumb]:rounded-full
+                [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:bg-[#667eea]
+                [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0"
+            />
+          </div>
+
+          {/* Speed slider */}
+          <div>
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-[10px] text-gray-500">Speed</label>
+              <span className="text-[10px] font-semibold text-[#667eea]">
+                {radius.rotationSpeed.toFixed(1)}x
+              </span>
+            </div>
+            <input
+              type="range"
+              min="0.1"
+              max="10"
+              step="0.1"
+              value={radius.rotationSpeed}
+              onChange={handleSpeedChange}
+              className="w-full h-1.5 bg-[#1a1a1a] rounded-lg appearance-none cursor-pointer
+                [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3
+                [&::-webkit-slider-thumb]:bg-[#667eea] [&::-webkit-slider-thumb]:rounded-full
+                [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:bg-[#667eea]
+                [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0"
+            />
+          </div>
+
+          {/* Angle slider */}
+          <div>
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-[10px] text-gray-500">Initial Angle</label>
+              <span className="text-[10px] font-semibold text-[#667eea]">
+                {Math.round((radius.initialAngle * 180) / Math.PI)}°
+              </span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="360"
+              step="1"
+              value={Math.round((radius.initialAngle * 180) / Math.PI)}
+              onChange={handleAngleChange}
+              className="w-full h-1.5 bg-[#1a1a1a] rounded-lg appearance-none cursor-pointer
+                [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3
+                [&::-webkit-slider-thumb]:bg-[#667eea] [&::-webkit-slider-thumb]:rounded-full
+                [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:bg-[#667eea]
+                [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0"
+            />
+          </div>
+
+          {/* Direction toggle */}
+          <div className="flex items-center justify-between pt-1">
+            <label className="text-[10px] text-gray-500">Direction</label>
+            <button
+              onClick={handleToggleDirection}
+              className="px-2 py-1 bg-[#1a1a1a] hover:bg-[#333] rounded text-[10px] text-gray-300 hover:text-[#667eea] transition-colors"
+            >
+              {radius.direction === "counterclockwise" ? "⟲ CCW" : "⟳ CW"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
