@@ -1,18 +1,34 @@
 import { create } from "zustand";
 import { Radius, CreateRadiusParams, UpdateRadiusParams } from "@/types/radius";
 
+// ⭐ History state snapshot
+interface HistorySnapshot {
+  radii: Radius[];
+  selectedRadiusId: string | null;
+}
+
 interface RadiusStore {
   radii: Radius[];
   selectedRadiusId: string | null;
 
+  // ⭐ History stacks
+  history: HistorySnapshot[];
+  historyIndex: number;
+
   // Actions
-  addRadius: (params: CreateRadiusParams) => string; // ⭐ Return ID
+  addRadius: (params: CreateRadiusParams) => string;
   removeRadius: (id: string) => void;
   updateRadius: (id: string, params: UpdateRadiusParams) => void;
   selectRadius: (id: string | null) => void;
   clearAllRadii: () => void;
-  clearRadii: () => void; // ⭐ Alias
+  clearRadii: () => void;
   getRadiusByParentId: (parentId: string | null) => Radius[];
+
+  // ⭐ Undo/Redo actions
+  undo: () => void;
+  redo: () => void;
+  canUndo: () => boolean;
+  canRedo: () => boolean;
 }
 
 // Генератор уникальных ID
@@ -29,9 +45,47 @@ const DEFAULT_RADIUS_VALUES = {
   isActive: true,
 };
 
+// ⭐ Helper: Create snapshot
+const createSnapshot = (
+  radii: Radius[],
+  selectedRadiusId: string | null
+): HistorySnapshot => ({
+  radii: JSON.parse(JSON.stringify(radii)), // Deep clone
+  selectedRadiusId,
+});
+
+// ⭐ Helper: Save to history
+const saveToHistory = (
+  get: () => RadiusStore,
+  set: (partial: Partial<RadiusStore>) => void
+) => {
+  const { radii, selectedRadiusId, history, historyIndex } = get();
+
+  // Remove any "future" history if we're not at the end
+  const newHistory = history.slice(0, historyIndex + 1);
+
+  // Add current state to history
+  newHistory.push(createSnapshot(radii, selectedRadiusId));
+
+  // Limit history to 50 items
+  const maxHistory = 50;
+  if (newHistory.length > maxHistory) {
+    newHistory.shift();
+  }
+
+  set({
+    history: newHistory,
+    historyIndex: newHistory.length - 1,
+  });
+};
+
 export const useRadiusStore = create<RadiusStore>((set, get) => ({
   radii: [],
   selectedRadiusId: null,
+
+  // ⭐ Initialize history with empty state
+  history: [{ radii: [], selectedRadiusId: null }],
+  historyIndex: 0,
 
   addRadius: (params) => {
     const radii = get().radii;
@@ -54,12 +108,12 @@ export const useRadiusStore = create<RadiusStore>((set, get) => ({
     };
 
     set({ radii: [...radii, newRadius] });
-    return newRadius.id; // ⭐ Return the ID
+    saveToHistory(get, set); // ⭐ Save to history
+    return newRadius.id;
   },
 
   removeRadius: (id) => {
     const radii = get().radii;
-    // Удаляем радиус и все его дочерние радиусы
     const toRemove = new Set<string>();
 
     const findChildren = (parentId: string) => {
@@ -79,27 +133,75 @@ export const useRadiusStore = create<RadiusStore>((set, get) => ({
       selectedRadiusId:
         get().selectedRadiusId === id ? null : get().selectedRadiusId,
     });
+    saveToHistory(get, set); // ⭐ Save to history
   },
 
   updateRadius: (id, params) => {
     set({
       radii: get().radii.map((r) => (r.id === id ? { ...r, ...params } : r)),
     });
+    saveToHistory(get, set); // ⭐ Save to history
   },
 
   selectRadius: (id) => {
+    // ⭐ Don't save selection to history (too noisy)
     set({ selectedRadiusId: id });
   },
 
   clearAllRadii: () => {
     set({ radii: [], selectedRadiusId: null });
+    saveToHistory(get, set); // ⭐ Save to history
   },
 
   clearRadii: () => {
-    set({ radii: [], selectedRadiusId: null }); // ⭐ Alias
+    set({ radii: [], selectedRadiusId: null });
+    saveToHistory(get, set); // ⭐ Save to history
   },
 
   getRadiusByParentId: (parentId) => {
     return get().radii.filter((r) => r.parentId === parentId);
+  },
+
+  // ⭐ Undo: Go back in history
+  undo: () => {
+    const { history, historyIndex } = get();
+
+    if (historyIndex > 0) {
+      const newIndex = historyIndex - 1;
+      const snapshot = history[newIndex];
+
+      set({
+        radii: JSON.parse(JSON.stringify(snapshot.radii)), // Deep clone
+        selectedRadiusId: snapshot.selectedRadiusId,
+        historyIndex: newIndex,
+      });
+    }
+  },
+
+  // ⭐ Redo: Go forward in history
+  redo: () => {
+    const { history, historyIndex } = get();
+
+    if (historyIndex < history.length - 1) {
+      const newIndex = historyIndex + 1;
+      const snapshot = history[newIndex];
+
+      set({
+        radii: JSON.parse(JSON.stringify(snapshot.radii)), // Deep clone
+        selectedRadiusId: snapshot.selectedRadiusId,
+        historyIndex: newIndex,
+      });
+    }
+  },
+
+  // ⭐ Check if undo is available
+  canUndo: () => {
+    return get().historyIndex > 0;
+  },
+
+  // ⭐ Check if redo is available
+  canRedo: () => {
+    const { history, historyIndex } = get();
+    return historyIndex < history.length - 1;
   },
 }));

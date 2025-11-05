@@ -5,7 +5,8 @@ import { useRadiusStore } from "@/store/radiusStore";
 export const useKeyboardShortcuts = () => {
   const { isPlaying, isPaused, play, pause, stop, reset } =
     useSimulationStore();
-  const { selectedRadiusId, removeRadius } = useRadiusStore();
+  const { selectedRadiusId, removeRadius, undo, redo, canUndo, canRedo } =
+    useRadiusStore();
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -17,6 +18,33 @@ export const useKeyboardShortcuts = () => {
         target.tagName === "SELECT" ||
         target.isContentEditable
       ) {
+        return;
+      }
+
+      // ⭐ Undo: Ctrl+Z (Windows/Linux) or Cmd+Z (Mac)
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        event.key === "z" &&
+        !event.shiftKey
+      ) {
+        event.preventDefault();
+        if (canUndo()) {
+          undo();
+        }
+        return;
+      }
+
+      // ⭐ Redo: Ctrl+Shift+Z or Ctrl+Y (Windows/Linux) or Cmd+Shift+Z (Mac)
+      if (
+        ((event.ctrlKey || event.metaKey) &&
+          event.shiftKey &&
+          event.key === "z") ||
+        ((event.ctrlKey || event.metaKey) && event.key === "y")
+      ) {
+        event.preventDefault();
+        if (canRedo()) {
+          redo();
+        }
         return;
       }
 
@@ -69,5 +97,9 @@ export const useKeyboardShortcuts = () => {
     reset,
     selectedRadiusId,
     removeRadius,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
   ]);
 };

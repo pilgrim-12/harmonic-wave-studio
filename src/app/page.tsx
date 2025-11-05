@@ -6,6 +6,7 @@ import { VisualizationCanvas } from "@/components/workspace/VisualizationCanvas"
 import { SignalGraph } from "@/components/workspace/SignalGraph";
 import { SettingsPanel } from "@/components/workspace/SettingsPanel";
 import { FrequencyPanel } from "@/components/analysis/FrequencyPanel";
+import { UndoRedoIndicator } from "@/components/ui/UndoRedoIndicator";
 import { AccordionItem } from "@/components/ui/Accordion";
 import { Settings, Plus, BarChart3 } from "lucide-react";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
@@ -48,11 +49,15 @@ export default function Home() {
 
   return (
     <div className="h-screen bg-[#0f0f0f] flex flex-col p-3">
-      {/* Compact Header ⭐ UPDATED */}
-      <header className="mb-2 text-center flex-shrink-0">
+      {/* Header with Undo/Redo ⭐ UPDATED */}
+      <header className="mb-2 flex items-center justify-between flex-shrink-0">
+        {/* Title */}
         <h1 className="text-base font-semibold bg-gradient-to-r from-[#667eea] to-[#764ba2] bg-clip-text text-transparent">
           🌊 Harmonic Wave Studio
         </h1>
+
+        {/* Undo/Redo Indicator */}
+        <UndoRedoIndicator />
       </header>
 
       {/* Main layout */}
