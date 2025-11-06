@@ -8,7 +8,7 @@ import { SettingsPanel } from "@/components/workspace/SettingsPanel";
 import { FrequencyPanel } from "@/components/analysis/FrequencyPanel";
 import { UndoRedoIndicator } from "@/components/ui/UndoRedoIndicator";
 import { AccordionItem } from "@/components/ui/Accordion";
-import { Settings, Plus, BarChart3 } from "lucide-react";
+import { Settings, Plus, BarChart3, Wand2 } from "lucide-react"; // ✨ Added Wand2
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useRadiusStore } from "@/store/radiusStore";
 import { useSimulationStore } from "@/store/simulationStore";
@@ -20,7 +20,7 @@ import { Radius } from "@/types/radius";
 export default function Home() {
   const [openPanel, setOpenPanel] = useState<string>("radii");
   const [editingRadius, setEditingRadius] = useState<Radius | null>(null);
-  const { radii, addRadius, selectRadius } = useRadiusStore();
+  const { radii, addRadius, selectRadius, updateRadius } = useRadiusStore(); // ✨ Added updateRadius
   const { setActiveTrackingRadius } = useSimulationStore();
 
   useKeyboardShortcuts();
@@ -47,9 +47,63 @@ export default function Home() {
     setActiveTrackingRadius(newRadiusId);
   };
 
+  // ✨ NEW: Normalize all radii
+  const handleNormalizeAll = () => {
+    if (radii.length === 0) return;
+
+    let normalizedCount = 0;
+
+    radii.forEach((radius) => {
+      let needsUpdate = false;
+      const updates: Partial<Radius> = {};
+
+      // Normalize angle to [0, 2π]
+      let angle = radius.initialAngle % (2 * Math.PI);
+      if (angle < 0) angle += 2 * Math.PI;
+      if (angle !== radius.initialAngle) {
+        updates.initialAngle = angle;
+        updates.currentAngle = angle;
+        needsUpdate = true;
+      }
+
+      // Clamp rotation speed to [0.1, 10]
+      const speed = Math.max(0.1, Math.min(radius.rotationSpeed, 10));
+      if (speed !== radius.rotationSpeed) {
+        updates.rotationSpeed = speed;
+        needsUpdate = true;
+      }
+
+      // Clamp length to [5, 200]
+      const length = Math.max(5, Math.min(radius.length, 200));
+      if (length !== radius.length) {
+        updates.length = length;
+        needsUpdate = true;
+      }
+
+      if (needsUpdate) {
+        updateRadius(radius.id, updates);
+        normalizedCount++;
+      }
+    });
+
+    if (normalizedCount > 0) {
+      alert(
+        `✅ Normalized ${normalizedCount} ${
+          normalizedCount === 1 ? "radius" : "radii"
+        }!\n\n` +
+          `Fixed:\n` +
+          `• Angles → [0°, 360°]\n` +
+          `• Speeds → [0.1, 10.0]\n` +
+          `• Lengths → [5, 200]px`
+      );
+    } else {
+      alert("✨ All radii are already normalized!");
+    }
+  };
+
   return (
     <div className="h-screen bg-[#0f0f0f] flex flex-col p-3">
-      {/* Header with Undo/Redo ⭐ UPDATED */}
+      {/* Header with Undo/Redo */}
       <header className="mb-2 flex items-center justify-between flex-shrink-0">
         {/* Title */}
         <h1 className="text-base font-semibold bg-gradient-to-r from-[#667eea] to-[#764ba2] bg-clip-text text-transparent">
@@ -102,8 +156,22 @@ export default function Home() {
                     </div>
                   </div>
 
-                  {/* Fixed button at bottom */}
-                  <div className="p-3 pt-2 border-t border-[#2a2a2a] flex-shrink-0">
+                  {/* ✨ Fixed buttons at bottom */}
+                  <div className="p-3 pt-2 border-t border-[#2a2a2a] flex-shrink-0 space-y-2">
+                    {/* Normalize All button */}
+                    {radii.length > 0 && (
+                      <Button
+                        onClick={handleNormalizeAll}
+                        variant="secondary"
+                        className="w-full text-sm"
+                        title="Fix invalid angles, speeds, and lengths"
+                      >
+                        <Wand2 size={14} className="mr-1" />
+                        Normalize All
+                      </Button>
+                    )}
+
+                    {/* Add Radius button */}
                     <Button
                       onClick={handleAddRadius}
                       variant="secondary"
@@ -143,7 +211,7 @@ export default function Home() {
             </AccordionItem>
           </div>
 
-          {/* Analysis Panel ⭐ NEW! */}
+          {/* Analysis Panel */}
           <div
             className={
               openPanel === "analysis"

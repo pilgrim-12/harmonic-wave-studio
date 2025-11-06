@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { ExportPanel } from "./ExportPanel";
 import { AudioPanel } from "./AudioPanel";
 import { PresetPanel } from "./PresetPanel";
+import { ProjectPanel } from "./ProjectPanel";
 
 export const ControlPanel: React.FC = () => {
   const { isPlaying, isPaused, currentTime, fps, play, pause, stop, reset } =
@@ -74,6 +75,12 @@ export const ControlPanel: React.FC = () => {
 
       {/* Presets */}
       <PresetPanel />
+
+      {/* Divider */}
+      <div className="w-px h-8 bg-[#333]" />
+
+      {/* ✨ NEW: Projects (Save/Load) */}
+      <ProjectPanel />
 
       {/* Divider */}
       <div className="w-px h-8 bg-[#333]" />
