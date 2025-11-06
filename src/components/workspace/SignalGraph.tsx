@@ -8,6 +8,11 @@ import {
   getFinalPoint,
 } from "@/lib/canvas/calculator";
 
+// ⭐ Cache for smooth scaling (avoid jitter)
+let cachedMinY = 0;
+let cachedMaxY = 0;
+let scalingFrameCount = 0;
+
 export const SignalGraph: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const signalDataRef = useRef<{ time: number; y: number }[]>([]);
@@ -47,7 +52,11 @@ export const SignalGraph: React.FC = () => {
   // Reset data when radii or active radius changes
   useEffect(() => {
     signalDataRef.current = [];
-    setSignalData([]); // ⭐ NEW - Clear store data too
+    setSignalData([]);
+    // Reset scaling cache
+    scalingFrameCount = 0;
+    cachedMinY = 0;
+    cachedMaxY = 0;
   }, [radii, activeTrackingRadiusId, setSignalData]);
 
   // Drawing loop
@@ -100,7 +109,6 @@ export const SignalGraph: React.FC = () => {
             (point) => currentTime - point.time <= maxTime
           );
 
-          // ⭐ NEW - Update store with signal data
           setSignalData(signalDataRef.current);
         }
       }
@@ -202,31 +210,58 @@ function drawSignal(
 ) {
   if (data.length < 2) return;
 
-  // Find min/max for autoscaling (sample every 5th point for performance)
+  // ✅ FIX 1: Remove DC offset (center the signal)
+  // Calculate average Y value
+  let sumY = 0;
+  for (const point of data) {
+    sumY += point.y;
+  }
+  const avgY = sumY / data.length; // This is the DC offset
+
+  // ✅ FIX 2: Find min/max AFTER removing DC offset
   let minY = Infinity;
   let maxY = -Infinity;
-  const step = Math.max(1, Math.floor(data.length / 100)); // Sample max 100 points
+  const step = Math.max(1, Math.floor(data.length / 100));
   for (let i = 0; i < data.length; i += step) {
-    minY = Math.min(minY, data[i].y);
-    maxY = Math.max(maxY, data[i].y);
+    const centeredY = data[i].y - avgY; // Remove DC offset
+    minY = Math.min(minY, centeredY);
+    maxY = Math.max(maxY, centeredY);
   }
 
+  // ✅ FIX 3: Use symmetric range around 0
+  const absMax = Math.max(Math.abs(minY), Math.abs(maxY));
+  minY = -absMax;
+  maxY = absMax;
+
   // Add 10% padding
-  const range = maxY - minY;
-  const padding = range * 0.1;
+  const padding = absMax * 0.1;
   minY -= padding;
   maxY += padding;
 
   // If range too small, use fixed
-  if (range < 10) {
+  if (maxY - minY < 10) {
     minY = -50;
     maxY = 50;
+  }
+
+  // ✅ FIX 4: Smooth scaling changes (exponential moving average)
+  scalingFrameCount++;
+  const smoothingFactor = 0.1; // Lower = smoother but slower adaptation
+
+  if (scalingFrameCount === 1) {
+    // First frame - initialize
+    cachedMinY = minY;
+    cachedMaxY = maxY;
+  } else {
+    // Smooth transition
+    cachedMinY = cachedMinY * (1 - smoothingFactor) + minY * smoothingFactor;
+    cachedMaxY = cachedMaxY * (1 - smoothingFactor) + maxY * smoothingFactor;
   }
 
   const centerY = height / 2;
   const timeScale = (width - 100) / graphDuration;
   const currentX = width - 50;
-  const yScale = height / (maxY - minY);
+  const yScale = height / (cachedMaxY - cachedMinY);
 
   ctx.strokeStyle = "#667eea";
   ctx.lineWidth = 2;
@@ -236,7 +271,9 @@ function drawSignal(
 
   for (const point of data) {
     const x = currentX - (currentTime - point.time) * timeScale;
-    const y = centerY - (point.y - (minY + maxY) / 2) * yScale;
+    // ✅ FIX 5: Use centered Y and cached scaling
+    const centeredY = point.y - avgY;
+    const y = centerY - (centeredY - (cachedMinY + cachedMaxY) / 2) * yScale;
 
     if (x < 0) continue;
 
@@ -254,7 +291,9 @@ function drawSignal(
   if (data.length > 0) {
     const lastPoint = data[data.length - 1];
     const lastX = currentX - (currentTime - lastPoint.time) * timeScale;
-    const lastY = centerY - (lastPoint.y - (minY + maxY) / 2) * yScale;
+    const centeredY = lastPoint.y - avgY;
+    const lastY =
+      centerY - (centeredY - (cachedMinY + cachedMaxY) / 2) * yScale;
 
     ctx.fillStyle = "#667eea";
     ctx.beginPath();
