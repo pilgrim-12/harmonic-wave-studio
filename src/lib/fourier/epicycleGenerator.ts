@@ -1,6 +1,12 @@
 /**
- * Epicycle Generator from FFT
+ * Epicycle Generator from FFT - FIXED VERSION
  * Converts frequency spectrum analysis into radius parameters
+ *
+ * FIXES:
+ * 1. ✅ Normalize angles to [0, 2π] range (no negative angles)
+ * 2. ✅ Better rotation speed scaling (map Hz to reasonable UI speeds)
+ * 3. ✅ Consistent length scaling
+ * 4. ✅ Better color mapping
  */
 
 import {
@@ -15,7 +21,7 @@ import { CreateRadiusParams } from "@/types/radius";
  */
 const DEFAULT_GENERATION_OPTIONS: EpicycleGenerationOptions = {
   maxRadii: 10,
-  minAmplitude: 0.05, // 5% of max
+  minAmplitude: 0.05, // 5% of max amplitude
   scaleFactor: 50, // Scale amplitude to pixel length
   sortBy: "amplitude",
   includeDC: false,
@@ -24,7 +30,7 @@ const DEFAULT_GENERATION_OPTIONS: EpicycleGenerationOptions = {
 
 /**
  * Generate radius parameters from FFT analysis
- * This is the MAGIC function that converts spectrum → epicycles! ✨
+ * This converts frequency spectrum → epicycles! ✨
  *
  * @param analysisResult - FFT analysis result
  * @param options - Generation options
@@ -46,6 +52,8 @@ export function generateRadiiFromFFT(
 
   // Filter by minimum amplitude
   const maxAmplitude = Math.max(...peaks.map((p) => p.amplitude));
+  if (maxAmplitude === 0) return []; // No valid peaks
+
   const minAbsoluteAmplitude = maxAmplitude * opts.minAmplitude;
   peaks = peaks.filter((peak) => peak.amplitude >= minAbsoluteAmplitude);
 
@@ -73,55 +81,109 @@ export function generateRadiiFromFFT(
 
 /**
  * Convert a single frequency peak to radius parameters
+ *
+ * KEY IMPROVEMENTS:
+ * - ✅ Normalize angles to [0, 2π]
+ * - ✅ Scale rotation speed intelligently
+ * - ✅ Clamp all values to UI-friendly ranges
  */
 function peakToRadius(
   peak: FrequencyPeak,
   fundamentalFreq: number,
   options: EpicycleGenerationOptions
 ): CreateRadiusParams {
-  // Calculate rotation speed
-  // Use absolute frequency directly, don't divide by fundamental
-  // This gives reasonable speeds (e.g., 1 Hz = 1.0 rev/s)
-  const rotationSpeed = peak.frequency;
+  // ============================================
+  // 1. ROTATION SPEED (Hz → rev/s)
+  // ============================================
 
-  // Clamp rotation speed to reasonable range [0.1, 10]
-  const clampedSpeed = Math.max(0.1, Math.min(rotationSpeed, 10));
+  // Strategy: Scale frequencies to reasonable UI speeds [0.1, 5.0]
+  // - Fundamental frequency → ~1.0 rev/s
+  // - Harmonics scale proportionally but clamped
 
-  // Calculate radius length from amplitude
-  let length = peak.amplitude * options.scaleFactor;
+  const frequencyRatio = peak.frequency / fundamentalFreq;
 
-  // Normalize to max length if specified
+  // Map frequency ratio to rotation speed
+  // Example: If fundamental = 0.5 Hz
+  //   - 0.5 Hz (1x) → 1.0 rev/s
+  //   - 1.0 Hz (2x) → 2.0 rev/s
+  //   - 1.5 Hz (3x) → 3.0 rev/s
+  let rotationSpeed = frequencyRatio;
+
+  // Clamp to reasonable UI range [0.1, 5.0]
+  // This ensures all speeds are user-editable and visible
+  rotationSpeed = Math.max(0.1, Math.min(rotationSpeed, 5.0));
+
+  // Round to 1 decimal place for cleaner UI
+  rotationSpeed = Math.round(rotationSpeed * 10) / 10;
+
+  // ============================================
+  // 2. LENGTH (amplitude → pixels)
+  // ============================================
+
+  let length: number;
+
   if (options.normalizeToMaxLength !== null) {
-    const maxAmplitude = peak.relativeAmplitude; // Already normalized 0-1
-    length = maxAmplitude * options.normalizeToMaxLength;
+    // Normalize based on relative amplitude (0-1)
+    // This ensures largest peak = maxLength
+    length = peak.relativeAmplitude * options.normalizeToMaxLength;
+  } else {
+    // Use absolute amplitude with scale factor
+    length = peak.amplitude * options.scaleFactor;
   }
 
-  // Ensure minimum length
-  length = Math.max(length, 10);
+  // Clamp to reasonable range [10, 200] pixels
+  length = Math.max(10, Math.min(length, 200));
 
-  // Initial angle from phase
-  // Convert phase from radians to degrees for easier editing
-  const initialAngle = peak.phase; // Keep in radians for calculation
+  // Round to integer for pixel-perfect rendering
+  length = Math.round(length);
 
-  // Determine direction based on rotation speed
-  // Positive frequencies → counterclockwise
-  // Negative frequencies → clockwise (though we filtered negatives in FFT)
-  const direction: "clockwise" | "counterclockwise" =
-    clampedSpeed >= 0 ? "counterclockwise" : "clockwise";
+  // ============================================
+  // 3. INITIAL ANGLE (phase → [0, 2π])
+  // ============================================
 
-  // Generate color based on frequency (rainbow spectrum)
+  // FFT returns phase in range [-π, +π]
+  // We need to normalize to [0, 2π] for UI consistency
+
+  let initialAngle = peak.phase;
+
+  // Normalize to [0, 2π] range
+  if (initialAngle < 0) {
+    initialAngle += 2 * Math.PI;
+  }
+
+  // Ensure it's in valid range (handle edge cases)
+  initialAngle = initialAngle % (2 * Math.PI);
+  if (initialAngle < 0) initialAngle += 2 * Math.PI;
+
+  // Round to 2 decimal places to avoid floating point issues
+  initialAngle = Math.round(initialAngle * 100) / 100;
+
+  // ============================================
+  // 4. DIRECTION
+  // ============================================
+
+  // For FFT-generated epicycles, use counterclockwise
+  // (FFT assumes positive frequency = counterclockwise rotation)
+  const direction: "clockwise" | "counterclockwise" = "counterclockwise";
+
+  // ============================================
+  // 5. COLOR (frequency → rainbow)
+  // ============================================
+
   const color = frequencyToColor(peak.frequency, fundamentalFreq);
 
-  // Parent is previous radius (linear chain)
-  // First radius has no parent, others will be linked in sequence by caller
-  const parentId = null;
+  // ============================================
+  // 6. NAME (frequency label)
+  // ============================================
+
+  const name = `${peak.frequency.toFixed(2)} Hz`;
 
   return {
-    parentId,
-    name: `${peak.frequency.toFixed(2)} Hz`,
-    length: Math.round(length),
+    parentId: null, // Will be set by caller when chaining
+    name,
+    length,
     initialAngle,
-    rotationSpeed: Math.abs(clampedSpeed), // Use clamped speed
+    rotationSpeed,
     direction,
     color,
   };
@@ -129,39 +191,41 @@ function peakToRadius(
 
 /**
  * Convert frequency to color (rainbow spectrum)
- * Lower frequencies → red/orange
- * Higher frequencies → blue/purple
+ *
+ * Color mapping:
+ * - Low frequencies (fundamental) → Blue/Purple (240-280°)
+ * - Mid frequencies (2x-3x) → Cyan/Green (180-120°)
+ * - High frequencies (5x+) → Yellow/Orange (60-0°)
  */
 function frequencyToColor(frequency: number, fundamentalFreq: number): string {
   // Normalize frequency relative to fundamental
   const ratio = frequency / fundamentalFreq;
 
-  // Map to hue (0-360)
-  // ratio 1 (fundamental) → hue 240 (blue)
-  // ratio 2 → hue 200 (cyan)
-  // ratio 3 → hue 160 (green)
-  // ratio 5 → hue 100 (yellow-green)
-  // ratio 7 → hue 40 (orange)
-
   let hue: number;
 
   if (ratio <= 1) {
-    // Fundamental: blue-purple
-    hue = 240 + (1 - ratio) * 60; // 240-300
+    // Fundamental: blue-purple (240-280°)
+    hue = 240 + (1 - ratio) * 40;
+  } else if (ratio <= 2) {
+    // 2nd harmonic: blue-cyan (240-200°)
+    hue = 240 - ((ratio - 1) / 1) * 40;
   } else if (ratio <= 3) {
-    // 2nd-3rd harmonics: cyan-green
-    hue = 240 - ((ratio - 1) / 2) * 80; // 240-160
+    // 3rd harmonic: cyan-green (200-160°)
+    hue = 200 - ((ratio - 2) / 1) * 40;
   } else if (ratio <= 5) {
-    // 4th-5th harmonics: green-yellow
-    hue = 160 - ((ratio - 3) / 2) * 60; // 160-100
+    // 4th-5th harmonics: green-yellow (160-60°)
+    hue = 160 - ((ratio - 3) / 2) * 100;
   } else {
-    // Higher harmonics: yellow-red
-    hue = 100 - ((ratio - 5) / 5) * 60; // 100-40
-    hue = Math.max(hue, 0);
+    // Higher harmonics: yellow-orange (60-0°)
+    hue = Math.max(0, 60 - ((ratio - 5) / 5) * 60);
   }
 
-  // HSL color with good saturation and lightness
-  return `hsl(${Math.round(hue)}, 70%, 60%)`;
+  // Clamp hue to valid range [0, 360]
+  hue = Math.max(0, Math.min(360, hue));
+  hue = Math.round(hue);
+
+  // Return HSL color with good saturation and lightness
+  return `hsl(${hue}, 70%, 60%)`;
 }
 
 /**
@@ -197,13 +261,13 @@ export function estimateOptimalRadiiCount(
     }
   }
 
-  // Limit to reasonable range
+  // Limit to reasonable range [3, 15]
   return Math.min(Math.max(count, 3), 15);
 }
 
 /**
  * Preview what radii will be generated without creating them
- * Useful for UI preview
+ * Useful for UI preview in settings dialog
  */
 export function previewRadiiGeneration(
   analysisResult: FFTAnalysisResult,
@@ -214,6 +278,8 @@ export function previewRadiiGeneration(
   capturedEnergy: number;
   capturedPercentage: number;
   frequencies: number[];
+  avgRotationSpeed: number;
+  maxLength: number;
 } {
   const radiiParams = generateRadiiFromFFT(analysisResult, options);
 
@@ -226,7 +292,7 @@ export function previewRadiiGeneration(
 
   const selectedFreqs = radiiParams.map((r) => parseFloat(r.name || "0"));
   const selectedPeaks = allPeaks.filter((peak) =>
-    selectedFreqs.includes(peak.frequency)
+    selectedFreqs.some((freq) => Math.abs(peak.frequency - freq) < 0.01)
   );
 
   const capturedEnergy = selectedPeaks.reduce(
@@ -234,7 +300,21 @@ export function previewRadiiGeneration(
     0
   );
 
-  const capturedPercentage = (capturedEnergy / totalEnergy) * 100;
+  const capturedPercentage =
+    totalEnergy > 0 ? (capturedEnergy / totalEnergy) * 100 : 0;
+
+  // Calculate average rotation speed
+  const avgRotationSpeed =
+    radiiParams.length > 0
+      ? radiiParams.reduce((sum, r) => sum + (r.rotationSpeed || 0), 0) /
+        radiiParams.length
+      : 0;
+
+  // Find max length
+  const maxLength =
+    radiiParams.length > 0
+      ? Math.max(...radiiParams.map((r) => r.length || 0))
+      : 0;
 
   return {
     count: radiiParams.length,
@@ -242,6 +322,8 @@ export function previewRadiiGeneration(
     capturedEnergy,
     capturedPercentage,
     frequencies: selectedFreqs,
+    avgRotationSpeed: Math.round(avgRotationSpeed * 10) / 10,
+    maxLength,
   };
 }
 
