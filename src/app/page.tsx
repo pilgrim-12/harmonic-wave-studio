@@ -8,7 +8,7 @@ import { SettingsPanel } from "@/components/workspace/SettingsPanel";
 import { FrequencyPanel } from "@/components/analysis/FrequencyPanel";
 import { UndoRedoIndicator } from "@/components/ui/UndoRedoIndicator";
 import { AccordionItem } from "@/components/ui/Accordion";
-import { Settings, Plus, BarChart3, Wand2 } from "lucide-react"; // ✨ Added Wand2
+import { Settings, Plus, BarChart3, Wand2 } from "lucide-react";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useRadiusStore } from "@/store/radiusStore";
 import { useSimulationStore } from "@/store/simulationStore";
@@ -16,12 +16,16 @@ import { RadiusItem } from "@/components/workspace/RadiusItem";
 import { RadiusEditor } from "@/components/workspace/RadiusEditor";
 import { Button } from "@/components/ui/Button";
 import { Radius } from "@/types/radius";
+import { SignInButton } from "@/components/auth/SignInButton";
+import { UserMenu } from "@/components/auth/UserMenu";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Home() {
   const [openPanel, setOpenPanel] = useState<string>("radii");
   const [editingRadius, setEditingRadius] = useState<Radius | null>(null);
-  const { radii, addRadius, selectRadius, updateRadius } = useRadiusStore(); // ✨ Added updateRadius
+  const { radii, addRadius, selectRadius, updateRadius } = useRadiusStore();
   const { setActiveTrackingRadius } = useSimulationStore();
+  const { user, loading } = useAuth(); // ✨ Added Auth
 
   useKeyboardShortcuts();
 
@@ -42,12 +46,10 @@ export default function Home() {
       direction: "counterclockwise",
     });
 
-    // Auto-select and track the newly added radius
     selectRadius(newRadiusId);
     setActiveTrackingRadius(newRadiusId);
   };
 
-  // ✨ NEW: Normalize all radii
   const handleNormalizeAll = () => {
     if (radii.length === 0) return;
 
@@ -103,15 +105,28 @@ export default function Home() {
 
   return (
     <div className="h-screen bg-[#0f0f0f] flex flex-col p-3">
-      {/* Header with Undo/Redo */}
+      {/* Header with Title, Undo/Redo, and Auth */}
       <header className="mb-2 flex items-center justify-between flex-shrink-0">
         {/* Title */}
         <h1 className="text-base font-semibold bg-gradient-to-r from-[#667eea] to-[#764ba2] bg-clip-text text-transparent">
           🌊 Harmonic Wave Studio
         </h1>
 
-        {/* Undo/Redo Indicator */}
-        <UndoRedoIndicator />
+        {/* Right side: Undo/Redo + Auth */}
+        <div className="flex items-center gap-3">
+          <UndoRedoIndicator />
+
+          {/* ✨ Auth Section */}
+          <div className="flex items-center">
+            {loading ? (
+              <div className="w-8 h-8 border-2 border-[#667eea] border-t-transparent rounded-full animate-spin" />
+            ) : user ? (
+              <UserMenu />
+            ) : (
+              <SignInButton />
+            )}
+          </div>
+        </div>
       </header>
 
       {/* Main layout */}
@@ -156,7 +171,7 @@ export default function Home() {
                     </div>
                   </div>
 
-                  {/* ✨ Fixed buttons at bottom */}
+                  {/* Fixed buttons at bottom */}
                   <div className="p-3 pt-2 border-t border-[#2a2a2a] flex-shrink-0 space-y-2">
                     {/* Normalize All button */}
                     {radii.length > 0 && (
