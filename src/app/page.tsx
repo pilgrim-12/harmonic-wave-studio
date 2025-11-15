@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ControlPanel } from "@/components/workspace/ControlPanel";
 import { VisualizationCanvas } from "@/components/workspace/VisualizationCanvas";
 import { SignalGraph } from "@/components/workspace/SignalGraph";
@@ -8,10 +8,11 @@ import { SettingsPanel } from "@/components/workspace/SettingsPanel";
 import { FrequencyPanel } from "@/components/analysis/FrequencyPanel";
 import { UndoRedoIndicator } from "@/components/ui/UndoRedoIndicator";
 import { AccordionItem } from "@/components/ui/Accordion";
-import { Settings, Plus, BarChart3, Wand2 } from "lucide-react";
+import { Settings, Plus, BarChart3, Wand2, Save, FilePlus } from "lucide-react";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useRadiusStore } from "@/store/radiusStore";
 import { useSimulationStore } from "@/store/simulationStore";
+import { useProjectStore } from "@/store/useProjectStore";
 import { RadiusItem } from "@/components/workspace/RadiusItem";
 import { RadiusEditor } from "@/components/workspace/RadiusEditor";
 import { Button } from "@/components/ui/Button";
@@ -19,15 +20,33 @@ import { Radius } from "@/types/radius";
 import { SignInButton } from "@/components/auth/SignInButton";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { useAuth } from "@/contexts/AuthContext";
+import { createProject, updateProject } from "@/services/projectService";
 
 export default function Home() {
   const [openPanel, setOpenPanel] = useState<string>("radii");
   const [editingRadius, setEditingRadius] = useState<Radius | null>(null);
-  const { radii, addRadius, selectRadius, updateRadius } = useRadiusStore();
+  const [projectName, setProjectName] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const { radii, addRadius, selectRadius, updateRadius, clearRadii } =
+    useRadiusStore();
   const { setActiveTrackingRadius } = useSimulationStore();
-  const { user, loading } = useAuth(); // ✨ Added Auth
+  const {
+    currentProjectId,
+    currentProjectName,
+    setCurrentProject,
+    clearProject,
+  } = useProjectStore();
+  const { user, loading } = useAuth();
 
   useKeyboardShortcuts();
+
+  // Синхронизация имени проекта
+  useEffect(() => {
+    if (currentProjectName) {
+      setProjectName(currentProjectName);
+    }
+  }, [currentProjectName]);
 
   const handleToggle = (panelId: string) => {
     setOpenPanel(openPanel === panelId ? "" : panelId);
@@ -59,7 +78,6 @@ export default function Home() {
       let needsUpdate = false;
       const updates: Partial<Radius> = {};
 
-      // Normalize angle to [0, 2π]
       let angle = radius.initialAngle % (2 * Math.PI);
       if (angle < 0) angle += 2 * Math.PI;
       if (angle !== radius.initialAngle) {
@@ -68,14 +86,12 @@ export default function Home() {
         needsUpdate = true;
       }
 
-      // Clamp rotation speed to [0.1, 10]
       const speed = Math.max(0.1, Math.min(radius.rotationSpeed, 10));
       if (speed !== radius.rotationSpeed) {
         updates.rotationSpeed = speed;
         needsUpdate = true;
       }
 
-      // Clamp length to [5, 200]
       const length = Math.max(5, Math.min(radius.length, 200));
       if (length !== radius.length) {
         updates.length = length;
@@ -103,20 +119,108 @@ export default function Home() {
     }
   };
 
+  const handleNewProject = () => {
+    if (radii.length > 0 || projectName.trim()) {
+      if (!confirm("Clear current project and start new?")) {
+        return;
+      }
+    }
+
+    clearRadii();
+    setProjectName("");
+    clearProject();
+  };
+
+  const handleSaveProject = async () => {
+    if (!user) {
+      alert("Please sign in to save projects");
+      return;
+    }
+
+    if (!projectName.trim()) {
+      alert("Please enter a project name");
+      return;
+    }
+
+    if (radii.length === 0) {
+      alert("Add at least one radius before saving");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      // Convert radii to project format with direction
+      const projectRadii = radii.map((r) => ({
+        frequency:
+          r.direction === "counterclockwise"
+            ? r.rotationSpeed
+            : -r.rotationSpeed,
+        amplitude: r.length,
+        phase: r.initialAngle,
+      }));
+
+      if (currentProjectId) {
+        await updateProject(currentProjectId, projectName, projectRadii);
+        alert("✅ Project updated!");
+      } else {
+        const projectId = await createProject(
+          user.uid,
+          projectName,
+          projectRadii
+        );
+        setCurrentProject(projectId, projectName, projectRadii);
+        alert("✅ Project saved!");
+      }
+    } catch (error) {
+      console.error("❌ Error saving project:", error);
+      alert("Failed to save project");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="h-screen bg-[#0f0f0f] flex flex-col p-3">
-      {/* Header with Title, Undo/Redo, and Auth */}
+      {/* Header */}
       <header className="mb-2 flex items-center justify-between flex-shrink-0">
-        {/* Title */}
         <h1 className="text-base font-semibold bg-gradient-to-r from-[#667eea] to-[#764ba2] bg-clip-text text-transparent">
           🌊 Harmonic Wave Studio
         </h1>
 
-        {/* Right side: Undo/Redo + Auth */}
         <div className="flex items-center gap-3">
+          {/* Save Project Section */}
+          {user && (
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={projectName}
+                onChange={(e) => setProjectName(e.target.value)}
+                placeholder="Project name"
+                className="px-3 py-1.5 text-sm rounded-lg bg-[#1a1a1a] text-white border border-[#2a2a2a] focus:border-[#667eea] focus:outline-none"
+              />
+              <Button
+                onClick={handleNewProject}
+                variant="secondary"
+                className="text-sm"
+                title="Start new project"
+              >
+                <FilePlus size={14} className="mr-1" />
+                New
+              </Button>
+              <Button
+                onClick={handleSaveProject}
+                disabled={saving}
+                variant="primary"
+                className="text-sm"
+              >
+                <Save size={14} className="mr-1" />
+                {saving ? "Saving..." : currentProjectId ? "Update" : "Save"}
+              </Button>
+            </div>
+          )}
+
           <UndoRedoIndicator />
 
-          {/* ✨ Auth Section */}
           <div className="flex items-center">
             {loading ? (
               <div className="w-8 h-8 border-2 border-[#667eea] border-t-transparent rounded-full animate-spin" />
@@ -149,7 +253,6 @@ export default function Home() {
             >
               {openPanel === "radii" && (
                 <div className="flex flex-col h-full">
-                  {/* Scrollable list */}
                   <div className="flex-1 overflow-y-auto custom-scrollbar px-3">
                     <div className="space-y-2 py-2">
                       {radii.length === 0 ? (
@@ -171,9 +274,7 @@ export default function Home() {
                     </div>
                   </div>
 
-                  {/* Fixed buttons at bottom */}
                   <div className="p-3 pt-2 border-t border-[#2a2a2a] flex-shrink-0 space-y-2">
-                    {/* Normalize All button */}
                     {radii.length > 0 && (
                       <Button
                         onClick={handleNormalizeAll}
@@ -186,7 +287,6 @@ export default function Home() {
                       </Button>
                     )}
 
-                    {/* Add Radius button */}
                     <Button
                       onClick={handleAddRadius}
                       variant="secondary"
@@ -251,24 +351,20 @@ export default function Home() {
 
         {/* Right workspace */}
         <div className="flex-1 grid grid-rows-[auto_1fr_1fr] gap-3 min-w-0 min-h-0">
-          {/* Control panel */}
           <div className="flex-shrink-0">
             <ControlPanel />
           </div>
 
-          {/* Visualization Canvas */}
           <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-0 overflow-hidden">
             <VisualizationCanvas />
           </div>
 
-          {/* Signal Graph */}
           <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-0 overflow-hidden">
             <SignalGraph />
           </div>
         </div>
       </div>
 
-      {/* Editor Modal */}
       {editingRadius && (
         <RadiusEditor
           radius={editingRadius}
