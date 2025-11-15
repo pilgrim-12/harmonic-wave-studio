@@ -15,9 +15,11 @@ import {
 } from "firebase/auth";
 import { doc, setDoc, onSnapshot, serverTimestamp } from "firebase/firestore";
 import { auth, googleProvider, db } from "@/lib/firebase/firebase";
+import { UserProfile } from "@/types/user";
 
 interface AuthContextType {
   user: User | null;
+  userProfile: UserProfile | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -29,6 +31,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const unsubscribeSnapshotRef = useRef<(() => void) | null>(null);
 
@@ -54,7 +57,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
           unsubscribeSnapshotRef.current = onSnapshot(
             userRef,
-            { includeMetadataChanges: true },
             async (snapshot) => {
               const endTime = performance.now();
               const duration = ((endTime - startTime) / 1000).toFixed(2);
@@ -66,13 +68,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                 console.log(`📝 [${duration}s] Creating new user profile...`);
 
                 const setDocStart = performance.now();
-                await setDoc(userRef, {
+                const newProfile = {
                   displayName: user.displayName || "Anonymous",
                   email: user.email || "",
                   photoURL: user.photoURL || "",
                   createdAt: serverTimestamp(),
                   updatedAt: serverTimestamp(),
-                });
+
+                  preferences: {
+                    theme: "dark" as const,
+                    language: "en" as const,
+                  },
+
+                  stats: {
+                    projectsCount: 0,
+                    lastLoginAt: serverTimestamp(),
+                  },
+                };
+
+                await setDoc(userRef, newProfile);
                 const setDocEnd = performance.now();
                 const setDocDuration = (
                   (setDocEnd - setDocStart) /
@@ -85,6 +99,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                   `✅ [${duration}s] User profile exists:`,
                   snapshot.data()
                 );
+
+                // Сохраняем профиль в состояние
+                setUserProfile(snapshot.data() as UserProfile);
               }
             },
             (error) => {
@@ -93,9 +110,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
               console.error(`❌ [${duration}s] Snapshot error:`, error);
             }
           );
+
+          // Обновляем lastLoginAt отдельно
+          await setDoc(
+            userRef,
+            {
+              stats: {
+                lastLoginAt: serverTimestamp(),
+              },
+            },
+            { merge: true }
+          );
         } catch (error) {
           console.error("❌ Firestore error:", error);
         }
+      } else {
+        // Сбрасываем профиль при выходе
+        setUserProfile(null);
       }
     });
 
@@ -116,7 +147,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signOut }}>
+    <AuthContext.Provider
+      value={{ user, userProfile, loading, signInWithGoogle, signOut }}
+    >
       {children}
     </AuthContext.Provider>
   );
