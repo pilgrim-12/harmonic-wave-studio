@@ -6,13 +6,25 @@ import { VisualizationCanvas } from "@/components/workspace/VisualizationCanvas"
 import { SignalGraph } from "@/components/workspace/SignalGraph";
 import { SettingsPanel } from "@/components/workspace/SettingsPanel";
 import { FrequencyPanel } from "@/components/analysis/FrequencyPanel";
+import { NoisePanel } from "@/components/signal/NoisePanel";
+import { MetricsPanel } from "@/components/signal/MetricsPanel";
+import { NoisySignalGraph } from "@/components/signal/NoisySignalGraph";
 import { UndoRedoIndicator } from "@/components/ui/UndoRedoIndicator";
 import { AccordionItem } from "@/components/ui/Accordion";
-import { Settings, Plus, BarChart3, Wand2, Save, FilePlus } from "lucide-react";
+import {
+  Settings,
+  Plus,
+  BarChart3,
+  Wand2,
+  Save,
+  FilePlus,
+  Activity,
+} from "lucide-react";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useRadiusStore } from "@/store/radiusStore";
 import { useSimulationStore } from "@/store/simulationStore";
 import { useProjectStore } from "@/store/useProjectStore";
+import { useSignalProcessingStore } from "@/store/signalProcessingStore";
 import { RadiusItem } from "@/components/workspace/RadiusItem";
 import { RadiusEditor } from "@/components/workspace/RadiusEditor";
 import { Button } from "@/components/ui/Button";
@@ -47,6 +59,19 @@ export default function Home() {
       setProjectName(currentProjectName);
     }
   }, [currentProjectName]);
+
+  // Синхронизация сигнала с Signal Processing Store
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const signal = useSimulationStore.getState().getSignalYValues();
+
+      if (signal.length > 100) {
+        useSignalProcessingStore.getState().setOriginalSignal(signal);
+      }
+    }, 100); // ✅ Обновляем каждые 100ms (10 раз в секунду) для плавности
+
+    return () => clearInterval(interval);
+  }, []); // Пустой массив зависимостей
 
   const handleToggle = (panelId: string) => {
     setOpenPanel(openPanel === panelId ? "" : panelId);
@@ -149,7 +174,6 @@ export default function Home() {
 
     setSaving(true);
     try {
-      // Convert radii to project format with direction
       const projectRadii = radii.map((r) => ({
         frequency:
           r.direction === "counterclockwise"
@@ -188,7 +212,6 @@ export default function Home() {
         </h1>
 
         <div className="flex items-center gap-3">
-          {/* Save Project Section */}
           {user && (
             <div className="flex items-center gap-2">
               <input
@@ -301,7 +324,30 @@ export default function Home() {
             </AccordionItem>
           </div>
 
-          {/* Settings Panel */}
+          {/* Signal Processing Panel */}
+          <div
+            className={
+              openPanel === "signal"
+                ? "flex-1 min-h-0 overflow-hidden"
+                : "flex-shrink-0"
+            }
+          >
+            <AccordionItem
+              title="Signal Processing"
+              icon={<Activity size={16} className="text-[#667eea]" />}
+              isOpen={openPanel === "signal"}
+              onToggle={() => handleToggle("signal")}
+            >
+              {openPanel === "signal" && (
+                <div className="overflow-y-auto custom-scrollbar px-3 pb-3 space-y-3">
+                  <NoisePanel />
+                  <MetricsPanel />
+                </div>
+              )}
+            </AccordionItem>
+          </div>
+
+          {/* Visualization Panel */}
           <div
             className={
               openPanel === "visualization"
@@ -350,7 +396,7 @@ export default function Home() {
         </div>
 
         {/* Right workspace */}
-        <div className="flex-1 grid grid-rows-[auto_1fr_1fr] gap-3 min-w-0 min-h-0">
+        <div className="flex-1 grid grid-rows-[auto_1fr_1fr_1fr] gap-3 min-w-0 min-h-0">
           <div className="flex-shrink-0">
             <ControlPanel />
           </div>
@@ -361,6 +407,10 @@ export default function Home() {
 
           <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-0 overflow-hidden">
             <SignalGraph />
+          </div>
+
+          <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-0 overflow-hidden">
+            <NoisySignalGraph />
           </div>
         </div>
       </div>

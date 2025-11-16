@@ -21,6 +21,7 @@ interface SimulationStore extends SimulationState {
   updateSettings: (settings: Partial<SimulationSettings>) => void;
   setActiveTrackingRadius: (radiusId: string | null) => void;
   setSignalData: (data: SignalDataPoint[]) => void;
+  getSignalYValues: () => number[]; // NEW: Get Y values for signal processing
 }
 
 const DEFAULT_SETTINGS: SimulationSettings = {
@@ -31,10 +32,10 @@ const DEFAULT_SETTINGS: SimulationSettings = {
   showAxes: true,
   showGrid: true,
   gridSize: 50,
-  zoom: 1.0, // ⭐ NEW - Default zoom 100%
+  zoom: 1.0,
 };
 
-export const useSimulationStore = create<SimulationStore>((set) => ({
+export const useSimulationStore = create<SimulationStore>((set, get) => ({
   // Initial state
   isPlaying: false,
   isPaused: false,
@@ -96,5 +97,11 @@ export const useSimulationStore = create<SimulationStore>((set) => ({
 
   setSignalData: (data) => {
     set({ signalData: data });
+  },
+
+  // NEW: Extract Y values from signal data
+  getSignalYValues: () => {
+    const { signalData } = get();
+    return signalData.map((point) => point.y);
   },
 }));
