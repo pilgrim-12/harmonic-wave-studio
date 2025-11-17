@@ -119,10 +119,10 @@ export const SignalGraph: React.FC = () => {
         ctx.fillStyle = "#0a0a0a";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Draw axes
-        drawAxes(ctx, canvas.width, canvas.height);
+        // ✅ Draw grid FIRST (behind everything)
+        drawGrid(ctx, canvas.width, canvas.height);
 
-        // Draw signal
+        // Draw signal OR placeholder
         if (signalDataRef.current.length > 1) {
           drawSignal(
             ctx,
@@ -132,13 +132,26 @@ export const SignalGraph: React.FC = () => {
             currentTime,
             settings.graphDuration
           );
+        } else {
+          // ✅ Show placeholder when no data
+          ctx.fillStyle = "#666";
+          ctx.font = "12px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("No signal data", canvas.width / 2, canvas.height / 2);
+          ctx.fillText(
+            "Start animation to see signals",
+            canvas.width / 2,
+            canvas.height / 2 + 20
+          );
         }
+
+        // ✅ Draw labels and legend LAST (on top)
+        drawLabelsAndLegend(ctx, canvas.width, canvas.height);
       }
 
       // Next frame
-      if (isPlaying) {
-        animationFrameRef.current = requestAnimationFrame(draw);
-      }
+      // ✅ ВСЕГДА продолжаем animation loop (даже когда остановлено)
+      animationFrameRef.current = requestAnimationFrame(draw);
     };
 
     draw();
@@ -158,46 +171,90 @@ export const SignalGraph: React.FC = () => {
   ]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="w-full h-full"
-      style={{ imageRendering: "crisp-edges" }}
-    />
+    <div className="relative w-full h-full">
+      <canvas
+        ref={canvasRef}
+        className="w-full h-full"
+        style={{ imageRendering: "crisp-edges" }}
+      />
+      <div className="absolute top-2 left-2 text-xs text-gray-500">
+        Original Signal
+      </div>
+    </div>
   );
 };
 
-// Helper drawing functions
-function drawAxes(
+/**
+ * ✅ NEW: Draw grid (like NoisySignalGraph)
+ */
+function drawGrid(
   ctx: CanvasRenderingContext2D,
   width: number,
   height: number
 ) {
-  const centerY = height / 2;
-
-  ctx.strokeStyle = "#444";
-  ctx.lineWidth = 2;
-
-  // Horizontal axis (Y = 0)
-  ctx.beginPath();
-  ctx.moveTo(0, centerY);
-  ctx.lineTo(width, centerY);
-  ctx.stroke();
-
-  // Vertical axis (t = now)
-  ctx.strokeStyle = "#666";
+  ctx.strokeStyle = "#1a1a1a";
   ctx.lineWidth = 1;
-  ctx.setLineDash([5, 5]);
-  ctx.beginPath();
-  ctx.moveTo(width - 50, 0);
-  ctx.lineTo(width - 50, height);
-  ctx.stroke();
-  ctx.setLineDash([]);
 
+  // Horizontal lines
+  for (let i = 0; i <= 4; i++) {
+    const y = (i * height) / 4;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(width, y);
+    ctx.stroke();
+  }
+
+  // Vertical lines
+  for (let i = 0; i <= 8; i++) {
+    const x = (i * width) / 8;
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, height);
+    ctx.stroke();
+  }
+
+  // Center line (Y = 0) - thicker
+  ctx.strokeStyle = "#2a2a2a";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, height / 2);
+  ctx.lineTo(width, height / 2);
+  ctx.stroke();
+}
+
+/**
+ * ✅ NEW: Draw labels and legend
+ */
+function drawLabelsAndLegend(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number
+) {
   // Axis labels
-  ctx.fillStyle = "#888";
-  ctx.font = "12px sans-serif";
-  ctx.fillText("Y", 10, centerY - 10);
-  ctx.fillText("t →", width - 40, height - 10);
+  ctx.fillStyle = "#666";
+  ctx.font = "10px monospace";
+  ctx.textAlign = "left";
+  ctx.fillText("Y", 10, 15);
+  ctx.textAlign = "right";
+  ctx.fillText("Time →", width - 10, height - 10);
+
+  // Legend
+  const legendX = width - 100;
+  const legendY = 10;
+
+  // Signal line
+  ctx.strokeStyle = "#667eea";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(legendX, legendY + 2);
+  ctx.lineTo(legendX + 15, legendY + 2);
+  ctx.stroke();
+
+  // Signal label
+  ctx.fillStyle = "#999";
+  ctx.font = "10px sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText("Signal", legendX + 20, legendY + 5);
 }
 
 function drawSignal(

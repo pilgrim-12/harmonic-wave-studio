@@ -42,7 +42,7 @@ export default function Home() {
 
   const { radii, addRadius, selectRadius, updateRadius, clearRadii } =
     useRadiusStore();
-  const { setActiveTrackingRadius } = useSimulationStore();
+  const { setActiveTrackingRadius, play } = useSimulationStore();
   const {
     currentProjectId,
     currentProjectName,
@@ -60,6 +60,13 @@ export default function Home() {
     }
   }, [currentProjectName]);
 
+  // ✅ АВТОСТАРТ: Запускаем анимацию когда загружены радиусы
+  useEffect(() => {
+    if (radii.length > 0) {
+      setTimeout(() => play(), 100);
+    }
+  }, [radii.length, play]);
+
   // Синхронизация сигнала с Signal Processing Store
   useEffect(() => {
     const interval = setInterval(() => {
@@ -68,7 +75,7 @@ export default function Home() {
       if (signal.length > 100) {
         useSignalProcessingStore.getState().setOriginalSignal(signal);
       }
-    }, 100); // ✅ Обновляем каждые 100ms (10 раз в секунду) для плавности
+    }, 500); // Обновляем каждые 500ms
 
     return () => clearInterval(interval);
   }, []); // Пустой массив зависимостей

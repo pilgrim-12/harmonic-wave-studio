@@ -19,9 +19,11 @@ An interactive web application for visualizing and analyzing signals through rot
 
 - **Real-time epicycle animation** with smooth 60 FPS rendering
 - **Dynamic signal graph** with auto-scaling and time tracking
+- **Grid overlay on all graphs** - coordinate reference lines always visible ⭐ NEW!
 - **Customizable radii** - adjust length, speed, direction, and color
 - **Visual branch tracking** - highlight active radius chains
 - **Trail visualization** - see the path traced by epicycles
+- **Auto-start on project load** - animation begins immediately after loading ⭐ NEW!
 
 ### 📊 FFT Analysis ⭐ NEW!
 
@@ -252,15 +254,18 @@ harmonic-wave-studio/
 - ✅ 6 preset waveforms
 - ✅ Keyboard shortcuts
 
-### Phase 2 - FFT Analysis (IN PROGRESS - 70% Complete)
+### Phase 2 - FFT Analysis & UX Improvements (IN PROGRESS - 75% Complete)
 
 - ✅ **FFT library integration** ⭐
 - ✅ **Frequency spectrum analyzer** ⭐
 - ✅ **Auto-generate epicycles from FFT** ⭐
 - ✅ **Peak detection and harmonic analysis** ⭐
-- ✅ **Spectrum visualization (bar chart canvas)** ⭐ NEW!
-- ✅ **Generation options dialog** ⭐ NEW!
-- ✅ **Manual zoom control** ⭐ NEW!
+- ✅ **Spectrum visualization (bar chart canvas)** ⭐
+- ✅ **Generation options dialog** ⭐
+- ✅ **Manual zoom control** ⭐
+- ✅ **Grid overlay on all visualizations** ⭐ NEW!
+- ✅ **Auto-start animation on project load** ⭐ NEW!
+- ✅ **Signal graph legends and labels** ⭐ NEW!
 - [ ] CSV/audio signal import
 - [ ] Signal reconstruction comparison
 
@@ -318,5 +323,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Made with ❤️ for signal processing enthusiasts**
 
-**Latest Update:** Phase 2.2 Complete - Spectrum Visualization, Generation Settings & Manual Zoom! ⭐  
-**Progress:** Phase 2 = 70% Complete 🚀
+**Latest Update:** Phase 2.3 Complete - Grid Overlays, Auto-Start & Enhanced UX! ⭐  
+**Progress:** Phase 2 = 75% Complete 🚀

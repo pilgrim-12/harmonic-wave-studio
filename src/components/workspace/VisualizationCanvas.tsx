@@ -54,15 +54,8 @@ export const VisualizationCanvas: React.FC = () => {
     };
   }, []);
 
-  // Анимационный цикл
+  // Анимационный цикл - ВСЕГДА работает (даже когда остановлено)
   useEffect(() => {
-    if (!isPlaying) {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      return;
-    }
-
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
@@ -72,20 +65,24 @@ export const VisualizationCanvas: React.FC = () => {
     let fpsTime = 0;
 
     const animate = (time: number) => {
-      const deltaTime = (time - lastTime) / 1000; // в секундах
+      const deltaTime = (time - lastTime) / 1000;
       lastTime = time;
 
-      // Обновляем время симуляции
-      const newTime = currentTime + deltaTime * settings.animationSpeed;
-      setCurrentTime(newTime);
+      // Обновляем время симуляции ТОЛЬКО если играет
+      let newTime = currentTime; // ✅ Определяем снаружи
 
-      // Расчет FPS
-      frameCount++;
-      fpsTime += deltaTime;
-      if (fpsTime >= 1) {
-        updateFps(frameCount / fpsTime);
-        frameCount = 0;
-        fpsTime = 0;
+      if (isPlaying) {
+        newTime = currentTime + deltaTime * settings.animationSpeed;
+        setCurrentTime(newTime);
+
+        // Расчет FPS
+        frameCount++;
+        fpsTime += deltaTime;
+        if (fpsTime >= 1) {
+          updateFps(frameCount / fpsTime);
+          frameCount = 0;
+          fpsTime = 0;
+        }
       }
 
       // Отрисовка
@@ -95,22 +92,18 @@ export const VisualizationCanvas: React.FC = () => {
       // Очистка
       clearCanvas(ctx, canvas.width, canvas.height);
 
-      // Сетка (опционально) - БЕЗ zoom
-      if (settings.showGrid) {
-        drawGrid(
-          ctx,
-          centerX,
-          centerY,
-          canvas.width,
-          canvas.height,
-          settings.gridSize
-        );
-      }
+      // ✅ Сетка - ВСЕГДА показываем
+      drawGrid(
+        ctx,
+        centerX,
+        centerY,
+        canvas.width,
+        canvas.height,
+        settings.gridSize
+      );
 
-      // Оси (опционально) - БЕЗ zoom
-      if (settings.showAxes) {
-        drawAxes(ctx, centerX, centerY, canvas.width, canvas.height);
-      }
+      // ✅ Оси - ВСЕГДА показываем
+      drawAxes(ctx, centerX, centerY, canvas.width, canvas.height);
 
       // Apply zoom transform ТОЛЬКО для радиусов и следа
       ctx.save();
@@ -166,7 +159,7 @@ export const VisualizationCanvas: React.FC = () => {
       // Restore transform
       ctx.restore();
 
-      // Следующий кадр
+      // ✅ Следующий кадр - ВСЕГДА продолжаем
       animationFrameRef.current = requestAnimationFrame(animate);
     };
 
