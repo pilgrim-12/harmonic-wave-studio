@@ -11,7 +11,7 @@ import {
 import { useProjectStore } from "@/store/useProjectStore";
 import { useRadiusStore } from "@/store/radiusStore";
 import { useSimulationStore } from "@/store/simulationStore";
-import { Trash2, FolderOpen, ArrowLeft } from "lucide-react";
+import { Trash2, FolderOpen, ArrowLeft, Share2 } from "lucide-react"; // ✅ ДОБАВЛЕНО Share2
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import Image from "next/image";
@@ -93,6 +93,13 @@ export default function ProfilePage() {
     }
   };
 
+  // ✅ ДОБАВЛЕНО: Handler для копирования share ссылки
+  const handleCopyShareLink = (shareId: string) => {
+    const url = `${window.location.origin}/project/${shareId}`;
+    navigator.clipboard.writeText(url);
+    alert("✅ Share link copied!");
+  };
+
   if (loading || !user) {
     return (
       <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center">
@@ -156,7 +163,20 @@ export default function ProfilePage() {
                   className="bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg p-4 flex items-center justify-between hover:border-[#667eea] transition-colors"
                 >
                   <div className="flex-1">
-                    <h3 className="text-white font-medium">{project.name}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-white font-medium">{project.name}</h3>
+                      {/* ✅ ДОБАВЛЕНО: Share индикатор */}
+                      {project.shareId && (
+                        <button
+                          onClick={() => handleCopyShareLink(project.shareId!)}
+                          className="flex items-center gap-1 px-2 py-1 bg-blue-600/20 text-blue-400 rounded text-xs hover:bg-blue-600/30 transition-colors"
+                          title="Copy share link"
+                        >
+                          <Share2 size={12} />
+                          Shared
+                        </button>
+                      )}
+                    </div>
                     <p className="text-sm text-gray-500 mt-1">
                       {project.radii.length} radii • Updated{" "}
                       {new Date(project.updatedAt!).toLocaleDateString()}

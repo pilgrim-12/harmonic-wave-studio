@@ -33,12 +33,14 @@ import { SignInButton } from "@/components/auth/SignInButton";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { useAuth } from "@/contexts/AuthContext";
 import { createProject, updateProject } from "@/services/projectService";
+import { ShareButton } from "@/components/share/ShareButton"; // ✅ ДОБАВЛЕНО
 
 export default function Home() {
   const [openPanel, setOpenPanel] = useState<string>("radii");
   const [editingRadius, setEditingRadius] = useState<Radius | null>(null);
   const [projectName, setProjectName] = useState("");
   const [saving, setSaving] = useState(false);
+  const [shareId, setShareId] = useState<string | null>(null); // ✅ ДОБАВЛЕНО
 
   const { radii, addRadius, selectRadius, updateRadius, clearRadii } =
     useRadiusStore();
@@ -160,6 +162,7 @@ export default function Home() {
 
     clearRadii();
     setProjectName("");
+    setShareId(null); // ✅ ДОБАВЛЕНО
     clearProject();
   };
 
@@ -210,6 +213,11 @@ export default function Home() {
     }
   };
 
+  // ✅ ДОБАВЛЕНО: Handler для успешного share
+  const handleShareSuccess = (newShareId: string) => {
+    setShareId(newShareId || null);
+  };
+
   return (
     <div className="h-screen bg-[#0f0f0f] flex flex-col p-3">
       {/* Header */}
@@ -246,6 +254,17 @@ export default function Home() {
                 <Save size={14} className="mr-1" />
                 {saving ? "Saving..." : currentProjectId ? "Update" : "Save"}
               </Button>
+
+              {/* ✅ ДОБАВЛЕНО: Share Button */}
+              {currentProjectId && (
+                <ShareButton
+                  projectId={currentProjectId}
+                  projectName={projectName}
+                  isShared={!!shareId}
+                  shareId={shareId}
+                  onShareSuccess={handleShareSuccess}
+                />
+              )}
             </div>
           )}
 

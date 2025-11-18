@@ -1,0 +1,46 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function: Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function: Check if user owns the document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      // Users can only read/write their own profile
+      allow read, write: if isOwner(userId);
+    }
+    
+    // Projects collection (Private)
+    match /projects/{projectId} {
+      // Users can only read/write their own projects
+      allow read, write: if isAuthenticated() && 
+                            request.auth.uid == resource.data.userId;
+      
+      // Allow create if user is authenticated
+      allow create: if isAuthenticated() && 
+                       request.auth.uid == request.resource.data.userId;
+    }
+    
+    // ✅ NEW: Shared Projects collection (Public reads, owner writes)
+    match /shared-projects/{shareId} {
+      // Anyone can read shared projects (public links)
+      allow read: if true;
+      
+      // Only the project owner can create/update/delete
+      allow create: if isAuthenticated() && 
+                       request.auth.uid == request.resource.data.userId;
+      
+      allow update, delete: if isAuthenticated() && 
+                               request.auth.uid == resource.data.userId;
+    }
+  }
+}

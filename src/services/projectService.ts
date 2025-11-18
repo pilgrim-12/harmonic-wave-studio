@@ -23,6 +23,7 @@ export interface Project {
   userId: string;
   name: string;
   radii: Radius[];
+  shareId?: string | null; // ✅ ДОБАВЛЕНО: ID публичной ссылки (если расшарен)
   createdAt: Date | null;
   updatedAt: Date | null;
 }
@@ -37,6 +38,7 @@ export async function createProject(
     userId,
     name,
     radii,
+    shareId: null, // ✅ ДОБАВЛЕНО: по умолчанию не расшарен
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
