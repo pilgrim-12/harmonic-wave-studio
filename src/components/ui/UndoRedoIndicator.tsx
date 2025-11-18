@@ -1,22 +1,36 @@
 "use client";
 
-import React from "react";
+import React, { useSyncExternalStore } from "react"; // ✅ ЛУЧШИЙ СПОСОБ
 import { Undo2, Redo2 } from "lucide-react";
 import { useRadiusStore } from "@/store/radiusStore";
 import { cn } from "@/lib/utils";
 
+// ✅ Хелпер для безопасной проверки на клиенте (без ESLint warning)
+const useIsClient = () => {
+  return useSyncExternalStore(
+    () => () => {}, // subscribe (no-op)
+    () => true, // getSnapshot (client)
+    () => false // getServerSnapshot (server)
+  );
+};
+
 export const UndoRedoIndicator: React.FC = () => {
   const { undo, redo, canUndo, canRedo } = useRadiusStore();
+  const isClient = useIsClient(); // ✅ Безопасная проверка
+
+  // ✅ Безопасная проверка (только на клиенте)
+  const undoEnabled = isClient && canUndo();
+  const redoEnabled = isClient && canRedo();
 
   return (
     <div className="flex items-center gap-1">
       {/* Undo button */}
       <button
         onClick={undo}
-        disabled={!canUndo()}
+        disabled={!undoEnabled}
         className={cn(
           "p-2 rounded-lg transition-all flex items-center gap-1.5",
-          canUndo()
+          undoEnabled
             ? "bg-[#2a2a2a] hover:bg-[#333] text-gray-300 cursor-pointer"
             : "bg-[#1a1a1a] text-gray-600 cursor-not-allowed opacity-50"
         )}
@@ -29,10 +43,10 @@ export const UndoRedoIndicator: React.FC = () => {
       {/* Redo button */}
       <button
         onClick={redo}
-        disabled={!canRedo()}
+        disabled={!redoEnabled}
         className={cn(
           "p-2 rounded-lg transition-all flex items-center gap-1.5",
-          canRedo()
+          redoEnabled
             ? "bg-[#2a2a2a] hover:bg-[#333] text-gray-300 cursor-pointer"
             : "bg-[#1a1a1a] text-gray-600 cursor-not-allowed opacity-50"
         )}
