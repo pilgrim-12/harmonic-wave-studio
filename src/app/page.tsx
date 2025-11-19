@@ -69,18 +69,34 @@ export default function Home() {
     }
   }, [radii.length, play]);
 
-  // Синхронизация сигнала с Signal Processing Store
+  // ✅ ИСПРАВЛЕНО: Плавное обновление сигнала через requestAnimationFrame
   useEffect(() => {
-    const interval = setInterval(() => {
-      const signal = useSimulationStore.getState().getSignalYValues();
+    let animationFrameId: number;
+    let lastUpdate = 0;
+    const UPDATE_INTERVAL = 1000 / 30; // 30 FPS
 
-      if (signal.length > 100) {
-        useSignalProcessingStore.getState().setOriginalSignal(signal);
+    const updateSignal = (timestamp: number) => {
+      if (timestamp - lastUpdate >= UPDATE_INTERVAL) {
+        const signal = useSimulationStore.getState().getSignalYValues();
+
+        if (signal.length > 100) {
+          useSignalProcessingStore.getState().setOriginalSignal(signal);
+        }
+
+        lastUpdate = timestamp;
       }
-    }, 500); // Обновляем каждые 500ms
 
-    return () => clearInterval(interval);
-  }, []); // Пустой массив зависимостей
+      animationFrameId = requestAnimationFrame(updateSignal);
+    };
+
+    animationFrameId = requestAnimationFrame(updateSignal);
+
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, []);
 
   const handleToggle = (panelId: string) => {
     setOpenPanel(openPanel === panelId ? "" : panelId);

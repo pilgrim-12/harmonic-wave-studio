@@ -13,6 +13,21 @@ export const NoisySignalGraph: React.FC = () => {
   const animationFrameRef = useRef<number | null>(null);
   const { original, noisy, noiseApplied } = useSignalProcessingStore();
 
+  // ✅ All state in refs - no setState in effects
+  const smoothedNoisyRef = useRef<number[]>([]);
+  const prevNoisyRef = useRef<number[]>([]);
+  const interpolationStateRef = useRef<{
+    isInterpolating: boolean;
+    startTime: number;
+    startValues: number[];
+    endValues: number[];
+  }>({
+    isInterpolating: false,
+    startTime: 0,
+    startValues: [],
+    endValues: [],
+  });
+
   // ✅ Initialize canvas size
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -34,7 +49,35 @@ export const NoisySignalGraph: React.FC = () => {
     };
   }, []);
 
-  // ✅ Animation loop for smooth rendering (like SignalGraph)
+  // ✅ Track noisy changes and start interpolation
+  useEffect(() => {
+    if (noisy.length === 0) {
+      smoothedNoisyRef.current = [];
+      prevNoisyRef.current = [];
+      interpolationStateRef.current.isInterpolating = false;
+      return;
+    }
+
+    const prevNoisy = prevNoisyRef.current;
+
+    // If no previous signal, use current immediately
+    if (prevNoisy.length === 0 || prevNoisy.length !== noisy.length) {
+      smoothedNoisyRef.current = [...noisy];
+      prevNoisyRef.current = [...noisy];
+      interpolationStateRef.current.isInterpolating = false;
+      return;
+    }
+
+    // Start interpolation
+    interpolationStateRef.current = {
+      isInterpolating: true,
+      startTime: performance.now(),
+      startValues: [...prevNoisy],
+      endValues: [...noisy],
+    };
+  }, [noisy]);
+
+  // ✅ Animation loop - handles both rendering and interpolation
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -42,44 +85,65 @@ export const NoisySignalGraph: React.FC = () => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let frameCount = 0;
+    const draw = (timestamp: number) => {
+      const width = canvas.width;
+      const height = canvas.height;
 
-    const draw = () => {
-      frameCount++;
+      // ✅ Handle interpolation in animation loop
+      const interpState = interpolationStateRef.current;
+      if (interpState.isInterpolating) {
+        const elapsed = timestamp - interpState.startTime;
+        const duration = 300; // 300ms transition
+        const progress = Math.min(1, elapsed / duration);
 
-      // Throttle: render every 2nd frame for performance
-      const shouldRender = frameCount % 2 === 0;
-
-      if (shouldRender) {
-        const width = canvas.width;
-        const height = canvas.height;
-
-        // Clear canvas
-        ctx.fillStyle = "#0a0a0a";
-        ctx.fillRect(0, 0, width, height);
-
-        // Draw grid
-        drawGrid(ctx, width, height);
-
-        // Draw signals if available
-        if (original.length > 0) {
-          drawSignals(ctx, width, height, original, noisy, noiseApplied);
+        if (progress >= 1) {
+          // Interpolation complete
+          smoothedNoisyRef.current = [...interpState.endValues];
+          prevNoisyRef.current = [...interpState.endValues];
+          interpState.isInterpolating = false;
         } else {
-          // Show placeholder
-          ctx.fillStyle = "#666";
-          ctx.font = "12px sans-serif";
-          ctx.textAlign = "center";
-          ctx.fillText("No signal data", width / 2, height / 2);
-          ctx.fillText(
-            "Start animation to see signals",
-            width / 2,
-            height / 2 + 20
-          );
-        }
+          // Ease-out cubic
+          const easedProgress = 1 - Math.pow(1 - progress, 3);
 
-        // Draw labels and legend
-        drawLabelsAndLegend(ctx, width, height, noiseApplied);
+          smoothedNoisyRef.current = interpState.endValues.map((endVal, i) => {
+            const startVal = interpState.startValues[i] || endVal;
+            return startVal + (endVal - startVal) * easedProgress;
+          });
+        }
       }
+
+      // Clear canvas
+      ctx.fillStyle = "#0a0a0a";
+      ctx.fillRect(0, 0, width, height);
+
+      // Draw grid
+      drawGrid(ctx, width, height);
+
+      // Draw signals if available
+      if (original.length > 0) {
+        drawSignals(
+          ctx,
+          width,
+          height,
+          original,
+          smoothedNoisyRef.current,
+          noiseApplied
+        );
+      } else {
+        // Show placeholder
+        ctx.fillStyle = "#666";
+        ctx.font = "12px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("No signal data", width / 2, height / 2);
+        ctx.fillText(
+          "Start animation to see signals",
+          width / 2,
+          height / 2 + 20
+        );
+      }
+
+      // Draw labels and legend
+      drawLabelsAndLegend(ctx, width, height, noiseApplied);
 
       // Continue animation loop
       animationFrameRef.current = requestAnimationFrame(draw);
@@ -93,14 +157,14 @@ export const NoisySignalGraph: React.FC = () => {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [original, noisy, noiseApplied]);
+  }, [original, noiseApplied]);
 
   return (
     <div className="relative w-full h-full">
       <canvas
         ref={canvasRef}
         className="w-full h-full"
-        style={{ imageRendering: "crisp-edges" }}
+        style={{ imageRendering: "auto" }}
       />
       <div className="absolute top-2 left-2 text-xs text-gray-500">
         Signal with Noise
@@ -158,7 +222,7 @@ function drawSignals(
   noisy: number[],
   noiseApplied: boolean
 ) {
-  // ✅ FIX 1: Remove DC offset (center both signals)
+  // ✅ Remove DC offset (center both signals)
   const avgOriginal =
     original.reduce((sum, val) => sum + val, 0) / original.length;
   const centeredOriginal = original.map((val) => val - avgOriginal);
@@ -169,13 +233,13 @@ function drawSignals(
     centeredNoisy = noisy.map((val) => val - avgNoisy);
   }
 
-  // ✅ FIX 2: Find min/max AFTER removing DC offset
+  // ✅ Find min/max AFTER removing DC offset
   const allValues =
     noisy.length > 0
       ? [...centeredOriginal, ...centeredNoisy]
       : centeredOriginal;
 
-  // Sample for performance (take every Nth point for large datasets)
+  // Sample for performance
   const step = Math.max(1, Math.floor(allValues.length / 500));
   let minY = Infinity;
   let maxY = -Infinity;
@@ -185,7 +249,7 @@ function drawSignals(
     maxY = Math.max(maxY, allValues[i]);
   }
 
-  // ✅ FIX 3: Use symmetric range around 0
+  // ✅ Use symmetric range around 0
   const absMax = Math.max(Math.abs(minY), Math.abs(maxY));
   minY = -absMax;
   maxY = absMax;
@@ -201,18 +265,15 @@ function drawSignals(
     maxY = 50;
   }
 
-  // ✅ FIX 4: Smooth scaling changes with VERY aggressive smoothing
+  // ✅ Smooth scaling changes
   scalingFrameCount++;
 
-  // More aggressive smoothing - slower adaptation but smoother
-  const smoothingFactor = 0.05; // Lower = smoother (was 0.15)
+  const smoothingFactor = 0.03;
 
   if (scalingFrameCount === 1 || cachedMinY === 0) {
-    // First frame or reset - initialize immediately
     cachedMinY = minY;
     cachedMaxY = maxY;
   } else {
-    // Smooth transition
     cachedMinY = cachedMinY * (1 - smoothingFactor) + minY * smoothingFactor;
     cachedMaxY = cachedMaxY * (1 - smoothingFactor) + maxY * smoothingFactor;
   }
@@ -229,12 +290,13 @@ function drawSignals(
     return (index / length) * width;
   };
 
-  // ✅ Use noiseApplied flag instead of noisy.length to prevent flickering
   const hasNoisy = noiseApplied && noisy.length > 0;
 
-  // ✅ Draw original signal (semi-transparent if noisy exists, full otherwise)
+  // ✅ Draw original signal
   ctx.strokeStyle = hasNoisy ? "rgba(102, 126, 234, 0.4)" : "#667eea";
   ctx.lineWidth = hasNoisy ? 2 : 2.5;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
   ctx.beginPath();
 
   for (let i = 0; i < centeredOriginal.length; i++) {
@@ -249,10 +311,12 @@ function drawSignals(
   }
   ctx.stroke();
 
-  // ✅ Draw noisy signal (if available)
+  // ✅ Draw noisy signal
   if (hasNoisy) {
     ctx.strokeStyle = "#ff6b6b";
     ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
     ctx.beginPath();
 
     for (let i = 0; i < centeredNoisy.length; i++) {
