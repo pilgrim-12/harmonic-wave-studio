@@ -222,15 +222,15 @@ function drawSignals(
   noisy: number[],
   noiseApplied: boolean
 ) {
-  // ✅ Remove DC offset (center both signals)
+  // ✅ Remove DC offset ONLY from original (keep noisy as-is to preserve phase)
   const avgOriginal =
     original.reduce((sum, val) => sum + val, 0) / original.length;
   const centeredOriginal = original.map((val) => val - avgOriginal);
 
+  // ✅ Apply SAME DC offset to noisy signal (don't recalculate!)
   let centeredNoisy: number[] = [];
   if (noisy.length > 0) {
-    const avgNoisy = noisy.reduce((sum, val) => sum + val, 0) / noisy.length;
-    centeredNoisy = noisy.map((val) => val - avgNoisy);
+    centeredNoisy = noisy.map((val) => val - avgOriginal); // ✅ Use avgOriginal!
   }
 
   // ✅ Find min/max AFTER removing DC offset
