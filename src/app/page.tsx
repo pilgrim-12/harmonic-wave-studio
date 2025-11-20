@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { ControlPanel } from "@/components/workspace/ControlPanel";
 import { VisualizationCanvas } from "@/components/workspace/VisualizationCanvas";
 import { SignalGraph } from "@/components/workspace/SignalGraph";
@@ -19,6 +20,7 @@ import {
   Save,
   FilePlus,
   Activity,
+  LayoutGrid,
 } from "lucide-react";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useRadiusStore } from "@/store/radiusStore";
@@ -33,14 +35,14 @@ import { SignInButton } from "@/components/auth/SignInButton";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { useAuth } from "@/contexts/AuthContext";
 import { createProject, updateProject } from "@/services/projectService";
-import { ShareButton } from "@/components/share/ShareButton"; // ✅ ДОБАВЛЕНО
+import { ShareButton } from "@/components/share/ShareButton";
 
 export default function Home() {
   const [openPanel, setOpenPanel] = useState<string>("radii");
   const [editingRadius, setEditingRadius] = useState<Radius | null>(null);
   const [projectName, setProjectName] = useState("");
   const [saving, setSaving] = useState(false);
-  const [shareId, setShareId] = useState<string | null>(null); // ✅ ДОБАВЛЕНО
+  const [shareId, setShareId] = useState<string | null>(null);
 
   const { radii, addRadius, selectRadius, updateRadius, clearRadii } =
     useRadiusStore();
@@ -55,25 +57,22 @@ export default function Home() {
 
   useKeyboardShortcuts();
 
-  // Синхронизация имени проекта
   useEffect(() => {
     if (currentProjectName) {
       setProjectName(currentProjectName);
     }
   }, [currentProjectName]);
 
-  // ✅ АВТОСТАРТ: Запускаем анимацию когда загружены радиусы
   useEffect(() => {
     if (radii.length > 0) {
       setTimeout(() => play(), 100);
     }
   }, [radii.length, play]);
 
-  // ✅ ИСПРАВЛЕНО: Плавное обновление сигнала через requestAnimationFrame
   useEffect(() => {
     let animationFrameId: number;
     let lastUpdate = 0;
-    const UPDATE_INTERVAL = 1000 / 30; // 30 FPS
+    const UPDATE_INTERVAL = 1000 / 30;
 
     const updateSignal = (timestamp: number) => {
       if (timestamp - lastUpdate >= UPDATE_INTERVAL) {
@@ -178,7 +177,7 @@ export default function Home() {
 
     clearRadii();
     setProjectName("");
-    setShareId(null); // ✅ ДОБАВЛЕНО
+    setShareId(null);
     clearProject();
   };
 
@@ -229,7 +228,6 @@ export default function Home() {
     }
   };
 
-  // ✅ ДОБАВЛЕНО: Handler для успешного share
   const handleShareSuccess = (newShareId: string) => {
     setShareId(newShareId || null);
   };
@@ -271,7 +269,6 @@ export default function Home() {
                 {saving ? "Saving..." : currentProjectId ? "Update" : "Save"}
               </Button>
 
-              {/* ✅ ДОБАВЛЕНО: Share Button */}
               {currentProjectId && (
                 <ShareButton
                   projectId={currentProjectId}
@@ -281,6 +278,18 @@ export default function Home() {
                   onShareSuccess={handleShareSuccess}
                 />
               )}
+
+              {/* ✅ NEW: Gallery Button */}
+              <Link href="/gallery">
+                <Button
+                  variant="secondary"
+                  className="text-sm"
+                  title="Browse community projects"
+                >
+                  <LayoutGrid size={14} className="mr-1" />
+                  Gallery
+                </Button>
+              </Link>
             </div>
           )}
 
