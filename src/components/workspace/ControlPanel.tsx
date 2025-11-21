@@ -3,6 +3,7 @@
 import React from "react";
 import { Play, Pause, Square, RotateCcw } from "lucide-react";
 import { useSimulationStore } from "@/store/simulationStore";
+import { useSignalProcessingStore } from "@/store/signalProcessingStore";
 import { Button } from "@/components/ui/Button";
 import { ExportPanel } from "./ExportPanel";
 import { AudioPanel } from "./AudioPanel";
@@ -12,6 +13,12 @@ import { ProjectPanel } from "./ProjectPanel";
 export const ControlPanel: React.FC = () => {
   const { isPlaying, isPaused, currentTime, fps, play, pause, stop, reset } =
     useSimulationStore();
+
+  const handleReset = () => {
+    reset();
+    // Clear signal processing graphs
+    useSignalProcessingStore.getState().resetSignal();
+  };
 
   return (
     <div className="flex items-center gap-2 p-2.5 bg-[#1a1a1a] rounded-lg border border-[#2a2a2a]">
@@ -45,7 +52,12 @@ export const ControlPanel: React.FC = () => {
           Stop
         </Button>
 
-        <Button onClick={reset} variant="secondary" size="sm" title="Reset">
+        <Button
+          onClick={handleReset}
+          variant="secondary"
+          size="sm"
+          title="Reset"
+        >
           <RotateCcw size={16} className="mr-1" />
           Reset
         </Button>

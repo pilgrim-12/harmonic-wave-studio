@@ -68,8 +68,9 @@ function HomeContent() {
         // Decode base64 data
         const projectData = JSON.parse(atob(loadSharedParam));
 
-        // Clear existing radii
+        // Clear existing radii and signal processing
         clearRadii();
+        useSignalProcessingStore.getState().resetSignal();
 
         // Convert Firebase radii to editor format
         const { radii: firebaseRadii } = projectData;
@@ -254,6 +255,9 @@ function HomeContent() {
     setProjectName("");
     setShareId(null);
     clearProject();
+
+    // Clear signal processing graphs
+    useSignalProcessingStore.getState().resetSignal();
   };
 
   const handleSaveProject = async () => {
