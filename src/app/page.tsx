@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ControlPanel } from "@/components/workspace/ControlPanel";
 import { VisualizationCanvas } from "@/components/workspace/VisualizationCanvas";
 import { SignalGraph } from "@/components/workspace/SignalGraph";
@@ -54,8 +55,68 @@ export default function Home() {
     clearProject,
   } = useProjectStore();
   const { user, loading } = useAuth();
+  const searchParams = useSearchParams();
 
   useKeyboardShortcuts();
+
+  // Load shared project from URL parameter
+  useEffect(() => {
+    const loadSharedParam = searchParams?.get("loadShared");
+
+    if (loadSharedParam) {
+      try {
+        // Decode base64 data
+        const projectData = JSON.parse(atob(loadSharedParam));
+
+        // Clear existing radii
+        clearRadii();
+
+        // Convert Firebase radii to editor format
+        const { radii: firebaseRadii, settings, metadata } = projectData;
+
+        // Accumulate created radii IDs
+        let previousRadiusId: string | null = null;
+
+        // Add radii one by one
+        firebaseRadii.forEach(
+          (fbRadius: {
+            frequency: number;
+            amplitude: number;
+            phase: number;
+          }) => {
+            const newRadiusId = addRadius({
+              parentId: previousRadiusId,
+              length: fbRadius.amplitude,
+              initialAngle: fbRadius.phase,
+              rotationSpeed: Math.abs(fbRadius.frequency),
+              direction:
+                fbRadius.frequency >= 0 ? "counterclockwise" : "clockwise",
+            });
+
+            // Update for next radius
+            previousRadiusId = newRadiusId;
+          }
+        );
+
+        // Set project name
+        if (metadata?.projectName) {
+          setProjectName(`${metadata.projectName} (from gallery)`);
+        }
+
+        // Start animation after short delay
+        setTimeout(() => {
+          play();
+        }, 200);
+
+        // Clean URL (remove parameter)
+        window.history.replaceState({}, "", "/");
+      } catch (error) {
+        console.error("Error loading shared project:", error);
+        alert("Failed to load project from gallery");
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   useEffect(() => {
     if (currentProjectName) {
@@ -279,7 +340,7 @@ export default function Home() {
                 />
               )}
 
-              {/* ✅ NEW: Gallery Button */}
+              {/* Gallery Button */}
               <Link href="/gallery">
                 <Button
                   variant="secondary"

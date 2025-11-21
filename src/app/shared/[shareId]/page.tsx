@@ -201,8 +201,30 @@ export default function SharedProjectPage() {
             <div className="space-y-2">
               <Button
                 onClick={() => {
-                  // TODO: Load project into studio
-                  router.push("/");
+                  try {
+                    // Prepare project data for studio
+                    const projectData = {
+                      radii: project.radii,
+                      settings: {
+                        animationSpeed: project.settings?.animationSpeed || 1,
+                        trailLength: project.settings?.trailLength || 1000,
+                      },
+                      metadata: {
+                        projectName: project.projectName,
+                        userName: project.userName,
+                        shareId: project.id,
+                      },
+                    };
+
+                    // Encode to base64 for URL
+                    const encodedData = btoa(JSON.stringify(projectData));
+
+                    // Navigate to studio with data
+                    router.push(`/?loadShared=${encodedData}`);
+                  } catch (error) {
+                    console.error("Error loading project:", error);
+                    alert("Failed to load project into studio");
+                  }
                 }}
                 variant="primary"
                 className="w-full"
