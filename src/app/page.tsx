@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useLayoutEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ControlPanel } from "@/components/workspace/ControlPanel";
@@ -60,7 +60,7 @@ function HomeContent() {
   useKeyboardShortcuts();
 
   // Load shared project from URL parameter
-  useEffect(() => {
+  useLayoutEffect(() => {
     const loadSharedParam = searchParams?.get("loadShared");
 
     if (loadSharedParam) {
@@ -72,10 +72,16 @@ function HomeContent() {
         clearRadii();
 
         // Convert Firebase radii to editor format
-        const { radii: firebaseRadii, settings, metadata } = projectData;
+        const { radii: firebaseRadii } = projectData;
+
+        if (!firebaseRadii || firebaseRadii.length === 0) {
+          alert("This project has no radii data");
+          return;
+        }
 
         // Accumulate created radii IDs
         let previousRadiusId: string | null = null;
+        let lastRadiusId: string | null = null;
 
         // Add radii one by one
         firebaseRadii.forEach(
@@ -95,12 +101,20 @@ function HomeContent() {
 
             // Update for next radius
             previousRadiusId = newRadiusId;
+            lastRadiusId = newRadiusId;
           }
         );
 
-        // Set project name
-        if (metadata?.projectName) {
-          setProjectName(`${metadata.projectName} (from gallery)`);
+        // Select last radius
+        if (lastRadiusId) {
+          selectRadius(lastRadiusId);
+          setActiveTrackingRadius(lastRadiusId);
+        }
+
+        // Set project in store (this triggers useEffect that updates projectName)
+        if (projectData.metadata?.projectName) {
+          const projectNameFromGallery = `${projectData.metadata.projectName} (from gallery)`;
+          setCurrentProject(null, projectNameFromGallery, firebaseRadii);
         }
 
         // Start animation after short delay
