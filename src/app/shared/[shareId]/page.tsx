@@ -90,175 +90,145 @@ export default function SharedProjectPage() {
     : "Unknown";
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f] p-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-6 flex items-center justify-between">
+    <div className="min-h-screen bg-[#0f0f0f] p-3">
+      <div className="max-w-4xl mx-auto">
+        {/* Minimal Header */}
+        <div className="mb-3 flex items-center justify-between">
           <Link href="/gallery">
-            <Button variant="secondary">
-              <ArrowLeft size={16} className="mr-2" />
-              Back to Gallery
+            <Button variant="secondary" size="sm">
+              <ArrowLeft size={12} className="mr-1" />
+              Gallery
             </Button>
           </Link>
 
-          <div className="flex items-center gap-4 text-sm text-gray-400">
-            <div className="flex items-center gap-1">
-              <Eye size={16} />
-              <span>{project.viewCount} views</span>
+          <div className="flex items-center gap-2 text-[10px] text-gray-400">
+            <div className="flex items-center gap-0.5">
+              <Eye size={12} />
+              <span>{project.viewCount}</span>
             </div>
-            <div className="flex items-center gap-1">
-              <Calendar size={16} />
+            <div className="flex items-center gap-0.5">
+              <Calendar size={12} />
               <span>{createdDate}</span>
             </div>
           </div>
         </div>
 
-        {/* Project Title */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-white mb-2">
+        {/* Title + Tags inline */}
+        <div className="mb-3">
+          <h1 className="text-xl font-bold text-white mb-1">
             {project.projectName}
           </h1>
-          <div className="flex items-center gap-2 text-gray-400">
-            <User size={16} />
-            <span>by {project.userName}</span>
+          <div className="flex items-center gap-2 text-xs text-gray-400 mb-2">
+            <User size={12} />
+            <span>{project.userName}</span>
+          </div>
+
+          {/* Inline description and tags */}
+          <div className="space-y-1.5">
+            {project.description && (
+              <p className="text-xs text-gray-400 line-clamp-2">
+                {project.description}
+              </p>
+            )}
+            {project.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {project.tags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="px-1.5 py-0.5 bg-[#667eea]/20 text-[#667eea] rounded text-[10px]"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Description */}
-        {project.description && (
-          <div className="mb-6 p-4 bg-[#1a1a1a] rounded-lg border border-[#2a2a2a]">
-            <h3 className="text-sm font-semibold text-gray-400 mb-2">
-              Description
-            </h3>
-            <p className="text-gray-300">{project.description}</p>
-          </div>
-        )}
-
-        {/* Tags */}
-        {project.tags.length > 0 && (
-          <div className="mb-6">
-            <h3 className="text-sm font-semibold text-gray-400 mb-2">Tags</h3>
-            <div className="flex flex-wrap gap-2">
-              {project.tags.map((tag, index) => (
-                <span
-                  key={index}
-                  className="px-3 py-1 bg-[#667eea]/20 text-[#667eea] rounded-full text-sm"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Preview Area */}
-        <div className="mb-6 aspect-video bg-gradient-to-br from-[#667eea]/20 to-[#764ba2]/20 rounded-lg flex items-center justify-center border border-[#2a2a2a]">
-          <div className="text-center">
-            <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-[#667eea]/30 flex items-center justify-center">
-              <ExternalLink size={40} className="text-[#667eea]" />
-            </div>
-            <p className="text-gray-400 mb-2">
-              Interactive preview coming soon
-            </p>
-            <p className="text-sm text-gray-500">
-              Canvas visualization will be displayed here
-            </p>
-          </div>
+        {/* Minimal Preview Area */}
+        <div className="mb-3 h-44 bg-gradient-to-br from-[#667eea]/20 to-[#764ba2]/20 rounded-lg flex items-center justify-center border border-[#2a2a2a]">
+          <ExternalLink size={20} className="text-[#667eea] opacity-50" />
         </div>
 
-        {/* Configuration */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div className="p-4 bg-[#1a1a1a] rounded-lg border border-[#2a2a2a]">
-            <h3 className="text-sm font-semibold text-gray-400 mb-3">
-              Configuration
-            </h3>
-            <div className="space-y-2 text-sm">
+        {/* Ultra Compact Config + Actions */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 mb-3">
+          {/* Config - smaller */}
+          <div className="p-2 bg-[#1a1a1a] rounded border border-[#2a2a2a]">
+            <div className="space-y-1 text-[10px]">
               <div className="flex justify-between">
                 <span className="text-gray-500">Radii:</span>
-                <span className="text-white font-medium">
-                  {project.radii.length}
-                </span>
+                <span className="text-white">{project.radii.length}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Animation Speed:</span>
-                <span className="text-white font-medium">
+                <span className="text-gray-500">Speed:</span>
+                <span className="text-white">
                   {project.settings?.animationSpeed || 1}x
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Trail Length:</span>
-                <span className="text-white font-medium">
-                  {project.settings?.trailLength || 100} pts
+                <span className="text-gray-500">Trail:</span>
+                <span className="text-white">
+                  {project.settings?.trailLength || 100}pts
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="p-4 bg-[#1a1a1a] rounded-lg border border-[#2a2a2a]">
-            <h3 className="text-sm font-semibold text-gray-400 mb-3">
-              Actions
-            </h3>
-            <div className="space-y-2">
-              <Button
-                onClick={() => {
-                  try {
-                    // Prepare project data for studio
-                    const projectData = {
-                      radii: project.radii,
-                      settings: {
-                        animationSpeed: project.settings?.animationSpeed || 1,
-                        trailLength: project.settings?.trailLength || 1000,
-                      },
-                      metadata: {
-                        projectName: project.projectName,
-                        userName: project.userName,
-                        shareId: project.id,
-                      },
-                    };
-
-                    // Encode to base64 for URL
-                    const encodedData = btoa(JSON.stringify(projectData));
-
-                    // Navigate to studio with data
-                    router.push(`/?loadShared=${encodedData}`);
-                  } catch (error) {
-                    console.error("Error loading project:", error);
-                    alert("Failed to load project into studio");
-                  }
-                }}
-                variant="primary"
-                className="w-full"
-              >
-                Open in Studio
-              </Button>
-              <Button
-                onClick={() => {
-                  const url = window.location.href;
-                  navigator.clipboard.writeText(url);
-                  alert("Link copied to clipboard!");
-                }}
-                variant="secondary"
-                className="w-full"
-              >
-                Copy Link
-              </Button>
-            </div>
+          {/* Actions - side by side */}
+          <div className="lg:col-span-2 grid grid-cols-2 gap-2">
+            <Button
+              onClick={() => {
+                try {
+                  const projectData = {
+                    radii: project.radii,
+                    settings: {
+                      animationSpeed: project.settings?.animationSpeed || 1,
+                      trailLength: project.settings?.trailLength || 1000,
+                    },
+                    metadata: {
+                      projectName: project.projectName,
+                      userName: project.userName,
+                      shareId: project.id,
+                    },
+                  };
+                  const encodedData = btoa(JSON.stringify(projectData));
+                  router.push(`/?loadShared=${encodedData}`);
+                } catch (error) {
+                  console.error("Error loading project:", error);
+                  alert("Failed to load project into studio");
+                }
+              }}
+              variant="primary"
+              className="w-full"
+              size="sm"
+            >
+              Open in Studio
+            </Button>
+            <Button
+              onClick={() => {
+                const url = window.location.href;
+                navigator.clipboard.writeText(url);
+                alert("Link copied!");
+              }}
+              variant="secondary"
+              className="w-full"
+              size="sm"
+            >
+              Copy Link
+            </Button>
           </div>
         </div>
 
-        {/* Radii Details */}
-        <div className="p-4 bg-[#1a1a1a] rounded-lg border border-[#2a2a2a]">
-          <h3 className="text-sm font-semibold text-gray-400 mb-3">
-            Radii Configuration
-          </h3>
+        {/* Minimal Radii Table */}
+        <div className="p-2 bg-[#1a1a1a] rounded border border-[#2a2a2a]">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-[10px]">
               <thead>
                 <tr className="border-b border-[#2a2a2a]">
-                  <th className="text-left py-2 text-gray-500">#</th>
-                  <th className="text-right py-2 text-gray-500">Frequency</th>
-                  <th className="text-right py-2 text-gray-500">Amplitude</th>
-                  <th className="text-right py-2 text-gray-500">Phase</th>
+                  <th className="text-left py-1 text-gray-500">#</th>
+                  <th className="text-right py-1 text-gray-500">Freq</th>
+                  <th className="text-right py-1 text-gray-500">Amp</th>
+                  <th className="text-right py-1 text-gray-500">Phase</th>
                 </tr>
               </thead>
               <tbody>
@@ -272,14 +242,14 @@ export default function SharedProjectPage() {
                     index: number
                   ) => (
                     <tr key={index} className="border-b border-[#2a2a2a]/50">
-                      <td className="py-2 text-gray-400">{index + 1}</td>
-                      <td className="text-right py-2 text-white">
+                      <td className="py-1 text-gray-400">{index + 1}</td>
+                      <td className="text-right py-1 text-white">
                         {radius.frequency?.toFixed(2)}
                       </td>
-                      <td className="text-right py-2 text-white">
+                      <td className="text-right py-1 text-white">
                         {radius.amplitude?.toFixed(2)}
                       </td>
-                      <td className="text-right py-2 text-white">
+                      <td className="text-right py-1 text-white">
                         {radius.phase?.toFixed(2)}
                       </td>
                     </tr>

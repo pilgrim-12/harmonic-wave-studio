@@ -32,68 +32,65 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   return (
     <div
       onClick={handleClick}
-      className="group bg-[#1a1a1a] rounded-lg border border-[#2a2a2a] overflow-hidden cursor-pointer transition-all hover:border-[#667eea] hover:shadow-lg hover:shadow-[#667eea]/10"
+      className="group bg-[#1a1a1a] rounded-md border border-[#2a2a2a] overflow-hidden cursor-pointer transition-all hover:border-[#667eea] hover:shadow-lg hover:shadow-[#667eea]/10"
     >
-      {/* Preview Area - Placeholder for now */}
-      <div className="aspect-video bg-gradient-to-br from-[#667eea]/20 to-[#764ba2]/20 flex items-center justify-center border-b border-[#2a2a2a] group-hover:from-[#667eea]/30 group-hover:to-[#764ba2]/30 transition-all">
-        <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-[#667eea]/30 flex items-center justify-center">
-            <Play size={24} className="text-[#667eea]" />
-          </div>
-          <p className="text-xs text-gray-500">Click to preview</p>
-        </div>
+      {/* Compact Preview - thin but visible */}
+      <div className="h-28 bg-gradient-to-br from-[#667eea]/20 to-[#764ba2]/20 flex items-center justify-center border-b border-[#2a2a2a] group-hover:from-[#667eea]/30 group-hover:to-[#764ba2]/30 transition-all">
+        <Play
+          size={16}
+          className="text-[#667eea] opacity-50 group-hover:opacity-100 transition-opacity"
+        />
       </div>
 
-      {/* Content */}
-      <div className="p-4">
-        {/* Title */}
-        <h3 className="text-base font-semibold text-white mb-2 line-clamp-1 group-hover:text-[#667eea] transition-colors">
+      {/* Dense Content */}
+      <div className="p-2">
+        {/* Title - 2 lines max */}
+        <h3 className="text-xs font-semibold text-white mb-1 line-clamp-2 group-hover:text-[#667eea] transition-colors leading-snug h-8">
           {project.projectName}
         </h3>
 
-        {/* Description */}
+        {/* Description if exists - 1 line */}
         {project.description && (
-          <p className="text-sm text-gray-400 mb-3 line-clamp-2">
+          <p className="text-[10px] text-gray-400 mb-1 line-clamp-1 leading-tight">
             {project.description}
           </p>
         )}
 
-        {/* Tags */}
+        {/* Tags - inline, max 2 */}
         {project.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-3">
-            {project.tags.slice(0, 3).map((tag, index) => (
+          <div className="flex flex-wrap gap-0.5 mb-1.5">
+            {project.tags.slice(0, 2).map((tag, index) => (
               <span
                 key={index}
-                className="px-2 py-0.5 bg-[#667eea]/20 text-[#667eea] rounded text-xs"
+                className="px-1 py-0.5 bg-[#667eea]/20 text-[#667eea] rounded text-[9px] leading-none"
               >
                 {tag}
               </span>
             ))}
-            {project.tags.length > 3 && (
-              <span className="px-2 py-0.5 bg-[#2a2a2a] text-gray-500 rounded text-xs">
-                +{project.tags.length - 3}
+            {project.tags.length > 2 && (
+              <span className="text-[9px] text-gray-500">
+                +{project.tags.length - 2}
               </span>
             )}
           </div>
         )}
 
-        {/* Footer */}
-        <div className="flex items-center justify-between text-xs text-gray-500">
-          {/* Author */}
-          <div className="flex items-center gap-1">
-            <User size={12} />
-            <span className="line-clamp-1">{project.userName}</span>
+        {/* Footer - all info in one line */}
+        <div className="flex items-center gap-2 text-[9px] text-gray-500 pt-1 border-t border-[#2a2a2a]/50">
+          <div className="flex items-center gap-0.5 flex-1 min-w-0">
+            <User size={8} className="flex-shrink-0" />
+            <span className="truncate">{project.userName}</span>
           </div>
-
-          {/* Stats */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1">
-              <Eye size={12} />
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex items-center gap-0.5">
+              <Eye size={8} />
               <span>{project.viewCount}</span>
             </div>
-            <div className="flex items-center gap-1">
-              <Calendar size={12} />
-              <span>{createdDate}</span>
+            <div className="flex items-center gap-0.5">
+              <Calendar size={8} />
+              <span>
+                {createdDate.split("/")[0]}/{createdDate.split("/")[1]}
+              </span>
             </div>
           </div>
         </div>

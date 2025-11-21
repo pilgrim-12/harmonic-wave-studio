@@ -73,11 +73,11 @@ export const GalleryGrid: React.FC<GalleryGridProps> = ({
   // Loading state
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2.5">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
           <div
             key={i}
-            className="h-80 bg-[#1a1a1a] rounded-lg border border-[#2a2a2a] animate-pulse"
+            className="h-52 bg-[#1a1a1a] rounded-md border border-[#2a2a2a] animate-pulse"
           />
         ))}
       </div>
@@ -103,8 +103,8 @@ export const GalleryGrid: React.FC<GalleryGridProps> = ({
 
   return (
     <div>
-      {/* Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
+      {/* Ultra Compact Grid - 6 columns on 2xl */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2.5 mb-6">
         {projects.map((project) => (
           <ProjectCard key={project.id} project={project} />
         ))}
