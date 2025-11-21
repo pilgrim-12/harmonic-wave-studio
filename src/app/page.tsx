@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ControlPanel } from "@/components/workspace/ControlPanel";
@@ -38,7 +38,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { createProject, updateProject } from "@/services/projectService";
 import { ShareButton } from "@/components/share/ShareButton";
 
-export default function Home() {
+function HomeContent() {
   const [openPanel, setOpenPanel] = useState<string>("radii");
   const [editingRadius, setEditingRadius] = useState<Radius | null>(null);
   const [projectName, setProjectName] = useState("");
@@ -534,5 +534,23 @@ export default function Home() {
         />
       )}
     </div>
+  );
+}
+
+// Wrap in Suspense to fix useSearchParams build error
+export default function Home() {
+  return (
+    <Suspense
+      fallback={
+        <div className="h-screen bg-[#0f0f0f] flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-[#667eea] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-gray-400">Loading studio...</p>
+          </div>
+        </div>
+      }
+    >
+      <HomeContent />
+    </Suspense>
   );
 }
