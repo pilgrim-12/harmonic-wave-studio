@@ -11,6 +11,8 @@ import { FrequencyPanel } from "@/components/analysis/FrequencyPanel";
 import { NoisePanel } from "@/components/signal/NoisePanel";
 import { MetricsPanel } from "@/components/signal/MetricsPanel";
 import { NoisySignalGraph } from "@/components/signal/NoisySignalGraph";
+import { DigitalFilterPanel } from "@/components/signal/DigitalFilterPanel";
+import { FilteredSignalGraph } from "@/components/signal/FilteredSignalGraph";
 import { UndoRedoIndicator } from "@/components/ui/UndoRedoIndicator";
 import { AccordionItem } from "@/components/ui/Accordion";
 import { FullscreenWrapper } from "@/components/ui/FullscreenWrapper";
@@ -30,6 +32,7 @@ import { useRadiusStore } from "@/store/radiusStore";
 import { useSimulationStore } from "@/store/simulationStore";
 import { useProjectStore } from "@/store/useProjectStore";
 import { useSignalProcessingStore } from "@/store/signalProcessingStore";
+import { useFilterStore } from "@/store/filterStore";
 import { RadiusItem } from "@/components/workspace/RadiusItem";
 import { RadiusEditor } from "@/components/workspace/RadiusEditor";
 import { Button } from "@/components/ui/Button";
@@ -49,7 +52,7 @@ function HomeContent() {
 
   const { radii, addRadius, selectRadius, updateRadius, clearRadii } =
     useRadiusStore();
-  const { setActiveTrackingRadius, play } = useSimulationStore();
+  const { setActiveTrackingRadius, play, signalData } = useSimulationStore();
   const {
     currentProjectId,
     currentProjectName,
@@ -58,6 +61,9 @@ function HomeContent() {
   } = useProjectStore();
   const { user, loading } = useAuth();
   const searchParams = useSearchParams();
+  const { noisy } = useSignalProcessingStore();
+  const { applyFilterToSignal, clearFilter, isFilterApplied } =
+    useFilterStore();
 
   useKeyboardShortcuts();
 
@@ -237,46 +243,27 @@ function HomeContent() {
           normalizedCount === 1 ? "radius" : "radii"
         }!\n\n` +
           `Fixed:\n` +
-          `• Angles → [0°, 360°]\n` +
-          `• Speeds → [0.1, 10.0]\n` +
-          `• Lengths → [5, 200]px`
+          `• Angles wrapped to [0, 2π)\n` +
+          `• Speeds clamped to [0.1, 10]\n` +
+          `• Lengths clamped to [5, 200]`
       );
     } else {
-      alert("✨ All radii are already normalized!");
+      alert("✓ All radii are already normalized!");
     }
-  };
-
-  const handleNewProject = () => {
-    if (radii.length > 0 || projectName.trim()) {
-      if (!confirm("Clear current project and start new?")) {
-        return;
-      }
-    }
-
-    clearRadii();
-    setProjectName("");
-    setShareId(null);
-    clearProject();
-
-    // Clear signal processing graphs
-    useSignalProcessingStore.getState().resetSignal();
   };
 
   const handleSaveProject = async () => {
     if (!user) {
-      alert("Please sign in to save projects");
-      return;
-    }
-
-    if (!projectName.trim()) {
-      alert("Please enter a project name");
+      alert("❌ Please sign in to save projects");
       return;
     }
 
     if (radii.length === 0) {
-      alert("Add at least one radius before saving");
+      alert("❌ No radii to save. Please add some radii first.");
       return;
     }
+
+    const name = projectName.trim() || "Untitled Project";
 
     setSaving(true);
     try {
@@ -290,52 +277,103 @@ function HomeContent() {
       }));
 
       if (currentProjectId) {
-        await updateProject(currentProjectId, projectName, projectRadii);
-        alert("✅ Project updated!");
+        await updateProject(currentProjectId, name, projectRadii);
+        alert("✅ Project updated successfully!");
       } else {
-        const projectId = await createProject(
-          user.uid,
-          projectName,
-          projectRadii
-        );
-        setCurrentProject(projectId, projectName, projectRadii);
-        alert("✅ Project saved!");
+        const newProjectId = await createProject(user.uid, name, projectRadii);
+        setCurrentProject(newProjectId, name, projectRadii);
+        alert("✅ Project saved successfully!");
       }
     } catch (error) {
-      console.error("❌ Error saving project:", error);
-      alert("Failed to save project");
+      console.error("Failed to save project:", error);
+      alert("❌ Failed to save project. Please try again.");
     } finally {
       setSaving(false);
     }
   };
 
+  const handleNewProject = () => {
+    if (radii.length > 0) {
+      const confirm = window.confirm(
+        "⚠️ Start new project?\n\nThis will clear all current radii and signal data."
+      );
+      if (!confirm) return;
+    }
+
+    clearRadii();
+    clearProject();
+    setProjectName("");
+    setShareId(null);
+    useSignalProcessingStore.getState().resetSignal();
+    alert("✅ New project started!");
+  };
+
   const handleShareSuccess = (newShareId: string) => {
-    setShareId(newShareId || null);
+    setShareId(newShareId);
+  };
+
+  const handleApplyFilter = (filterSettings: {
+    type: "butterworth" | "chebyshev1" | "chebyshev2";
+    mode: "lowpass" | "highpass" | "bandpass" | "bandstop";
+    order: number;
+    cutoffFreq: number;
+    enabled: boolean;
+  }) => {
+    // Convert signalData to number[] if needed
+    let signalArray: number[] = [];
+
+    if (signalData.length > 0) {
+      if (typeof signalData[0] === "object" && "y" in signalData[0]) {
+        // signalData is SignalDataPoint[] - extract y values
+        signalArray = signalData.map((point) => (point as { y: number }).y);
+      } else {
+        // signalData is already number[]
+        signalArray = signalData as unknown as number[];
+      }
+    }
+
+    const signalToFilter = noisy.length > 0 ? noisy : signalArray;
+
+    if (signalToFilter.length === 0) {
+      alert("⚠️ No signal available. Start animation first!");
+      return;
+    }
+    applyFilterToSignal(signalToFilter, filterSettings, 30);
+  };
+
+  const handleClearFilter = () => {
+    clearFilter();
   };
 
   return (
-    <div className="h-screen bg-[#0f0f0f] flex flex-col p-3">
-      {/* Header */}
-      <header className="mb-2 flex items-center justify-between flex-shrink-0">
-        <h1 className="text-base font-semibold bg-gradient-to-r from-[#667eea] to-[#764ba2] bg-clip-text text-transparent">
-          🌊 Harmonic Wave Studio
-        </h1>
+    <div className="h-screen bg-[#0f0f0f] flex flex-col overflow-hidden">
+      <header className="border-b border-[#2a2a2a] flex-shrink-0">
+        <div className="flex items-center justify-between h-14 px-3 gap-3">
+          <div className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-2">
+              <BarChart3 size={24} className="text-[#667eea]" />
+              <span className="font-bold text-white text-lg">
+                Harmonic Wave Studio
+              </span>
+            </Link>
 
-        <div className="flex items-center gap-3">
-          {user && (
+            <div className="h-6 w-px bg-[#2a2a2a]" />
+
+            <input
+              type="text"
+              value={projectName}
+              onChange={(e) => setProjectName(e.target.value)}
+              placeholder="Project name..."
+              className="px-3 py-1.5 text-sm bg-[#1a1a1a] border border-[#2a2a2a] rounded-md text-gray-300 placeholder-gray-500 focus:outline-none focus:border-[#667eea] w-48"
+            />
+          </div>
+
+          {!loading && user && (
             <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-                placeholder="Project name"
-                className="px-3 py-1.5 text-sm rounded-lg bg-[#1a1a1a] text-white border border-[#2a2a2a] focus:border-[#667eea] focus:outline-none"
-              />
               <Button
                 onClick={handleNewProject}
                 variant="secondary"
                 className="text-sm"
-                title="Start new project"
               >
                 <FilePlus size={14} className="mr-1" />
                 New
@@ -471,9 +509,17 @@ function HomeContent() {
               onToggle={() => handleToggle("signal")}
             >
               {openPanel === "signal" && (
-                <div className="overflow-y-auto custom-scrollbar px-3 pb-3 space-y-3">
-                  <NoisePanel />
-                  <MetricsPanel />
+                <div className="h-full overflow-y-auto custom-scrollbar">
+                  <div className="px-3 pb-3 space-y-3">
+                    <NoisePanel />
+                    <DigitalFilterPanel
+                      onApplyFilter={handleApplyFilter}
+                      onClearFilter={handleClearFilter}
+                      isFilterApplied={isFilterApplied}
+                      sampleRate={30}
+                    />
+                    <MetricsPanel />
+                  </div>
                 </div>
               )}
             </AccordionItem>
@@ -528,7 +574,7 @@ function HomeContent() {
         </ResizableSidebar>
 
         {/* Right workspace */}
-        <div className="flex-1 grid grid-rows-[auto_1fr_1fr_1fr] gap-3 min-w-0 min-h-0">
+        <div className="flex-1 grid grid-rows-[auto_1fr_1fr] gap-3 min-w-0 min-h-0">
           <div className="flex-shrink-0">
             <ControlPanel />
           </div>
@@ -539,12 +585,22 @@ function HomeContent() {
             </FullscreenWrapper>
           </div>
 
-          <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-0 overflow-hidden">
-            <SignalGraph />
-          </div>
+          {/* Signal Graphs - 3 columns */}
+          <div className="grid grid-cols-3 gap-3">
+            {/* Original Signal */}
+            <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-0 overflow-hidden">
+              <SignalGraph />
+            </div>
 
-          <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-0 overflow-hidden">
-            <NoisySignalGraph />
+            {/* Noisy Signal */}
+            <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-0 overflow-hidden">
+              <NoisySignalGraph />
+            </div>
+
+            {/* Filtered Signal */}
+            <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-0 overflow-hidden">
+              <FilteredSignalGraph />
+            </div>
           </div>
         </div>
       </div>
