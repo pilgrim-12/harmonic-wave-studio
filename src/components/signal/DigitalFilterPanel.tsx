@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Slider } from "@/components/ui/Slider";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
@@ -33,6 +33,25 @@ export const DigitalFilterPanel: React.FC<DigitalFilterPanelProps> = ({
     useState<FilterSettings["mode"]>("lowpass");
   const [order, setOrder] = useState(2);
   const [cutoffFreq, setCutoffFreq] = useState(1.5);
+
+  // Auto-reapply filter when parameters change (only if filter is already applied)
+  useEffect(() => {
+    if (isFilterApplied) {
+      // Debounce: wait 300ms after last change before reapplying
+      const timer = setTimeout(() => {
+        onApplyFilter({
+          type: filterType,
+          mode: filterMode,
+          order,
+          cutoffFreq,
+          enabled: true,
+        });
+      }, 300);
+
+      return () => clearTimeout(timer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterType, filterMode, order, cutoffFreq, isFilterApplied]);
 
   const handleApply = () => {
     onApplyFilter({
@@ -175,16 +194,16 @@ export const DigitalFilterPanel: React.FC<DigitalFilterPanelProps> = ({
 
       {/* Apply/Clear Buttons */}
       <div className="space-y-2 pt-2 border-t border-[#2a2a2a]">
-        <Button
-          onClick={handleApply}
-          variant="primary"
-          className="w-full text-sm"
-        >
-          <Filter size={14} className="mr-1" />
-          Apply Filter
-        </Button>
-
-        {isFilterApplied && (
+        {!isFilterApplied ? (
+          <Button
+            onClick={handleApply}
+            variant="primary"
+            className="w-full text-sm"
+          >
+            <Filter size={14} className="mr-1" />
+            Apply Filter
+          </Button>
+        ) : (
           <Button
             onClick={handleClear}
             variant="secondary"
@@ -198,7 +217,9 @@ export const DigitalFilterPanel: React.FC<DigitalFilterPanelProps> = ({
       {/* Info */}
       {isFilterApplied && (
         <div className="p-2 bg-[#667eea]/10 border border-[#667eea]/20 rounded">
-          <p className="text-xs text-gray-400">✓ Filter applied to signal</p>
+          <p className="text-xs text-gray-400">
+            ✓ Filter active (real-time updates)
+          </p>
         </div>
       )}
 

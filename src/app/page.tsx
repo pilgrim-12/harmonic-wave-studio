@@ -164,6 +164,19 @@ function HomeContent() {
 
         if (signal.length > 100) {
           useSignalProcessingStore.getState().setOriginalSignal(signal);
+
+          // REAL-TIME FILTERING: Auto-apply filter if enabled
+          const filterState = useFilterStore.getState();
+          if (filterState.isFilterApplied && filterState.filterSettings) {
+            const noisySignal = useSignalProcessingStore.getState().noisy;
+            if (noisySignal.length > 0) {
+              filterState.applyFilterToSignal(
+                noisySignal,
+                filterState.filterSettings,
+                30
+              );
+            }
+          }
         }
 
         lastUpdate = timestamp;
