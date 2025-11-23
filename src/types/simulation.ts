@@ -25,8 +25,11 @@ export interface SimulationSettings {
   /** Размер сетки в пикселях */
   gridSize: number;
 
-  /** Zoom level (0.1 - 2.0) ⭐ NEW */
+  /** Zoom level (0.1 - 2.0) */
   zoom: number;
+
+  /** Signal sample rate in Hz (NEW in Phase 15) */
+  signalSampleRate: number;
 }
 
 /**
@@ -42,7 +45,7 @@ export interface SimulationState {
   /** Текущее время симуляции в секундах */
   currentTime: number;
 
-  /** FPS (frames per second) */
+  /** FPS (frames per second) для визуализации */
   fps: number;
 
   /** Последнее обновление timestamp */

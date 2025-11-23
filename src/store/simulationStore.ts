@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { SimulationSettings, SimulationState } from "@/types/simulation";
+import { useRadiusStore } from "./radiusStore";
 
 interface SignalDataPoint {
   time: number;
@@ -10,6 +11,7 @@ interface SimulationStore extends SimulationState {
   settings: SimulationSettings;
   activeTrackingRadiusId: string | null;
   signalData: SignalDataPoint[];
+  highResSignal: number[]; // NEW: High-resolution signal buffer
 
   // Actions
   play: () => void;
@@ -21,7 +23,8 @@ interface SimulationStore extends SimulationState {
   updateSettings: (settings: Partial<SimulationSettings>) => void;
   setActiveTrackingRadius: (radiusId: string | null) => void;
   setSignalData: (data: SignalDataPoint[]) => void;
-  getSignalYValues: () => number[]; // NEW: Get Y values for signal processing
+  getSignalYValues: () => number[];
+  generateHighResSignal: () => void; // NEW: Generate signal at high sample rate
 }
 
 const DEFAULT_SETTINGS: SimulationSettings = {
@@ -33,6 +36,7 @@ const DEFAULT_SETTINGS: SimulationSettings = {
   showGrid: true,
   gridSize: 50,
   zoom: 1.0,
+  signalSampleRate: 500, // NEW: Default 500 Hz
 };
 
 export const useSimulationStore = create<SimulationStore>((set, get) => ({
@@ -45,6 +49,7 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
   settings: DEFAULT_SETTINGS,
   activeTrackingRadiusId: null,
   signalData: [],
+  highResSignal: [],
 
   play: () => {
     set({
@@ -74,6 +79,7 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
       fps: 0,
       lastUpdateTime: 0,
       signalData: [],
+      highResSignal: [],
     });
   },
 
@@ -89,6 +95,11 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
     set((state) => ({
       settings: { ...state.settings, ...newSettings },
     }));
+
+    // Regenerate high-res signal if sample rate changed
+    if (newSettings.signalSampleRate !== undefined) {
+      get().generateHighResSignal();
+    }
   },
 
   setActiveTrackingRadius: (radiusId) => {
@@ -99,9 +110,51 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
     set({ signalData: data });
   },
 
-  // NEW: Extract Y values from signal data
+  // Get Y values from signal data (legacy for 30 FPS)
   getSignalYValues: () => {
     const { signalData } = get();
     return signalData.map((point) => point.y);
+  },
+
+  // NEW: Generate high-resolution signal
+  generateHighResSignal: () => {
+    const { settings, currentTime } = get();
+    const { radii } = useRadiusStore.getState();
+
+    if (radii.length === 0) {
+      set({ highResSignal: [] });
+      return;
+    }
+
+    const { signalSampleRate, graphDuration } = settings;
+    const totalSamples = Math.floor(graphDuration * signalSampleRate);
+    const signal: number[] = [];
+
+    // Generate signal at high sample rate
+    for (let i = 0; i < totalSamples; i++) {
+      const t = currentTime - graphDuration + i / signalSampleRate;
+
+      if (t < 0) {
+        signal.push(0);
+        continue;
+      }
+
+      // Calculate Y coordinate from all radii
+      let y = 0;
+      let cumulativeAngle = 0;
+
+      for (const radius of radii) {
+        const direction = radius.direction === "counterclockwise" ? 1 : -1;
+        const angle =
+          radius.initialAngle +
+          direction * radius.rotationSpeed * t * 2 * Math.PI;
+        cumulativeAngle += angle;
+        y += radius.length * Math.sin(cumulativeAngle);
+      }
+
+      signal.push(y);
+    }
+
+    set({ highResSignal: signal });
   },
 }));

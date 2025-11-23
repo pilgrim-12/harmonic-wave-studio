@@ -4,6 +4,7 @@ import React from "react";
 import { Grid3x3, Axis3d, PenLine } from "lucide-react";
 import { useSimulationStore } from "@/store/simulationStore";
 import { Slider } from "@/components/ui/Slider";
+import { SampleRateControl } from "@/components/settings/SampleRateControl";
 
 export const SettingsPanel: React.FC = () => {
   const { settings, updateSettings } = useSimulationStore();
@@ -127,7 +128,7 @@ export const SettingsPanel: React.FC = () => {
           />
         </div>
 
-        {/* Zoom ⭐ NEW */}
+        {/* Zoom */}
         <div className="pt-2 border-t border-[#2a2a2a]">
           <Slider
             label="Zoom"
@@ -139,6 +140,11 @@ export const SettingsPanel: React.FC = () => {
             valueFormatter={(v) => `${(v * 100).toFixed(0)}%`}
           />
         </div>
+      </div>
+
+      {/* NEW: Sample Rate Control */}
+      <div className="pt-3 border-t border-[#2a2a2a]">
+        <SampleRateControl />
       </div>
     </div>
   );

@@ -160,20 +160,27 @@ function HomeContent() {
 
     const updateSignal = (timestamp: number) => {
       if (timestamp - lastUpdate >= UPDATE_INTERVAL) {
-        const signal = useSimulationStore.getState().getSignalYValues();
+        // Generate high-resolution signal
+        useSimulationStore.getState().generateHighResSignal();
 
-        if (signal.length > 100) {
-          useSignalProcessingStore.getState().setOriginalSignal(signal);
+        // Get high-resolution signal
+        const highResSignal = useSimulationStore.getState().highResSignal;
 
-          // REAL-TIME FILTERING: Auto-apply filter if enabled
+        if (highResSignal.length > 100) {
+          useSignalProcessingStore.getState().setOriginalSignal(highResSignal);
+
+          // REAL-TIME FILTERING with actual sample rate
           const filterState = useFilterStore.getState();
           if (filterState.isFilterApplied && filterState.filterSettings) {
             const noisySignal = useSignalProcessingStore.getState().noisy;
             if (noisySignal.length > 0) {
+              // Use actual sample rate from settings
+              const sampleRate =
+                useSimulationStore.getState().settings.signalSampleRate;
               filterState.applyFilterToSignal(
                 noisySignal,
                 filterState.filterSettings,
-                30
+                sampleRate
               );
             }
           }

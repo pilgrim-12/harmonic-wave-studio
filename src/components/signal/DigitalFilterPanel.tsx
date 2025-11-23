@@ -5,6 +5,7 @@ import { Slider } from "@/components/ui/Slider";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { Filter, TrendingUp, TrendingDown } from "lucide-react";
+import { useSimulationStore } from "@/store/simulationStore";
 
 export interface FilterSettings {
   type: "butterworth" | "chebyshev1" | "chebyshev2";
@@ -25,8 +26,10 @@ export const DigitalFilterPanel: React.FC<DigitalFilterPanelProps> = ({
   onApplyFilter,
   onClearFilter,
   isFilterApplied,
-  sampleRate = 30, // Default 30 FPS
 }) => {
+  // Get actual sample rate from settings
+  const { settings } = useSimulationStore();
+  const sampleRate = settings.signalSampleRate;
   const [filterType, setFilterType] =
     useState<FilterSettings["type"]>("butterworth");
   const [filterMode, setFilterMode] =
