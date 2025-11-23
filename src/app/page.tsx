@@ -13,6 +13,8 @@ import { MetricsPanel } from "@/components/signal/MetricsPanel";
 import { NoisySignalGraph } from "@/components/signal/NoisySignalGraph";
 import { UndoRedoIndicator } from "@/components/ui/UndoRedoIndicator";
 import { AccordionItem } from "@/components/ui/Accordion";
+import { FullscreenWrapper } from "@/components/ui/FullscreenWrapper";
+import { ResizableSidebar } from "@/components/ui/ResizableSidebar";
 import {
   Settings,
   Plus,
@@ -389,7 +391,7 @@ function HomeContent() {
       {/* Main layout */}
       <div className="flex gap-3 flex-1 min-h-0">
         {/* Left panel */}
-        <div className="w-[260px] flex flex-col gap-3 flex-shrink-0 overflow-hidden">
+        <ResizableSidebar>
           {/* Radii Panel */}
           <div
             className={
@@ -523,7 +525,7 @@ function HomeContent() {
               )}
             </AccordionItem>
           </div>
-        </div>
+        </ResizableSidebar>
 
         {/* Right workspace */}
         <div className="flex-1 grid grid-rows-[auto_1fr_1fr_1fr] gap-3 min-w-0 min-h-0">
@@ -532,7 +534,9 @@ function HomeContent() {
           </div>
 
           <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-0 overflow-hidden">
-            <VisualizationCanvas />
+            <FullscreenWrapper>
+              <VisualizationCanvas />
+            </FullscreenWrapper>
           </div>
 
           <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-0 overflow-hidden">
