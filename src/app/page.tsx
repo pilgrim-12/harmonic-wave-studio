@@ -589,17 +589,23 @@ function HomeContent() {
           <div className="grid grid-cols-3 gap-3">
             {/* Original Signal */}
             <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-0 overflow-hidden">
-              <SignalGraph />
+              <FullscreenWrapper>
+                <SignalGraph />
+              </FullscreenWrapper>
             </div>
 
             {/* Noisy Signal */}
             <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-0 overflow-hidden">
-              <NoisySignalGraph />
+              <FullscreenWrapper>
+                <NoisySignalGraph />
+              </FullscreenWrapper>
             </div>
 
             {/* Filtered Signal */}
             <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-0 overflow-hidden">
-              <FilteredSignalGraph />
+              <FullscreenWrapper>
+                <FilteredSignalGraph />
+              </FullscreenWrapper>
             </div>
           </div>
         </div>
