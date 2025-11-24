@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { BarChart3, Sparkles, Info } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useSimulationStore } from "@/store/simulationStore";
+import { useSignalProcessingStore } from "@/store/signalProcessingStore"; // ⭐ NEW
 import { analyzeSignal } from "@/lib/fourier/analyzer";
 import { generateRadiiFromFFT } from "@/lib/fourier/epicycleGenerator";
 import { useRadiusStore } from "@/store/radiusStore";
@@ -15,17 +16,11 @@ import {
 } from "./GenerationSettingsDialog";
 
 export const FrequencyPanel: React.FC = () => {
-  const { signalData } = useSimulationStore();
+  // ⭐ CHANGED: Read from signalProcessingStore instead of simulationStore
+  const signalBuffer = useSignalProcessingStore((state) => state.signalBuffer);
   const { isPlaying } = useSimulationStore(); // ⭐ NEW - для real-time FFT
   const { clearRadii, addRadius, selectRadius } = useRadiusStore();
   const { setActiveTrackingRadius } = useSimulationStore();
-
-  const signalDataRef = useRef(signalData); // ⭐ Ref для актуальных данных
-
-  // Update ref when signalData changes
-  useEffect(() => {
-    signalDataRef.current = signalData;
-  }, [signalData]);
 
   const [analysisResult, setAnalysisResult] =
     useState<FFTAnalysisResult | null>(null);
@@ -40,19 +35,20 @@ export const FrequencyPanel: React.FC = () => {
    * Perform FFT analysis on signal data
    */
   const performFFT = () => {
-    const currentSignalData = signalDataRef.current;
+    // ⭐ Always get fresh data from store
+    const currentBuffer = useSignalProcessingStore.getState().signalBuffer;
 
-    if (currentSignalData.length < 100) {
+    if (currentBuffer.length < 100) {
       // Need at least 100 points for meaningful FFT
       return;
     }
 
-    // Extract Y values from signal data
-    const yValues = currentSignalData.map((point) => point.y);
+    // ⭐ Extract Y values from signal buffer
+    const yValues = currentBuffer.map((point) => point.y);
 
-    // Use fixed sample rate based on typical FPS (60 Hz)
-    // This is more stable than calculating from timestamps
-    const sampleRate = 60; // Fixed at 60 Hz (animation FPS)
+    // ⭐ Use sample rate from settings
+    const sampleRate =
+      useSimulationStore.getState().settings.signalSampleRate || 60;
 
     try {
       // Run FFT analysis
@@ -76,7 +72,7 @@ export const FrequencyPanel: React.FC = () => {
    * Analyze current signal with FFT (manual button)
    */
   const handleAnalyze = () => {
-    if (signalData.length === 0) {
+    if (signalBuffer.length === 0) {
       alert("No signal data available. Please start the animation first!");
       return;
     }
@@ -94,17 +90,14 @@ export const FrequencyPanel: React.FC = () => {
       return;
     }
 
-    // Initial FFT when enabled
-    if (signalDataRef.current.length >= 100) {
-      performFFT();
-    }
-
-    // Update FFT every 1 second
+    // Update FFT every 500ms for smoother updates
+    // Initial update happens on first interval tick
     const interval = setInterval(() => {
-      if (signalDataRef.current.length >= 100) {
+      const buffer = useSignalProcessingStore.getState().signalBuffer;
+      if (buffer.length >= 100) {
         performFFT();
       }
-    }, 1000);
+    }, 500);
 
     return () => clearInterval(interval);
   }, [realTimeFft, isPlaying]);
@@ -219,15 +212,15 @@ export const FrequencyPanel: React.FC = () => {
       {/* Analyze Button */}
       <Button
         onClick={handleAnalyze}
-        disabled={isAnalyzing || signalData.length === 0 || realTimeFft}
+        disabled={isAnalyzing || signalBuffer.length === 0 || realTimeFft}
         variant="primary"
         className="w-full"
       >
         {isAnalyzing ? (
           <>⏳ Analyzing...</>
-        ) : realTimeFft ? (
+        ) : realTimeFft && isPlaying ? (
           <>
-            <BarChart3 size={14} className="mr-1" />
+            <BarChart3 size={14} className="mr-1 animate-pulse" />
             Auto-updating...
           </>
         ) : (
@@ -238,40 +231,39 @@ export const FrequencyPanel: React.FC = () => {
         )}
       </Button>
 
-      {/* Analysis Results */}
+      {/* Results */}
       {analysisResult && (
-        <div className="space-y-3">
-          {/* Spectrum Visualization ⭐ NEW! */}
-          <div>
+        <div className="space-y-4 animate-fadeIn">
+          {/* Spectrum Canvas ⭐ NEW! */}
+          <div className="bg-[#1a1a1a] rounded-lg p-2 border border-[#333] overflow-hidden">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-gray-400">
-                Frequency Spectrum:
+              <span className="text-xs text-gray-400 font-semibold">
+                📊 Spectrum
               </span>
               <button
                 onClick={() => setShowFloatingSpectrum(true)}
-                className="text-xs text-[#667eea] hover:underline flex items-center gap-1"
-                title="Expand spectrum"
+                className="text-xs text-[#667eea] hover:underline"
               >
-                🔍 Expand
+                Expand ↗
               </button>
             </div>
-            <SpectrumCanvas
-              key={updateCounter}
-              spectrum={analysisResult.spectrum}
-              maxFrequency={10}
-              height={180}
-              showGrid={true}
-            />
+            <div className="aspect-[3/1] min-h-[60px] max-h-[120px] overflow-hidden">
+              <SpectrumCanvas
+                key={updateCounter}
+                spectrum={analysisResult.spectrum}
+                maxFrequency={10}
+                height={0}
+                showGrid={false}
+              />
+            </div>
           </div>
 
-          {/* Metrics */}
-          <div className="bg-[#252525] rounded-lg p-3 space-y-2">
+          {/* Key Metrics */}
+          <div className="bg-[#1a1a1a] rounded-lg p-3 border border-[#333] space-y-2">
             <div className="flex items-center justify-between text-xs">
               <span className="text-gray-400">Fundamental Frequency:</span>
-              <span className="text-[#667eea] font-semibold">
-                {analysisResult.fundamentalFrequency
-                  ? `${analysisResult.fundamentalFrequency.toFixed(2)} Hz`
-                  : "N/A"}
+              <span className="text-[#667eea] font-bold text-sm">
+                {analysisResult.fundamentalFrequency?.toFixed(2) || "N/A"} Hz
               </span>
             </div>
 
