@@ -10,10 +10,12 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { FeedbackModal } from "@/components/feedback/FeedbackModal";
 
 export const UserMenu: React.FC = () => {
   const { user, signOut } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -97,7 +99,7 @@ export const UserMenu: React.FC = () => {
               className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-[#252525] transition-colors flex items-center gap-2"
               onClick={() => {
                 setIsOpen(false);
-                // TODO: Open Feedback form
+                setIsFeedbackOpen(true);
               }}
             >
               <MessageSquare size={16} />
@@ -116,6 +118,11 @@ export const UserMenu: React.FC = () => {
           </div>
         </div>
       )}
+
+      <FeedbackModal
+        isOpen={isFeedbackOpen}
+        onClose={() => setIsFeedbackOpen(false)}
+      />
     </div>
   );
 };
