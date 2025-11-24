@@ -87,7 +87,7 @@ export const SettingsPanel: React.FC = () => {
             <Slider
               label="Trail Length"
               min={50}
-              max={500}
+              max={2000}
               step={50}
               value={settings.trailLength}
               onChange={(e) =>

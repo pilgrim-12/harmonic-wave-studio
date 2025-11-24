@@ -9,6 +9,7 @@ import { ExportPanel } from "./ExportPanel";
 import { AudioPanel } from "./AudioPanel";
 import { PresetPanel } from "./PresetPanel";
 import { ProjectPanel } from "./ProjectPanel";
+import { TrailLengthControl } from "@/components/settings/TrailLengthControl";
 
 export const ControlPanel: React.FC = () => {
   const { isPlaying, isPaused, currentTime, fps, play, pause, stop, reset } =
@@ -21,7 +22,7 @@ export const ControlPanel: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center gap-2 p-2.5 bg-[#1a1a1a] rounded-lg border border-[#2a2a2a]">
+    <div className="flex items-center gap-2 p-2.5 bg-[#1a1a1a] rounded-lg border border-[#2a2a2a] flex-wrap">
       {/* Playback controls */}
       <div className="flex gap-2">
         {!isPlaying ? (
@@ -105,6 +106,14 @@ export const ControlPanel: React.FC = () => {
 
       {/* Export */}
       <ExportPanel />
+
+      {/* Divider */}
+      <div className="w-px h-8 bg-[#333]" />
+
+      {/* Trail Length Control */}
+      <div className="flex-1 min-w-[300px]">
+        <TrailLengthControl />
+      </div>
     </div>
   );
 };
