@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useLayoutEffect, Suspense } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ControlPanel } from "@/components/workspace/ControlPanel";
@@ -42,6 +42,10 @@ import { UserMenu } from "@/components/auth/UserMenu";
 import { useAuth } from "@/contexts/AuthContext";
 import { createProject, updateProject } from "@/services/projectService";
 import { ShareButton } from "@/components/share/ShareButton";
+import {
+  calculateRadiusPositions,
+  getFinalPoint,
+} from "@/lib/canvas/calculator";
 
 function HomeContent() {
   const [openPanel, setOpenPanel] = useState<string>("radii");
@@ -50,9 +54,18 @@ function HomeContent() {
   const [saving, setSaving] = useState(false);
   const [shareId, setShareId] = useState<string | null>(null);
 
+  // ✅ Ref for animation loop
+  const animationFrameRef = useRef<number | null>(null);
+
   const { radii, addRadius, selectRadius, updateRadius, clearRadii } =
     useRadiusStore();
-  const { setActiveTrackingRadius, play, signalData } = useSimulationStore();
+  const {
+    isPlaying,
+    settings,
+    activeTrackingRadiusId,
+    setActiveTrackingRadius,
+    play,
+  } = useSimulationStore();
   const {
     currentProjectId,
     currentProjectName,
@@ -61,7 +74,7 @@ function HomeContent() {
   } = useProjectStore();
   const { user, loading } = useAuth();
   const searchParams = useSearchParams();
-  const { noisy } = useSignalProcessingStore();
+  // Signal processing store used via getState() in effects
   const { applyFilterToSignal, clearFilter, isFilterApplied } =
     useFilterStore();
 
@@ -153,53 +166,106 @@ function HomeContent() {
     }
   }, [radii.length, play]);
 
+  // ==========================================================================
+  // ✅ NEW: CENTRALIZED SIGNAL GENERATION (Single Source of Truth)
+  // ==========================================================================
   useEffect(() => {
-    let animationFrameId: number;
-    let lastUpdate = 0;
-    const UPDATE_INTERVAL = 1000 / 30;
+    // Virtual canvas center for calculations
+    const CENTER_X = 400;
+    const CENTER_Y = 300;
 
-    const updateSignal = (timestamp: number) => {
-      if (timestamp - lastUpdate >= UPDATE_INTERVAL) {
-        // Generate high-resolution signal
-        useSimulationStore.getState().generateHighResSignal();
+    // ✅ Throttle: update store at most 30 times per second
+    let lastUpdateTime = 0;
+    const UPDATE_INTERVAL = 1000 / 30; // 33.3ms
 
-        // Get high-resolution signal
-        const highResSignal = useSimulationStore.getState().highResSignal;
+    const generateSignal = (timestamp: number) => {
+      // Only generate when playing and radii exist
+      if (!isPlaying || radii.length === 0) {
+        animationFrameRef.current = requestAnimationFrame(generateSignal);
+        return;
+      }
 
-        if (highResSignal.length > 100) {
-          useSignalProcessingStore.getState().setOriginalSignal(highResSignal);
+      // ✅ Throttle updates
+      if (timestamp - lastUpdateTime < UPDATE_INTERVAL) {
+        animationFrameRef.current = requestAnimationFrame(generateSignal);
+        return;
+      }
+      lastUpdateTime = timestamp;
 
-          // REAL-TIME FILTERING with actual sample rate
-          const filterState = useFilterStore.getState();
-          if (filterState.isFilterApplied && filterState.filterSettings) {
-            const noisySignal = useSignalProcessingStore.getState().noisy;
-            if (noisySignal.length > 0) {
-              // Use actual sample rate from settings
-              const sampleRate =
-                useSimulationStore.getState().settings.signalSampleRate;
-              filterState.applyFilterToSignal(
-                noisySignal,
-                filterState.filterSettings,
-                sampleRate
-              );
-            }
-          }
+      // Get current time from simulation store
+      const time = useSimulationStore.getState().currentTime;
+
+      // Calculate radius positions
+      const positions = calculateRadiusPositions(
+        radii,
+        CENTER_X,
+        CENTER_Y,
+        time
+      );
+
+      // Determine which point to track
+      let finalPoint = null;
+
+      if (activeTrackingRadiusId) {
+        const trackingPosition = positions.find(
+          (pos) => pos.radiusId === activeTrackingRadiusId
+        );
+        finalPoint = trackingPosition?.endPoint || null;
+      } else {
+        finalPoint = getFinalPoint(positions);
+      }
+
+      // ✅ Push signal point to centralized store (Single Source of Truth)
+      if (finalPoint) {
+        const y = CENTER_Y - finalPoint.y;
+        useSignalProcessingStore.getState().pushSignalPoint(time, y);
+      }
+
+      // ✅ Real-time filtering (if enabled) - throttled
+      const filterState = useFilterStore.getState();
+      if (filterState.isFilterApplied && filterState.filterSettings) {
+        const noisySignal = useSignalProcessingStore.getState().noisy;
+        if (noisySignal.length > 50) {
+          const sampleRate =
+            useSimulationStore.getState().settings.signalSampleRate || 30;
+          filterState.applyFilterToSignal(
+            noisySignal,
+            filterState.filterSettings,
+            sampleRate
+          );
         }
-
-        lastUpdate = timestamp;
       }
 
-      animationFrameId = requestAnimationFrame(updateSignal);
+      // Continue animation loop
+      animationFrameRef.current = requestAnimationFrame(generateSignal);
     };
 
-    animationFrameId = requestAnimationFrame(updateSignal);
+    // Start animation loop
+    animationFrameRef.current = requestAnimationFrame(generateSignal);
 
+    // Cleanup
     return () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, []);
+  }, [isPlaying, radii, activeTrackingRadiusId]);
+
+  // ==========================================================================
+  // ✅ Sync buffer duration with graph duration setting
+  // ==========================================================================
+  useEffect(() => {
+    useSignalProcessingStore
+      .getState()
+      .setBufferDuration(settings.graphDuration);
+  }, [settings.graphDuration]);
+
+  // ==========================================================================
+  // ✅ Clear buffer when radii change
+  // ==========================================================================
+  useEffect(() => {
+    useSignalProcessingStore.getState().clearBuffer();
+  }, [radii, activeTrackingRadiusId]);
 
   const handleToggle = (panelId: string) => {
     setOpenPanel(openPanel === panelId ? "" : panelId);
@@ -339,26 +405,17 @@ function HomeContent() {
     cutoffFreq: number;
     enabled: boolean;
   }) => {
-    // Convert signalData to number[] if needed
-    let signalArray: number[] = [];
-
-    if (signalData.length > 0) {
-      if (typeof signalData[0] === "object" && "y" in signalData[0]) {
-        // signalData is SignalDataPoint[] - extract y values
-        signalArray = signalData.map((point) => (point as { y: number }).y);
-      } else {
-        // signalData is already number[]
-        signalArray = signalData as unknown as number[];
-      }
-    }
-
-    const signalToFilter = noisy.length > 0 ? noisy : signalArray;
+    // ✅ Use centralized signal from signalProcessingStore
+    const { original, noisy } = useSignalProcessingStore.getState();
+    const signalToFilter = noisy.length > 0 ? noisy : original;
 
     if (signalToFilter.length === 0) {
       alert("⚠️ No signal available. Start animation first!");
       return;
     }
-    applyFilterToSignal(signalToFilter, filterSettings, 30);
+
+    const sampleRate = settings.signalSampleRate || 30;
+    applyFilterToSignal(signalToFilter, filterSettings, sampleRate);
   };
 
   const handleClearFilter = () => {
@@ -536,7 +593,7 @@ function HomeContent() {
                       onApplyFilter={handleApplyFilter}
                       onClearFilter={handleClearFilter}
                       isFilterApplied={isFilterApplied}
-                      sampleRate={30}
+                      sampleRate={settings.signalSampleRate || 30}
                     />
                     <MetricsPanel />
                   </div>

@@ -1,30 +1,22 @@
 "use client";
 
 import React, { useRef, useEffect } from "react";
+import { useSimulationStore } from "@/store/simulationStore";
 import { useSignalProcessingStore } from "@/store/signalProcessingStore";
 import { useFilterStore } from "@/store/filterStore";
 
 export const FilteredSignalGraph: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const frameCountRef = useRef<number>(0);
 
-  const { original, noisy, noiseApplied } = useSignalProcessingStore();
-  const { filteredSignal, isFilterApplied } = useFilterStore();
-
-  // Smooth interpolation refs
-  const smoothedFilteredRef = useRef<number[]>([]);
-  const prevFilteredRef = useRef<number[]>([]);
-  const interpolationStateRef = useRef<{
-    isInterpolating: boolean;
-    startTime: number;
-    startValues: number[];
-    endValues: number[];
-  }>({
-    isInterpolating: false,
-    startTime: 0,
-    startValues: [],
-    endValues: [],
-  });
+  // Subscribe to trigger re-renders (values used implicitly)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const originalLength = useSignalProcessingStore(
+    (state) => state.original.length
+  );
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const filteredLength = useFilterStore((state) => state.filteredSignal.length);
 
   // Initialize canvas size
   useEffect(() => {
@@ -41,44 +33,10 @@ export const FilteredSignalGraph: React.FC = () => {
 
     updateSize();
     window.addEventListener("resize", updateSize);
-
-    return () => {
-      window.removeEventListener("resize", updateSize);
-    };
+    return () => window.removeEventListener("resize", updateSize);
   }, []);
 
-  // Track filtered signal changes and start interpolation
-  useEffect(() => {
-    if (filteredSignal.length === 0) {
-      smoothedFilteredRef.current = [];
-      prevFilteredRef.current = [];
-      interpolationStateRef.current.isInterpolating = false;
-      return;
-    }
-
-    const prevFiltered = prevFilteredRef.current;
-
-    // If no previous signal, use current immediately
-    if (
-      prevFiltered.length === 0 ||
-      prevFiltered.length !== filteredSignal.length
-    ) {
-      smoothedFilteredRef.current = [...filteredSignal];
-      prevFilteredRef.current = [...filteredSignal];
-      interpolationStateRef.current.isInterpolating = false;
-      return;
-    }
-
-    // Start interpolation
-    interpolationStateRef.current = {
-      isInterpolating: true,
-      startTime: performance.now(),
-      startValues: [...prevFiltered],
-      endValues: [...filteredSignal],
-    };
-  }, [filteredSignal]);
-
-  // Animation loop
+  // Render loop
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -86,95 +44,69 @@ export const FilteredSignalGraph: React.FC = () => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const draw = (timestamp: number) => {
-      const width = canvas.width;
-      const height = canvas.height;
+    const draw = () => {
+      frameCountRef.current++;
+      if (frameCountRef.current % 2 === 0) {
+        const width = canvas.width;
+        const height = canvas.height;
 
-      // Handle interpolation
-      const interpState = interpolationStateRef.current;
-      if (interpState.isInterpolating) {
-        const elapsed = timestamp - interpState.startTime;
-        const duration = 300; // 300ms transition
-        const progress = Math.min(1, elapsed / duration);
+        // Clear
+        ctx.fillStyle = "#0a0a0a";
+        ctx.fillRect(0, 0, width, height);
 
-        if (progress >= 1) {
-          // Interpolation complete
-          smoothedFilteredRef.current = [...interpState.endValues];
-          prevFilteredRef.current = [...interpState.endValues];
-          interpState.isInterpolating = false;
-        } else {
-          // Ease-out cubic
-          const easedProgress = 1 - Math.pow(1 - progress, 3);
+        // Grid
+        drawGrid(ctx, width, height);
 
-          smoothedFilteredRef.current = interpState.endValues.map(
-            (endVal, i) => {
-              const startVal = interpState.startValues[i] || endVal;
-              return startVal + (endVal - startVal) * easedProgress;
-            }
+        // Get data
+        const { signalBuffer, original, noisy, noiseApplied, scale } =
+          useSignalProcessingStore.getState();
+        const { filteredSignal, isFilterApplied } = useFilterStore.getState();
+        const { currentTime, settings } = useSimulationStore.getState();
+
+        if (signalBuffer.length > 1) {
+          drawSignals(
+            ctx,
+            signalBuffer,
+            original,
+            noisy,
+            filteredSignal,
+            noiseApplied,
+            isFilterApplied,
+            scale,
+            width,
+            height,
+            currentTime,
+            settings.graphDuration
           );
+        } else {
+          ctx.fillStyle = "#666";
+          ctx.font = "12px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("No signal data", width / 2, height / 2);
         }
-      }
 
-      // Clear canvas
-      ctx.fillStyle = "#0a0a0a";
-      ctx.fillRect(0, 0, width, height);
-
-      // Draw grid
-      drawGrid(ctx, width, height);
-
-      // Draw signals if available
-      if (
-        original.length > 0 ||
-        noisy.length > 0 ||
-        smoothedFilteredRef.current.length > 0
-      ) {
-        drawSignals(
+        drawLabels(
           ctx,
           width,
           height,
-          original.length > 0 ? original : noisy,
-          noisy,
-          smoothedFilteredRef.current,
-          noiseApplied,
+          noiseApplied && noisy.length > 0,
           isFilterApplied
-        );
-      } else {
-        // Show placeholder
-        ctx.fillStyle = "#666";
-        ctx.font = "12px sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText("No signal data", width / 2, height / 2);
-        ctx.fillText(
-          "Start animation to see signals",
-          width / 2,
-          height / 2 + 20
         );
       }
 
-      // Draw labels and legend
-      drawLabelsAndLegend(ctx, width, height, noiseApplied, isFilterApplied);
-
-      // Continue animation loop
       animationFrameRef.current = requestAnimationFrame(draw);
     };
 
-    // Start animation
     animationFrameRef.current = requestAnimationFrame(draw);
-
     return () => {
-      if (animationFrameRef.current) {
+      if (animationFrameRef.current)
         cancelAnimationFrame(animationFrameRef.current);
-      }
     };
-  }, [original, noisy, filteredSignal, noiseApplied, isFilterApplied]);
+  }, []);
 
   return (
     <div className="relative w-full h-full">
-      <canvas
-        ref={canvasRef}
-        className="w-full h-full"
-        style={{ imageRendering: "auto" }}
-      />
+      <canvas ref={canvasRef} className="w-full h-full" />
       <div className="absolute top-2 left-2 text-xs text-gray-500">
         Signal Comparison
       </div>
@@ -182,9 +114,6 @@ export const FilteredSignalGraph: React.FC = () => {
   );
 };
 
-/**
- * Draw grid
- */
 function drawGrid(
   ctx: CanvasRenderingContext2D,
   width: number,
@@ -193,7 +122,6 @@ function drawGrid(
   ctx.strokeStyle = "#1a1a1a";
   ctx.lineWidth = 1;
 
-  // Horizontal lines
   for (let i = 0; i <= 4; i++) {
     const y = (i * height) / 4;
     ctx.beginPath();
@@ -202,7 +130,6 @@ function drawGrid(
     ctx.stroke();
   }
 
-  // Vertical lines
   for (let i = 0; i <= 8; i++) {
     const x = (i * width) / 8;
     ctx.beginPath();
@@ -211,7 +138,6 @@ function drawGrid(
     ctx.stroke();
   }
 
-  // Center line (Y = 0)
   ctx.strokeStyle = "#2a2a2a";
   ctx.lineWidth = 2;
   ctx.beginPath();
@@ -220,142 +146,13 @@ function drawGrid(
   ctx.stroke();
 }
 
-/**
- * Draw all signals with smooth scaling
- */
-function drawSignals(
+function drawLabels(
   ctx: CanvasRenderingContext2D,
   width: number,
   height: number,
-  original: number[],
-  noisy: number[],
-  filtered: number[],
-  hasNoisy: boolean,
-  hasFiltered: boolean
+  hasNoise: boolean,
+  hasFilter: boolean
 ) {
-  // Use noisy as baseline
-  if (!hasNoisy || noisy.length === 0) {
-    ctx.fillStyle = "#666";
-    ctx.font = "12px sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("Apply noise first", width / 2, height / 2);
-    return;
-  }
-
-  // Center noisy signal
-  const avgNoisy = noisy.reduce((sum, val) => sum + val, 0) / noisy.length;
-  const centeredNoisy = noisy.map((val) => val - avgNoisy);
-
-  // Center original signal
-  let centeredOriginal: number[] = [];
-  if (original.length > 0) {
-    const avgOriginal =
-      original.reduce((sum, val) => sum + val, 0) / original.length;
-    centeredOriginal = original.map((val) => val - avgOriginal);
-  }
-
-  // Center filtered signal - NO SCALING
-  let centeredFiltered: number[] = [];
-  if (hasFiltered && filtered.length > 0) {
-    const avgFiltered =
-      filtered.reduce((sum, val) => sum + val, 0) / filtered.length;
-    centeredFiltered = filtered.map((val) => val - avgFiltered);
-  }
-
-  // Find min/max from BOTH noisy AND filtered to show all data
-  const allSignals = [...centeredNoisy];
-  if (centeredFiltered.length > 0) {
-    allSignals.push(...centeredFiltered);
-  }
-
-  const minY = Math.min(...allSignals) * 1.1;
-  const maxY = Math.max(...allSignals) * 1.1;
-
-  // Scale functions
-  const centerY = height / 2;
-  const yScale = height / (maxY - minY);
-
-  const scaleY = (val: number) => {
-    return centerY - (val - (minY + maxY) / 2) * yScale;
-  };
-
-  const scaleX = (index: number, length: number) => {
-    return (index / (length - 1)) * width;
-  };
-
-  // Draw original signal (thin, very transparent)
-  if (centeredOriginal.length > 0) {
-    ctx.strokeStyle = "rgba(102, 126, 234, 0.25)";
-    ctx.lineWidth = 1.5;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.beginPath();
-
-    for (let i = 0; i < centeredOriginal.length; i++) {
-      const x = scaleX(i, centeredOriginal.length);
-      const y = scaleY(centeredOriginal[i]);
-
-      if (i === 0) {
-        ctx.moveTo(x, y);
-      } else {
-        ctx.lineTo(x, y);
-      }
-    }
-    ctx.stroke();
-  }
-
-  // Draw noisy signal (red, medium)
-  ctx.strokeStyle = "rgba(255, 107, 107, 0.6)";
-  ctx.lineWidth = 1.5;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.beginPath();
-
-  for (let i = 0; i < centeredNoisy.length; i++) {
-    const x = scaleX(i, centeredNoisy.length);
-    const y = scaleY(centeredNoisy[i]);
-
-    if (i === 0) {
-      ctx.moveTo(x, y);
-    } else {
-      ctx.lineTo(x, y);
-    }
-  }
-  ctx.stroke();
-
-  // Draw filtered signal (green, THICK and BRIGHT)
-  if (hasFiltered && centeredFiltered.length > 0) {
-    ctx.strokeStyle = "#22c55e"; // Brighter green
-    ctx.lineWidth = 3;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.beginPath();
-
-    for (let i = 0; i < centeredFiltered.length; i++) {
-      const x = scaleX(i, centeredFiltered.length);
-      const y = scaleY(centeredFiltered[i]);
-
-      if (i === 0) {
-        ctx.moveTo(x, y);
-      } else {
-        ctx.lineTo(x, y);
-      }
-    }
-    ctx.stroke();
-  }
-}
-
-/**
- * Draw labels and legend
- */
-function drawLabelsAndLegend(
-  ctx: CanvasRenderingContext2D,
-  width: number,
-  height: number,
-  hasNoisy: boolean,
-  hasFiltered: boolean
-) {
-  // Axis labels
   ctx.fillStyle = "#666";
   ctx.font = "10px monospace";
   ctx.textAlign = "left";
@@ -363,34 +160,135 @@ function drawLabelsAndLegend(
   ctx.textAlign = "right";
   ctx.fillText("Time →", width - 10, height - 10);
 
-  // Legend
   const legendX = width - 130;
-  const legendY = 10;
-  let currentY = legendY;
+  let y = 10;
 
-  // Original signal
-  ctx.fillStyle = "rgba(102, 126, 234, 0.25)";
-  ctx.fillRect(legendX, currentY, 15, 3);
+  // Original
+  ctx.fillStyle = "rgba(102, 126, 234, 0.3)";
+  ctx.fillRect(legendX, y, 15, 3);
   ctx.fillStyle = "#999";
   ctx.font = "10px sans-serif";
   ctx.textAlign = "left";
-  ctx.fillText("Original", legendX + 20, currentY + 5);
-  currentY += 15;
+  ctx.fillText("Original", legendX + 20, y + 5);
+  y += 15;
 
-  // Noisy signal
-  if (hasNoisy) {
+  // Noisy
+  if (hasNoise) {
     ctx.fillStyle = "rgba(255, 107, 107, 0.6)";
-    ctx.fillRect(legendX, currentY, 15, 3);
+    ctx.fillRect(legendX, y, 15, 3);
     ctx.fillStyle = "#999";
-    ctx.fillText("With Noise", legendX + 20, currentY + 5);
-    currentY += 15;
+    ctx.fillText("Noisy", legendX + 20, y + 5);
+    y += 15;
   }
 
-  // Filtered signal
-  if (hasFiltered) {
+  // Filtered
+  if (hasFilter) {
     ctx.fillStyle = "#22c55e";
-    ctx.fillRect(legendX, currentY, 15, 3);
+    ctx.fillRect(legendX, y, 15, 3);
     ctx.fillStyle = "#999";
-    ctx.fillText("Filtered", legendX + 20, currentY + 5);
+    ctx.fillText("Filtered", legendX + 20, y + 5);
+  }
+}
+
+function drawSignals(
+  ctx: CanvasRenderingContext2D,
+  signalBuffer: { time: number; y: number }[],
+  original: number[],
+  noisy: number[],
+  filtered: number[],
+  noiseApplied: boolean,
+  filterApplied: boolean,
+  scale: { minY: number; maxY: number; avgY: number },
+  width: number,
+  height: number,
+  currentTime: number,
+  graphDuration: number
+) {
+  // Need noise for this view
+  if (!noiseApplied || noisy.length === 0) {
+    ctx.fillStyle = "#666";
+    ctx.font = "12px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Apply noise first", width / 2, height / 2);
+    return;
+  }
+
+  const { minY, maxY, avgY } = scale;
+  const centerY = height / 2;
+  const timeScale = (width - 100) / graphDuration;
+  const currentX = width - 50;
+  const yScale = height / (maxY - minY);
+
+  // Draw original (thin, transparent)
+  ctx.strokeStyle = "rgba(102, 126, 234, 0.3)";
+  ctx.lineWidth = 1.5;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.beginPath();
+
+  let firstPoint = true;
+  for (let i = 0; i < signalBuffer.length && i < original.length; i++) {
+    const point = signalBuffer[i];
+    const x = currentX - (currentTime - point.time) * timeScale;
+    if (x < 0) continue;
+
+    const centered = original[i] - avgY;
+    const y = centerY - (centered - (minY + maxY) / 2) * yScale;
+
+    if (firstPoint) {
+      ctx.moveTo(x, y);
+      firstPoint = false;
+    } else {
+      ctx.lineTo(x, y);
+    }
+  }
+  ctx.stroke();
+
+  // Draw noisy (red, medium)
+  ctx.strokeStyle = "rgba(255, 107, 107, 0.6)";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+
+  firstPoint = true;
+  for (let i = 0; i < signalBuffer.length && i < noisy.length; i++) {
+    const point = signalBuffer[i];
+    const x = currentX - (currentTime - point.time) * timeScale;
+    if (x < 0) continue;
+
+    const centered = noisy[i] - avgY;
+    const y = centerY - (centered - (minY + maxY) / 2) * yScale;
+
+    if (firstPoint) {
+      ctx.moveTo(x, y);
+      firstPoint = false;
+    } else {
+      ctx.lineTo(x, y);
+    }
+  }
+  ctx.stroke();
+
+  // Draw filtered (green, thick)
+  if (filterApplied && filtered.length > 0) {
+    ctx.strokeStyle = "#22c55e";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+
+    firstPoint = true;
+    for (let i = 0; i < signalBuffer.length && i < filtered.length; i++) {
+      const point = signalBuffer[i];
+      const x = currentX - (currentTime - point.time) * timeScale;
+      if (x < 0) continue;
+
+      const centered = filtered[i] - avgY;
+      const y = centerY - (centered - (minY + maxY) / 2) * yScale;
+
+      if (firstPoint) {
+        ctx.moveTo(x, y);
+        firstPoint = false;
+      } else {
+        ctx.lineTo(x, y);
+      }
+    }
+    ctx.stroke();
   }
 }
