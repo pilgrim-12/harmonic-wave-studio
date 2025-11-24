@@ -593,36 +593,38 @@ function HomeContent() {
           </div>
         </ResizableSidebar>
 
-        {/* Right workspace */}
-        <div className="flex-1 grid grid-rows-[auto_1fr_1fr] gap-3 min-w-0 min-h-0">
+        {/* Right workspace - IMPROVED RESPONSIVE */}
+        <div className="flex-1 grid grid-rows-[auto_2fr_1fr] gap-3 min-w-0 min-h-0">
+          {/* Control Panel */}
           <div className="flex-shrink-0">
             <ControlPanel />
           </div>
 
-          <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-0 overflow-hidden">
+          {/* Visualization Canvas - 2/3 of space, min height */}
+          <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-[200px] overflow-hidden">
             <FullscreenWrapper>
               <VisualizationCanvas />
             </FullscreenWrapper>
           </div>
 
-          {/* Signal Graphs - 3 columns */}
-          <div className="grid grid-cols-3 gap-3">
+          {/* Signal Graphs - 1/3 of space, responsive columns */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 min-h-[100px]">
             {/* Original Signal */}
-            <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-0 overflow-hidden">
+            <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-[80px] overflow-hidden">
               <FullscreenWrapper>
                 <SignalGraph />
               </FullscreenWrapper>
             </div>
 
             {/* Noisy Signal */}
-            <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-0 overflow-hidden">
+            <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-[80px] overflow-hidden">
               <FullscreenWrapper>
                 <NoisySignalGraph />
               </FullscreenWrapper>
             </div>
 
             {/* Filtered Signal */}
-            <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-0 overflow-hidden">
+            <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-[80px] overflow-hidden">
               <FullscreenWrapper>
                 <FilteredSignalGraph />
               </FullscreenWrapper>
