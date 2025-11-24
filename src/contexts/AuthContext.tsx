@@ -84,6 +84,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                     projectsCount: 0,
                     lastLoginAt: serverTimestamp(),
                   },
+
+                  // Default tier for new users
+                  tier: "free" as const,
                 };
 
                 await setDoc(userRef, newProfile);

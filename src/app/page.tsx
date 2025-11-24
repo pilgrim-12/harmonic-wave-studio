@@ -46,6 +46,8 @@ import {
   calculateRadiusPositions,
   getFinalPoint,
 } from "@/lib/canvas/calculator";
+import { FeatureGate } from "@/components/tier/FeatureGate";
+import { useTierCheck } from "@/hooks/useTierCheck";
 
 function HomeContent() {
   const [openPanel, setOpenPanel] = useState<string>("radii");
@@ -77,6 +79,7 @@ function HomeContent() {
   // Signal processing store used via getState() in effects
   const { applyFilterToSignal, clearFilter, isFilterApplied } =
     useFilterStore();
+  const { checkLimit } = useTierCheck();
 
   useKeyboardShortcuts();
 
@@ -272,6 +275,23 @@ function HomeContent() {
   };
 
   const handleAddRadius = () => {
+    // Check radii limit
+    const { allowed, remaining, isUnlimited } = checkLimit(
+      "maxRadii",
+      radii.length
+    );
+
+    if (!allowed) {
+      alert(
+        `🔒 Radii limit reached!\n\nYou can't add more radii on your current plan.\n\n${
+          user
+            ? "Upgrade to Pro for unlimited radii!"
+            : "Sign in for free to get 5 radii!"
+        }`
+      );
+      return;
+    }
+
     let parentId: string | null = null;
     if (radii.length > 0) {
       parentId = radii[radii.length - 1].id;
@@ -286,6 +306,15 @@ function HomeContent() {
 
     selectRadius(newRadiusId);
     setActiveTrackingRadius(newRadiusId);
+
+    // Show warning when approaching limit
+    if (!isUnlimited && remaining <= 1 && remaining > 0) {
+      setTimeout(() => {
+        alert(
+          `⚠️ ${remaining} radius slot left!\n\nUpgrade to Pro for unlimited radii.`
+        );
+      }, 500);
+    }
   };
 
   const handleNormalizeAll = () => {
@@ -589,12 +618,14 @@ function HomeContent() {
                 <div className="h-full overflow-y-auto custom-scrollbar">
                   <div className="px-3 pb-3 space-y-3">
                     <NoisePanel />
-                    <DigitalFilterPanel
-                      onApplyFilter={handleApplyFilter}
-                      onClearFilter={handleClearFilter}
-                      isFilterApplied={isFilterApplied}
-                      sampleRate={settings.signalSampleRate || 30}
-                    />
+                    <FeatureGate feature="canUseFilters" showLockedOverlay>
+                      <DigitalFilterPanel
+                        onApplyFilter={handleApplyFilter}
+                        onClearFilter={handleClearFilter}
+                        isFilterApplied={isFilterApplied}
+                        sampleRate={settings.signalSampleRate || 30}
+                      />
+                    </FeatureGate>
                     <MetricsPanel />
                   </div>
                 </div>
@@ -643,7 +674,9 @@ function HomeContent() {
             >
               {openPanel === "analysis" && (
                 <div className="h-full overflow-y-auto custom-scrollbar px-3 pb-3">
-                  <FrequencyPanel />
+                  <FeatureGate feature="canUseFFT" showLockedOverlay>
+                    <FrequencyPanel />
+                  </FeatureGate>
                 </div>
               )}
             </AccordionItem>
