@@ -1,0 +1,10 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Block admin/sensitive routes
+Disallow: /api/
+Disallow: /admin/
+
+# Sitemap location
+Sitemap: https://harmonic-wave-studio.vercel.app/sitemap.xml
