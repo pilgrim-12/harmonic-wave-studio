@@ -27,7 +27,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push("/");
+      router.push("/studio");
     }
   }, [user, loading, router]);
 
@@ -77,7 +77,7 @@ export default function ProfilePage() {
     }
 
     setCurrentProject(project.id!, project.name, project.radii);
-    router.push("/");
+    router.push("/studio");
   };
 
   const handleDeleteProject = async (projectId: string) => {
@@ -112,7 +112,7 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-[#0f0f0f] p-8">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <Link href="/">
+          <Link href="/studio">
             <Button variant="secondary" className="mb-4">
               <ArrowLeft size={16} className="mr-2" />
               Back to Studio

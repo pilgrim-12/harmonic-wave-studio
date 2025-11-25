@@ -32,7 +32,7 @@ export default function PricingPage() {
         }
       } else {
         // Already Free, go to studio
-        window.location.href = "/";
+        window.location.href = "/studio";
       }
       return;
     }
@@ -60,7 +60,7 @@ export default function PricingPage() {
     <div className="min-h-screen bg-[#0f0f0f] py-12 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Back button */}
-        <Link href="/">
+        <Link href="/studio">
           <Button variant="secondary" className="mb-8">
             <ArrowLeft size={16} className="mr-2" />
             Back to Studio

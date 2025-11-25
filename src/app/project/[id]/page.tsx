@@ -89,8 +89,8 @@ export default function SharedProjectPage() {
       parentId = newRadiusId;
     });
 
-    // Переходим на главную страницу
-    router.push("/");
+    // Переходим в студию
+    router.push("/studio");
   };
 
   if (loading) {

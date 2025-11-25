@@ -192,7 +192,7 @@ export default function SharedProjectPage() {
                     },
                   };
                   const encodedData = btoa(JSON.stringify(projectData));
-                  router.push(`/?loadShared=${encodedData}`);
+                  router.push(`/studio?loadShared=${encodedData}`);
                 } catch (error) {
                   console.error("Error loading project:", error);
                   alert("Failed to load project into studio");

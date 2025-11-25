@@ -47,8 +47,8 @@ export default function LandingPage() {
             >
               Pricing
             </Link>
-            <Link href="/app">
-              <Button size="sm">Launch App</Button>
+            <Link href="/studio">
+              <Button size="sm">Launch Studio</Button>
             </Link>
           </nav>
         </div>
@@ -79,7 +79,7 @@ export default function LandingPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link href="/app">
+            <Link href="/studio">
               <Button size="lg" className="text-lg px-8">
                 <Zap size={20} />
                 Start Creating
@@ -216,12 +216,12 @@ export default function LandingPage() {
               to Pro for unlimited creativity.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/app">
+              <Link href="/studio">
                 <Button
                   size="lg"
                   className="bg-white text-[#667eea] hover:bg-gray-100"
                 >
-                  Launch App
+                  Launch Studio
                   <ArrowRight size={20} />
                 </Button>
               </Link>
@@ -259,8 +259,8 @@ export default function LandingPage() {
               <h4 className="font-semibold text-white mb-4">Product</h4>
               <ul className="space-y-2 text-gray-400 text-sm">
                 <li>
-                  <Link href="/app" className="hover:text-white transition-colors">
-                    App
+                  <Link href="/studio" className="hover:text-white transition-colors">
+                    Studio
                   </Link>
                 </li>
                 <li>

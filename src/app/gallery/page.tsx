@@ -20,7 +20,7 @@ export default function GalleryPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <Link href="/">
+          <Link href="/studio">
             <Button variant="secondary" className="mb-4">
               <ArrowLeft size={16} className="mr-2" />
               Back to Studio
