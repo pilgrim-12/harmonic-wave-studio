@@ -7,6 +7,9 @@ import {
   doc,
   serverTimestamp,
   increment,
+  query,
+  where,
+  getDocs,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase/firebase";
 import { SharedProject, ShareProjectData } from "@/types/share";
@@ -173,4 +176,19 @@ export async function cloneSharedProject(
   });
 
   return projectRef.id;
+}
+
+/**
+ * Получить количество расшаренных проектов пользователя
+ */
+export async function getUserSharedProjectsCount(
+  userId: string
+): Promise<number> {
+  const q = query(
+    collection(db, "shared-projects"),
+    where("userId", "==", userId)
+  );
+
+  const snapshot = await getDocs(q);
+  return snapshot.size;
 }

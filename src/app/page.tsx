@@ -40,7 +40,7 @@ import { Radius } from "@/types/radius";
 import { SignInButton } from "@/components/auth/SignInButton";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { useAuth } from "@/contexts/AuthContext";
-import { createProject, updateProject } from "@/services/projectService";
+import { createProject, updateProject, getUserProjects } from "@/services/projectService";
 import { ShareButton } from "@/components/share/ShareButton";
 import {
   calculateRadiusPositions,
@@ -376,6 +376,30 @@ function HomeContent() {
     if (radii.length === 0) {
       alert("❌ No radii to save. Please add some radii first.");
       return;
+    }
+
+    // Check project limit for new projects
+    if (!currentProjectId) {
+      try {
+        const userProjects = await getUserProjects(user.uid);
+        const actualCheck = checkLimit("maxProjects", userProjects.length);
+
+        if (!actualCheck.allowed) {
+          alert(
+            `🔒 Project limit reached!\n\nYou have ${userProjects.length} projects.\n\nUpgrade to Pro for unlimited projects!`
+          );
+          return;
+        }
+
+        // Show warning when close to limit
+        if (!actualCheck.isUnlimited && actualCheck.remaining <= 1 && actualCheck.remaining > 0) {
+          setTimeout(() => {
+            alert(`⚠️ ${actualCheck.remaining} project slot left!`);
+          }, 500);
+        }
+      } catch (error) {
+        console.error("Error checking project limit:", error);
+      }
     }
 
     const name = projectName.trim() || "Untitled Project";

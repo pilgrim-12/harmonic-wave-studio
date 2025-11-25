@@ -8,8 +8,10 @@ import {
   shareProject,
   unshareProject,
   getSharedProject,
+  getUserSharedProjectsCount,
 } from "@/services/shareService";
 import { Button } from "@/components/ui/Button";
+import { useTierCheck } from "@/hooks/useTierCheck";
 
 interface ShareModalProps {
   projectId: string;
@@ -30,6 +32,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
 }) => {
   const { user } = useAuth();
   const { radii } = useRadiusStore();
+  const { checkLimit } = useTierCheck();
   const [name, setName] = useState(projectName);
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState("");
@@ -63,6 +66,28 @@ export const ShareModal: React.FC<ShareModalProps> = ({
 
   const handleShare = async () => {
     if (!user) return;
+
+    // ✅ NEW: Check share limit for new shares
+    if (!currentShareId) {
+      try {
+        const userSharesCount = await getUserSharedProjectsCount(user.uid);
+        const actualCheck = checkLimit("maxShares", userSharesCount);
+
+        if (!actualCheck.allowed) {
+          alert(
+            `🔒 Share limit reached!\n\nYou have ${userSharesCount} shared project${userSharesCount !== 1 ? "s" : ""}.\n\nUpgrade to Pro for unlimited shares!`
+          );
+          return;
+        }
+
+        // Show warning when close to limit
+        if (!actualCheck.isUnlimited && actualCheck.remaining <= 1 && actualCheck.remaining > 0) {
+          alert(`⚠️ ${actualCheck.remaining} share slot left!`);
+        }
+      } catch (error) {
+        console.error("Error checking share limit:", error);
+      }
+    }
 
     setLoading(true);
     try {

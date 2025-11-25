@@ -6,14 +6,25 @@ import { useRadiusStore } from "@/store/radiusStore";
 import { useSimulationStore } from "@/store/simulationStore";
 import { WAVEFORM_PRESETS, WaveformPreset } from "@/lib/presets/waveforms";
 import { Button } from "@/components/ui/Button";
+import { useTierCheck } from "@/hooks/useTierCheck";
+import { useUpgradeModal } from "@/components/tier/UpgradeModalProvider";
 
 export const PresetPanel: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [expandedPreset, setExpandedPreset] = useState<string | null>(null); // ✨ NEW
   const { clearRadii, addRadius, selectRadius } = useRadiusStore();
   const { setActiveTrackingRadius } = useSimulationStore();
+  const { hasAccess } = useTierCheck("canUsePresets");
+  const { showUpgradeModal } = useUpgradeModal();
 
   const loadPreset = (preset: WaveformPreset) => {
+    // ✅ Block for Anonymous users
+    if (!hasAccess) {
+      showUpgradeModal("canUsePresets");
+      setIsOpen(false);
+      return;
+    }
+
     // Clear existing radii
     clearRadii();
 

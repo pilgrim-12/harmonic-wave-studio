@@ -10,12 +10,22 @@ import {
   exportSignalCSV,
 } from "@/lib/export/exporter";
 import { Button } from "@/components/ui/Button";
+import { useTierCheck } from "@/hooks/useTierCheck";
+import { useUpgradeModal } from "@/components/tier/UpgradeModalProvider";
 
 export const ExportPanel: React.FC = () => {
   const { radii } = useRadiusStore();
   const { settings, signalData } = useSimulationStore();
+  const { hasAccess } = useTierCheck("canExport");
+  const { showUpgradeModal } = useUpgradeModal();
 
   const handleExportJSON = () => {
+    // ✅ Block for Anonymous users
+    if (!hasAccess) {
+      showUpgradeModal("canExport");
+      return;
+    }
+
     if (radii.length === 0) {
       alert("No radii to export. Please add some radii first.");
       return;
@@ -24,6 +34,12 @@ export const ExportPanel: React.FC = () => {
   };
 
   const handleExportCSV = () => {
+    // ✅ Block for Anonymous users
+    if (!hasAccess) {
+      showUpgradeModal("canExport");
+      return;
+    }
+
     if (signalData.length === 0) {
       alert("No signal data to export. Please start the animation first!");
       return;
@@ -32,6 +48,12 @@ export const ExportPanel: React.FC = () => {
   };
 
   const handleExportPNG = () => {
+    // ✅ Block for Anonymous users
+    if (!hasAccess) {
+      showUpgradeModal("canExport");
+      return;
+    }
+
     const canvas = document.querySelector("canvas") as HTMLCanvasElement;
     if (!canvas) {
       alert("Canvas not found. Please make sure the visualization is running.");
