@@ -150,7 +150,7 @@ function HomeContent() {
         }, 200);
 
         // Clean URL (remove parameter)
-        window.history.replaceState({}, "", "/");
+        window.history.replaceState({}, "", "/studio");
       } catch (error) {
         console.error("Error loading shared project:", error);
         alert("Failed to load project from gallery");
