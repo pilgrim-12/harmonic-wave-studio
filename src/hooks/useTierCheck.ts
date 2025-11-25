@@ -14,7 +14,7 @@ import {
   hasFeatureAccess,
   checkLimit,
 } from "@/config/tiers";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 export interface TierCheckResult {
   // Текущий тарif пользователя
@@ -48,11 +48,14 @@ export const useTierCheck = (
 ): TierCheckResult => {
   const { user, userProfile } = useAuth();
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [isAllProEnabled, setIsAllProEnabled] = useState(false);
 
-  // 🎛️ Feature Flag: Check if all Pro features are enabled
-  const isAllProEnabled =
-    typeof window !== "undefined" &&
-    localStorage.getItem("dev_enable_all_pro_features") === "true";
+  // 🎛️ Feature Flag: Check if all Pro features are enabled (client-side only)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsAllProEnabled(localStorage.getItem("dev_enable_all_pro_features") === "true");
+    }
+  }, []);
 
   // Определяем текущий тарif
   let currentTier: UserTier = user
