@@ -1,781 +1,333 @@
 "use client";
 
-import { useState, useEffect, useLayoutEffect, useRef, Suspense } from "react";
+import React from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { ControlPanel } from "@/components/workspace/ControlPanel";
-import { VisualizationCanvas } from "@/components/workspace/VisualizationCanvas";
-import { SignalGraph } from "@/components/workspace/SignalGraph";
-import { SettingsPanel } from "@/components/workspace/SettingsPanel";
-import { FrequencyPanel } from "@/components/analysis/FrequencyPanel";
-import { NoisePanel } from "@/components/signal/NoisePanel";
-import { MetricsPanel } from "@/components/signal/MetricsPanel";
-import { NoisySignalGraph } from "@/components/signal/NoisySignalGraph";
-import { DigitalFilterPanel } from "@/components/signal/DigitalFilterPanel";
-import { FilteredSignalGraph } from "@/components/signal/FilteredSignalGraph";
-import { UndoRedoIndicator } from "@/components/ui/UndoRedoIndicator";
-import { AccordionItem } from "@/components/ui/Accordion";
-import { FullscreenWrapper } from "@/components/ui/FullscreenWrapper";
-import { ResizableSidebar } from "@/components/ui/ResizableSidebar";
 import {
-  Settings,
-  Plus,
-  BarChart3,
+  Waves,
+  Sparkles,
   Wand2,
-  Save,
-  FilePlus,
-  Activity,
-  LayoutGrid,
+  BarChart3,
+  Download,
+  Users,
+  Zap,
+  Crown,
+  ArrowRight,
+  Github,
 } from "lucide-react";
-import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
-import { useRadiusStore } from "@/store/radiusStore";
-import { useSimulationStore } from "@/store/simulationStore";
-import { useProjectStore } from "@/store/useProjectStore";
-import { useSignalProcessingStore } from "@/store/signalProcessingStore";
-import { useFilterStore } from "@/store/filterStore";
-import { RadiusItem } from "@/components/workspace/RadiusItem";
-import { RadiusEditor } from "@/components/workspace/RadiusEditor";
 import { Button } from "@/components/ui/Button";
-import { Radius } from "@/types/radius";
-import { SignInButton } from "@/components/auth/SignInButton";
-import { UserMenu } from "@/components/auth/UserMenu";
-import { useAuth } from "@/contexts/AuthContext";
-import { createProject, updateProject, getUserProjects } from "@/services/projectService";
-import { ShareButton } from "@/components/share/ShareButton";
-import { useToast } from "@/contexts/ToastContext";
-import {
-  calculateRadiusPositions,
-  getFinalPoint,
-} from "@/lib/canvas/calculator";
-import { FeatureGate } from "@/components/tier/FeatureGate";
-import { useTierCheck } from "@/hooks/useTierCheck";
 
-function HomeContent() {
-  const [openPanel, setOpenPanel] = useState<string>("radii");
-  const [editingRadius, setEditingRadius] = useState<Radius | null>(null);
-  const [projectName, setProjectName] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [shareId, setShareId] = useState<string | null>(null);
-
-  // ✅ Ref for animation loop
-  const animationFrameRef = useRef<number | null>(null);
-
-  const { radii, addRadius, selectRadius, updateRadius, clearRadii } =
-    useRadiusStore();
-  const {
-    isPlaying,
-    settings,
-    activeTrackingRadiusId,
-    setActiveTrackingRadius,
-    play,
-  } = useSimulationStore();
-  const {
-    currentProjectId,
-    currentProjectName,
-    setCurrentProject,
-    clearProject,
-  } = useProjectStore();
-  const { user, loading } = useAuth();
-  const searchParams = useSearchParams();
-  // Signal processing store used via getState() in effects
-  const { applyFilterToSignal, clearFilter, isFilterApplied } =
-    useFilterStore();
-  const { checkLimit } = useTierCheck();
-  const toast = useToast();
-
-  useKeyboardShortcuts();
-
-  // Load shared project from URL parameter
-  useLayoutEffect(() => {
-    const loadSharedParam = searchParams?.get("loadShared");
-
-    if (loadSharedParam) {
-      try {
-        // Decode base64 data
-        const projectData = JSON.parse(atob(loadSharedParam));
-
-        // Clear existing radii and signal processing
-        clearRadii();
-        useSignalProcessingStore.getState().resetSignal();
-
-        // Convert Firebase radii to editor format
-        const { radii: firebaseRadii } = projectData;
-
-        if (!firebaseRadii || firebaseRadii.length === 0) {
-          alert("This project has no radii data");
-          return;
-        }
-
-        // Accumulate created radii IDs
-        let previousRadiusId: string | null = null;
-        let lastRadiusId: string | null = null;
-
-        // Add radii one by one
-        firebaseRadii.forEach(
-          (fbRadius: {
-            frequency: number;
-            amplitude: number;
-            phase: number;
-          }) => {
-            const newRadiusId = addRadius({
-              parentId: previousRadiusId,
-              length: fbRadius.amplitude,
-              initialAngle: fbRadius.phase,
-              rotationSpeed: Math.abs(fbRadius.frequency),
-              direction:
-                fbRadius.frequency >= 0 ? "counterclockwise" : "clockwise",
-            });
-
-            // Update for next radius
-            previousRadiusId = newRadiusId;
-            lastRadiusId = newRadiusId;
-          }
-        );
-
-        // Select last radius
-        if (lastRadiusId) {
-          selectRadius(lastRadiusId);
-          setActiveTrackingRadius(lastRadiusId);
-        }
-
-        // Set project in store (this triggers useEffect that updates projectName)
-        if (projectData.metadata?.projectName) {
-          const projectNameFromGallery = `${projectData.metadata.projectName} (from gallery)`;
-          setCurrentProject(null, projectNameFromGallery, firebaseRadii);
-        }
-
-        // Start animation after short delay
-        setTimeout(() => {
-          play();
-        }, 200);
-
-        // Clean URL (remove parameter)
-        window.history.replaceState({}, "", "/");
-      } catch (error) {
-        console.error("Error loading shared project:", error);
-        alert("Failed to load project from gallery");
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
-
-  useEffect(() => {
-    if (currentProjectName) {
-      setProjectName(currentProjectName);
-    }
-  }, [currentProjectName]);
-
-  useEffect(() => {
-    if (radii.length > 0) {
-      setTimeout(() => play(), 100);
-    }
-  }, [radii.length, play]);
-
-  // ==========================================================================
-  // ✅ NEW: CENTRALIZED SIGNAL GENERATION (Single Source of Truth)
-  // ==========================================================================
-  useEffect(() => {
-    // Virtual canvas center for calculations
-    const CENTER_X = 400;
-    const CENTER_Y = 300;
-
-    // ✅ Throttle: update store at most 30 times per second
-    let lastUpdateTime = 0;
-    const UPDATE_INTERVAL = 1000 / 30; // 33.3ms
-
-    const generateSignal = (timestamp: number) => {
-      // Only generate when playing and radii exist
-      if (!isPlaying || radii.length === 0) {
-        animationFrameRef.current = requestAnimationFrame(generateSignal);
-        return;
-      }
-
-      // ✅ Throttle updates
-      if (timestamp - lastUpdateTime < UPDATE_INTERVAL) {
-        animationFrameRef.current = requestAnimationFrame(generateSignal);
-        return;
-      }
-      lastUpdateTime = timestamp;
-
-      // Get current time from simulation store
-      const time = useSimulationStore.getState().currentTime;
-
-      // Calculate radius positions
-      const positions = calculateRadiusPositions(
-        radii,
-        CENTER_X,
-        CENTER_Y,
-        time
-      );
-
-      // Determine which point to track
-      let finalPoint = null;
-
-      if (activeTrackingRadiusId) {
-        const trackingPosition = positions.find(
-          (pos) => pos.radiusId === activeTrackingRadiusId
-        );
-        finalPoint = trackingPosition?.endPoint || null;
-      } else {
-        finalPoint = getFinalPoint(positions);
-      }
-
-      // ✅ Push signal point to centralized store (Single Source of Truth)
-      if (finalPoint) {
-        const y = CENTER_Y - finalPoint.y;
-        useSignalProcessingStore.getState().pushSignalPoint(time, y);
-      }
-
-      // ✅ Real-time filtering (if enabled) - throttled
-      const filterState = useFilterStore.getState();
-      if (filterState.isFilterApplied && filterState.filterSettings) {
-        const noisySignal = useSignalProcessingStore.getState().noisy;
-        if (noisySignal.length > 50) {
-          const sampleRate =
-            useSimulationStore.getState().settings.signalSampleRate || 30;
-          filterState.applyFilterToSignal(
-            noisySignal,
-            filterState.filterSettings,
-            sampleRate
-          );
-        }
-      }
-
-      // Continue animation loop
-      animationFrameRef.current = requestAnimationFrame(generateSignal);
-    };
-
-    // Start animation loop
-    animationFrameRef.current = requestAnimationFrame(generateSignal);
-
-    // Cleanup
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, [isPlaying, radii, activeTrackingRadiusId]);
-
-  // ==========================================================================
-  // ✅ Sync buffer duration with graph duration setting
-  // ==========================================================================
-  useEffect(() => {
-    useSignalProcessingStore
-      .getState()
-      .setBufferDuration(settings.graphDuration);
-  }, [settings.graphDuration]);
-
-  // ==========================================================================
-  // ✅ Clear buffer when radii change
-  // ==========================================================================
-  useEffect(() => {
-    useSignalProcessingStore.getState().clearBuffer();
-  }, [radii, activeTrackingRadiusId]);
-
-  const handleToggle = (panelId: string) => {
-    setOpenPanel(openPanel === panelId ? "" : panelId);
-  };
-
-  const handleAddRadius = () => {
-    // Check radii limit
-    const { allowed, remaining, isUnlimited } = checkLimit(
-      "maxRadii",
-      radii.length
-    );
-
-    if (!allowed) {
-      toast.warning(
-        `You can't add more radii on your current plan. ${
-          user
-            ? "Upgrade to Pro for unlimited radii!"
-            : "Sign in for free to get 5 radii!"
-        }`,
-        "Radii Limit Reached"
-      );
-      return;
-    }
-
-    let parentId: string | null = null;
-    if (radii.length > 0) {
-      parentId = radii[radii.length - 1].id;
-    }
-    const newRadiusId = addRadius({
-      parentId,
-      length: 30,
-      initialAngle: 0,
-      rotationSpeed: 1,
-      direction: "counterclockwise",
-    });
-
-    selectRadius(newRadiusId);
-    setActiveTrackingRadius(newRadiusId);
-
-    // Show warning when approaching limit
-    if (!isUnlimited && remaining <= 1 && remaining > 0) {
-      setTimeout(() => {
-        toast.warning(
-          `Only ${remaining} radius slot left. Upgrade to Pro for unlimited radii.`,
-          "Almost at Limit"
-        );
-      }, 500);
-    }
-  };
-
-  const handleNormalizeAll = () => {
-    if (radii.length === 0) return;
-
-    let normalizedCount = 0;
-
-    radii.forEach((radius) => {
-      let needsUpdate = false;
-      const updates: Partial<Radius> = {};
-
-      let angle = radius.initialAngle % (2 * Math.PI);
-      if (angle < 0) angle += 2 * Math.PI;
-      if (angle !== radius.initialAngle) {
-        updates.initialAngle = angle;
-        updates.currentAngle = angle;
-        needsUpdate = true;
-      }
-
-      const speed = Math.max(0.1, Math.min(radius.rotationSpeed, 10));
-      if (speed !== radius.rotationSpeed) {
-        updates.rotationSpeed = speed;
-        needsUpdate = true;
-      }
-
-      const length = Math.max(5, Math.min(radius.length, 200));
-      if (length !== radius.length) {
-        updates.length = length;
-        needsUpdate = true;
-      }
-
-      if (needsUpdate) {
-        updateRadius(radius.id, updates);
-        normalizedCount++;
-      }
-    });
-
-    if (normalizedCount > 0) {
-      alert(
-        `✅ Normalized ${normalizedCount} ${
-          normalizedCount === 1 ? "radius" : "radii"
-        }!\n\n` +
-          `Fixed:\n` +
-          `• Angles wrapped to [0, 2π)\n` +
-          `• Speeds clamped to [0.1, 10]\n` +
-          `• Lengths clamped to [5, 200]`
-      );
-    } else {
-      alert("✓ All radii are already normalized!");
-    }
-  };
-
-  const handleSaveProject = async () => {
-    if (!user) {
-      toast.error("Please sign in to save projects", "Sign In Required");
-      return;
-    }
-
-    if (radii.length === 0) {
-      toast.error("No radii to save. Please add some radii first.", "No Radii");
-      return;
-    }
-
-    // Check project limit for new projects
-    if (!currentProjectId) {
-      try {
-        const userProjects = await getUserProjects(user.uid);
-        const actualCheck = checkLimit("maxProjects", userProjects.length);
-
-        if (!actualCheck.allowed) {
-          toast.warning(
-            `You have ${userProjects.length} projects. Upgrade to Pro for unlimited projects!`,
-            "Project Limit Reached"
-          );
-          return;
-        }
-
-        // Show warning when close to limit
-        if (!actualCheck.isUnlimited && actualCheck.remaining <= 1 && actualCheck.remaining > 0) {
-          setTimeout(() => {
-            toast.warning(`Only ${actualCheck.remaining} project slot left!`, "Almost at Limit");
-          }, 500);
-        }
-      } catch (error) {
-        console.error("Error checking project limit:", error);
-      }
-    }
-
-    const name = projectName.trim() || "Untitled Project";
-
-    setSaving(true);
-    try {
-      const projectRadii = radii.map((r) => ({
-        frequency:
-          r.direction === "counterclockwise"
-            ? r.rotationSpeed
-            : -r.rotationSpeed,
-        amplitude: r.length,
-        phase: r.initialAngle,
-      }));
-
-      if (currentProjectId) {
-        await updateProject(currentProjectId, name, projectRadii);
-        toast.success("Project updated successfully!", "Success");
-      } else {
-        const newProjectId = await createProject(user.uid, name, projectRadii);
-        setCurrentProject(newProjectId, name, projectRadii);
-        toast.success("Project saved successfully!", "Success");
-      }
-    } catch (error) {
-      console.error("Failed to save project:", error);
-      toast.error("Failed to save project. Please try again.", "Save Failed");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleNewProject = () => {
-    if (radii.length > 0) {
-      const confirm = window.confirm(
-        "⚠️ Start new project?\n\nThis will clear all current radii and signal data."
-      );
-      if (!confirm) return;
-    }
-
-    clearRadii();
-    clearProject();
-    setProjectName("");
-    setShareId(null);
-    useSignalProcessingStore.getState().resetSignal();
-    alert("✅ New project started!");
-  };
-
-  const handleShareSuccess = (newShareId: string) => {
-    setShareId(newShareId);
-  };
-
-  const handleApplyFilter = (filterSettings: {
-    type: "butterworth" | "chebyshev1" | "chebyshev2";
-    mode: "lowpass" | "highpass" | "bandpass" | "bandstop";
-    order: number;
-    cutoffFreq: number;
-    enabled: boolean;
-  }) => {
-    // ✅ Use centralized signal from signalProcessingStore
-    const { original, noisy } = useSignalProcessingStore.getState();
-    const signalToFilter = noisy.length > 0 ? noisy : original;
-
-    if (signalToFilter.length === 0) {
-      alert("⚠️ No signal available. Start animation first!");
-      return;
-    }
-
-    const sampleRate = settings.signalSampleRate || 30;
-    applyFilterToSignal(signalToFilter, filterSettings, sampleRate);
-  };
-
-  const handleClearFilter = () => {
-    clearFilter();
-  };
-
+export default function LandingPage() {
   return (
-    <div className="h-screen bg-[#0f0f0f] flex flex-col overflow-hidden">
-      <header className="border-b border-[#2a2a2a] flex-shrink-0">
-        <div className="flex items-center justify-between h-14 px-3 gap-3">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2">
-              <BarChart3 size={24} className="text-[#667eea]" />
-              <span className="font-bold text-white text-lg">
-                Harmonic Wave Studio
-              </span>
+    <div className="min-h-screen bg-gradient-to-b from-[#0a0a0a] via-[#1a1a1a] to-[#0a0a0a]">
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-md border-b border-gray-800">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Waves className="text-[#667eea]" size={28} />
+            <span className="text-xl font-bold text-white">
+              Harmonic Wave Studio
+            </span>
+          </div>
+          <nav className="hidden md:flex items-center gap-6">
+            <Link
+              href="#features"
+              className="text-gray-300 hover:text-white transition-colors"
+            >
+              Features
             </Link>
-
-            <div className="h-6 w-px bg-[#2a2a2a]" />
-
-            <input
-              type="text"
-              value={projectName}
-              onChange={(e) => setProjectName(e.target.value)}
-              placeholder="Project name..."
-              className="px-3 py-1.5 text-sm bg-[#1a1a1a] border border-[#2a2a2a] rounded-md text-gray-300 placeholder-gray-500 focus:outline-none focus:border-[#667eea] w-48"
-            />
-          </div>
-
-          {!loading && user && (
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={handleNewProject}
-                variant="secondary"
-                className="text-sm"
-              >
-                <FilePlus size={14} className="mr-1" />
-                New
-              </Button>
-              <Button
-                onClick={handleSaveProject}
-                disabled={saving}
-                variant="primary"
-                className="text-sm"
-              >
-                <Save size={14} className="mr-1" />
-                {saving ? "Saving..." : currentProjectId ? "Update" : "Save"}
-              </Button>
-
-              {currentProjectId && (
-                <ShareButton
-                  projectId={currentProjectId}
-                  projectName={projectName}
-                  isShared={!!shareId}
-                  shareId={shareId}
-                  onShareSuccess={handleShareSuccess}
-                />
-              )}
-
-              {/* Gallery Button */}
-              <Link href="/gallery">
-                <Button
-                  variant="secondary"
-                  className="text-sm"
-                  title="Browse community projects"
-                >
-                  <LayoutGrid size={14} className="mr-1" />
-                  Gallery
-                </Button>
-              </Link>
-            </div>
-          )}
-
-          <UndoRedoIndicator />
-
-          <div className="flex items-center">
-            {loading ? (
-              <div className="w-8 h-8 border-2 border-[#667eea] border-t-transparent rounded-full animate-spin" />
-            ) : user ? (
-              <UserMenu />
-            ) : (
-              <SignInButton />
-            )}
-          </div>
+            <Link
+              href="#examples"
+              className="text-gray-300 hover:text-white transition-colors"
+            >
+              Examples
+            </Link>
+            <Link
+              href="/pricing"
+              className="text-gray-300 hover:text-white transition-colors"
+            >
+              Pricing
+            </Link>
+            <Link href="/app">
+              <Button size="sm">Launch App</Button>
+            </Link>
+          </nav>
         </div>
       </header>
 
-      {/* Main layout */}
-      <div className="flex gap-3 flex-1 min-h-0">
-        {/* Left panel */}
-        <ResizableSidebar>
-          {/* Radii Panel */}
-          <div
-            className={
-              openPanel === "radii"
-                ? "flex-1 min-h-0 overflow-hidden"
-                : "flex-shrink-0"
-            }
-          >
-            <AccordionItem
-              title="Radii"
-              icon={<span className="text-lg">⚙️</span>}
-              isOpen={openPanel === "radii"}
-              onToggle={() => handleToggle("radii")}
-            >
-              {openPanel === "radii" && (
-                <div className="flex flex-col h-full">
-                  <div className="flex-1 overflow-y-auto custom-scrollbar px-3">
-                    <div className="space-y-2 py-2">
-                      {radii.length === 0 ? (
-                        <div className="text-center py-6 text-gray-500">
-                          <p className="text-xs">No radii</p>
-                          <p className="text-xs mt-1">
-                            Click the button below to add the first one
-                          </p>
-                        </div>
-                      ) : (
-                        radii.map((radius) => (
-                          <RadiusItem
-                            key={radius.id}
-                            radius={radius}
-                            onEdit={setEditingRadius}
-                          />
-                        ))
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="p-3 pt-2 border-t border-[#2a2a2a] flex-shrink-0 space-y-2">
-                    {radii.length > 0 && (
-                      <Button
-                        onClick={handleNormalizeAll}
-                        variant="secondary"
-                        className="w-full text-sm"
-                        title="Fix invalid angles, speeds, and lengths"
-                      >
-                        <Wand2 size={14} className="mr-1" />
-                        Normalize All
-                      </Button>
-                    )}
-
-                    <Button
-                      onClick={handleAddRadius}
-                      variant="secondary"
-                      className="w-full text-sm"
-                    >
-                      <Plus size={14} className="mr-1" />
-                      Add Radius
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </AccordionItem>
+      {/* Hero Section */}
+      <section className="pt-32 pb-20 px-4">
+        <div className="container mx-auto max-w-6xl text-center">
+          <div className="inline-block mb-4 px-4 py-2 bg-blue-500/10 border border-blue-500/30 rounded-full">
+            <span className="text-blue-400 text-sm font-semibold flex items-center gap-2">
+              <Sparkles size={16} />
+              Interactive Fourier Series Visualization
+            </span>
           </div>
 
-          {/* Signal Processing Panel */}
-          <div
-            className={
-              openPanel === "signal"
-                ? "flex-1 min-h-0 overflow-hidden"
-                : "flex-shrink-0"
-            }
-          >
-            <AccordionItem
-              title="Signal Processing"
-              icon={<Activity size={16} className="text-[#667eea]" />}
-              isOpen={openPanel === "signal"}
-              onToggle={() => handleToggle("signal")}
+          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+            Explore the Beauty of
+            <br />
+            <span className="bg-gradient-to-r from-[#667eea] to-[#764ba2] bg-clip-text text-transparent">
+              Harmonic Waves
+            </span>
+          </h1>
+
+          <p className="text-xl text-gray-400 mb-8 max-w-3xl mx-auto">
+            Create stunning visualizations of Fourier series, analyze frequency
+            components, and explore signal processing — all in real-time with an
+            intuitive interface.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Link href="/app">
+              <Button size="lg" className="text-lg px-8">
+                <Zap size={20} />
+                Start Creating
+                <ArrowRight size={20} />
+              </Button>
+            </Link>
+            <a
+              href="https://github.com/pilgrim-12/harmonic-wave-studio"
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              {openPanel === "signal" && (
-                <div className="h-full overflow-y-auto custom-scrollbar">
-                  <div className="px-3 pb-3 space-y-3">
-                    <NoisePanel />
-                    <FeatureGate feature="canUseFilters" showLockedOverlay>
-                      <DigitalFilterPanel
-                        onApplyFilter={handleApplyFilter}
-                        onClearFilter={handleClearFilter}
-                        isFilterApplied={isFilterApplied}
-                        sampleRate={settings.signalSampleRate || 30}
-                      />
-                    </FeatureGate>
-                    <MetricsPanel />
-                  </div>
-                </div>
-              )}
-            </AccordionItem>
+              <Button variant="secondary" size="lg" className="text-lg px-8">
+                <Github size={20} />
+                View on GitHub
+              </Button>
+            </a>
           </div>
 
-          {/* Visualization Panel */}
-          <div
-            className={
-              openPanel === "visualization"
-                ? "flex-1 min-h-0 overflow-hidden"
-                : "flex-shrink-0"
-            }
-          >
-            <AccordionItem
-              title="Visualization"
-              icon={<Settings size={16} className="text-[#667eea]" />}
-              isOpen={openPanel === "visualization"}
-              onToggle={() => handleToggle("visualization")}
-            >
-              {openPanel === "visualization" && (
-                <div
-                  className="overflow-y-auto custom-scrollbar px-3 pb-3"
-                  style={{ maxHeight: "calc(100vh - 200px)" }}
+          <div className="mt-12 text-sm text-gray-500">
+            No installation required • Works in your browser • Free to start
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="py-20 px-4 bg-[#0f0f0f]">
+        <div className="container mx-auto max-w-6xl">
+          <h2 className="text-4xl font-bold text-white text-center mb-4">
+            Powerful Features
+          </h2>
+          <p className="text-gray-400 text-center mb-12 max-w-2xl mx-auto">
+            Everything you need to create, analyze, and understand harmonic wave
+            patterns.
+          </p>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Feature 1 */}
+            <div className="p-6 bg-[#1a1a1a] rounded-lg border border-gray-800 hover:border-[#667eea] transition-all">
+              <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center mb-4">
+                <Waves className="text-blue-400" size={24} />
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-2">
+                Real-time Visualization
+              </h3>
+              <p className="text-gray-400">
+                Watch epicycles rotate in real-time as they construct complex
+                waveforms through Fourier series.
+              </p>
+            </div>
+
+            {/* Feature 2 */}
+            <div className="p-6 bg-[#1a1a1a] rounded-lg border border-gray-800 hover:border-[#667eea] transition-all">
+              <div className="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center mb-4">
+                <BarChart3 className="text-purple-400" size={24} />
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-2">
+                FFT Analysis
+              </h3>
+              <p className="text-gray-400">
+                Analyze frequency components with Fast Fourier Transform and
+                visualize the frequency spectrum.
+              </p>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="p-6 bg-[#1a1a1a] rounded-lg border border-gray-800 hover:border-[#667eea] transition-all">
+              <div className="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center mb-4">
+                <Wand2 className="text-green-400" size={24} />
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-2">
+                Digital Filters
+              </h3>
+              <p className="text-gray-400">
+                Apply low-pass, high-pass, band-pass, and notch filters to shape
+                your signals in real-time.
+              </p>
+            </div>
+
+            {/* Feature 4 */}
+            <div className="p-6 bg-[#1a1a1a] rounded-lg border border-gray-800 hover:border-[#667eea] transition-all">
+              <div className="w-12 h-12 bg-yellow-500/10 rounded-lg flex items-center justify-center mb-4">
+                <Sparkles className="text-yellow-400" size={24} />
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-2">
+                Preset Waveforms
+              </h3>
+              <p className="text-gray-400">
+                Start with classic waveforms like Square, Sawtooth, Triangle, and
+                more complex patterns.
+              </p>
+            </div>
+
+            {/* Feature 5 */}
+            <div className="p-6 bg-[#1a1a1a] rounded-lg border border-gray-800 hover:border-[#667eea] transition-all">
+              <div className="w-12 h-12 bg-red-500/10 rounded-lg flex items-center justify-center mb-4">
+                <Download className="text-red-400" size={24} />
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-2">
+                Export Projects
+              </h3>
+              <p className="text-gray-400">
+                Save your work as JSON, export signal data as CSV, or capture
+                visualizations as PNG images.
+              </p>
+            </div>
+
+            {/* Feature 6 */}
+            <div className="p-6 bg-[#1a1a1a] rounded-lg border border-gray-800 hover:border-[#667eea] transition-all">
+              <div className="w-12 h-12 bg-pink-500/10 rounded-lg flex items-center justify-center mb-4">
+                <Users className="text-pink-400" size={24} />
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-2">
+                Share & Collaborate
+              </h3>
+              <p className="text-gray-400">
+                Share your creations with a public link and explore projects from
+                the community gallery.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 px-4">
+        <div className="container mx-auto max-w-4xl text-center">
+          <div className="bg-gradient-to-r from-[#667eea] to-[#764ba2] rounded-2xl p-12">
+            <Crown className="text-white mx-auto mb-4" size={48} />
+            <h2 className="text-4xl font-bold text-white mb-4">
+              Ready to Get Started?
+            </h2>
+            <p className="text-white/90 text-lg mb-8">
+              Start creating beautiful harmonic visualizations for free. Upgrade
+              to Pro for unlimited creativity.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/app">
+                <Button
+                  size="lg"
+                  className="bg-white text-[#667eea] hover:bg-gray-100"
                 >
-                  <SettingsPanel />
-                </div>
-              )}
-            </AccordionItem>
-          </div>
-
-          {/* Analysis Panel */}
-          <div
-            className={
-              openPanel === "analysis"
-                ? "flex-1 min-h-0 overflow-hidden"
-                : "flex-shrink-0"
-            }
-          >
-            <AccordionItem
-              title="Analysis"
-              icon={<BarChart3 size={16} className="text-[#667eea]" />}
-              isOpen={openPanel === "analysis"}
-              onToggle={() => handleToggle("analysis")}
-            >
-              {openPanel === "analysis" && (
-                <div className="h-full overflow-y-auto custom-scrollbar px-3 pb-3">
-                  <FeatureGate feature="canUseFFT" showLockedOverlay>
-                    <FrequencyPanel />
-                  </FeatureGate>
-                </div>
-              )}
-            </AccordionItem>
-          </div>
-        </ResizableSidebar>
-
-        {/* Right workspace - IMPROVED RESPONSIVE */}
-        <div className="flex-1 grid grid-rows-[auto_2fr_1fr] gap-3 min-w-0 min-h-0">
-          {/* Control Panel */}
-          <div className="flex-shrink-0">
-            <ControlPanel />
-          </div>
-
-          {/* Visualization Canvas - 2/3 of space, min height */}
-          <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-[200px] overflow-hidden">
-            <FullscreenWrapper>
-              <VisualizationCanvas />
-            </FullscreenWrapper>
-          </div>
-
-          {/* Signal Graphs - 1/3 of space, responsive columns */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 min-h-[100px]">
-            {/* Original Signal */}
-            <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-[80px] overflow-hidden">
-              <FullscreenWrapper>
-                <SignalGraph />
-              </FullscreenWrapper>
-            </div>
-
-            {/* Noisy Signal */}
-            <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-[80px] overflow-hidden">
-              <FullscreenWrapper>
-                <NoisySignalGraph />
-              </FullscreenWrapper>
-            </div>
-
-            {/* Filtered Signal */}
-            <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-[80px] overflow-hidden">
-              <FullscreenWrapper>
-                <FilteredSignalGraph />
-              </FullscreenWrapper>
+                  Launch App
+                  <ArrowRight size={20} />
+                </Button>
+              </Link>
+              <Link href="/pricing">
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  className="bg-white/10 text-white border-white/20 hover:bg-white/20"
+                >
+                  View Pricing
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {editingRadius && (
-        <RadiusEditor
-          radius={editingRadius}
-          onClose={() => setEditingRadius(null)}
-        />
-      )}
+      {/* Footer */}
+      <footer className="py-12 px-4 border-t border-gray-800">
+        <div className="container mx-auto max-w-6xl">
+          <div className="grid md:grid-cols-4 gap-8">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Waves className="text-[#667eea]" size={24} />
+                <span className="font-bold text-white">
+                  Harmonic Wave Studio
+                </span>
+              </div>
+              <p className="text-gray-400 text-sm">
+                Interactive Fourier series and harmonic wave visualization tool.
+              </p>
+            </div>
+
+            <div>
+              <h4 className="font-semibold text-white mb-4">Product</h4>
+              <ul className="space-y-2 text-gray-400 text-sm">
+                <li>
+                  <Link href="/app" className="hover:text-white transition-colors">
+                    App
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/pricing"
+                    className="hover:text-white transition-colors"
+                  >
+                    Pricing
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/gallery"
+                    className="hover:text-white transition-colors"
+                  >
+                    Gallery
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-semibold text-white mb-4">Resources</h4>
+              <ul className="space-y-2 text-gray-400 text-sm">
+                <li>
+                  <a
+                    href="https://github.com/pilgrim-12/harmonic-wave-studio"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-white transition-colors"
+                  >
+                    GitHub
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Documentation
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-semibold text-white mb-4">Connect</h4>
+              <ul className="space-y-2 text-gray-400 text-sm">
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Twitter
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Discord
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-12 pt-8 border-t border-gray-800 text-center text-gray-400 text-sm">
+            <p>
+              © {new Date().getFullYear()} Harmonic Wave Studio. Built with ❤️
+              using Next.js and React.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
-  );
-}
-
-// Wrap in Suspense to fix useSearchParams build error
-export default function Home() {
-  return (
-    <Suspense
-      fallback={
-        <div className="h-screen bg-[#0f0f0f] flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-16 h-16 border-4 border-[#667eea] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-gray-400">Loading studio...</p>
-          </div>
-        </div>
-      }
-    >
-      <HomeContent />
-    </Suspense>
   );
 }
