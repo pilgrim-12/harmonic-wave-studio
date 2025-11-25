@@ -102,7 +102,7 @@ function HomeContent() {
         const { radii: firebaseRadii } = projectData;
 
         if (!firebaseRadii || firebaseRadii.length === 0) {
-          alert("This project has no radii data");
+          toast.error("This project has no radii data");
           return;
         }
 
@@ -153,7 +153,7 @@ function HomeContent() {
         window.history.replaceState({}, "", "/studio");
       } catch (error) {
         console.error("Error loading shared project:", error);
-        alert("Failed to load project from gallery");
+        toast.error("Failed to load project from gallery");
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -357,17 +357,14 @@ function HomeContent() {
     });
 
     if (normalizedCount > 0) {
-      alert(
-        `✅ Normalized ${normalizedCount} ${
+      toast.success(
+        `Normalized ${normalizedCount} ${
           normalizedCount === 1 ? "radius" : "radii"
-        }!\n\n` +
-          `Fixed:\n` +
-          `• Angles wrapped to [0, 2π)\n` +
-          `• Speeds clamped to [0.1, 10]\n` +
-          `• Lengths clamped to [5, 200]`
+        }! Fixed: angles wrapped to [0, 2π), speeds clamped to [0.1, 10], lengths clamped to [5, 200]`,
+        "Normalized Successfully"
       );
     } else {
-      alert("✓ All radii are already normalized!");
+      toast.info("All radii are already normalized!");
     }
   };
 
@@ -437,19 +434,12 @@ function HomeContent() {
   };
 
   const handleNewProject = () => {
-    if (radii.length > 0) {
-      const confirm = window.confirm(
-        "⚠️ Start new project?\n\nThis will clear all current radii and signal data."
-      );
-      if (!confirm) return;
-    }
-
     clearRadii();
     clearProject();
     setProjectName("");
     setShareId(null);
     useSignalProcessingStore.getState().resetSignal();
-    alert("✅ New project started!");
+    toast.success("New project started!");
   };
 
   const handleShareSuccess = (newShareId: string) => {
@@ -468,7 +458,7 @@ function HomeContent() {
     const signalToFilter = noisy.length > 0 ? noisy : original;
 
     if (signalToFilter.length === 0) {
-      alert("⚠️ No signal available. Start animation first!");
+      toast.warning("No signal available. Start animation first!");
       return;
     }
 
