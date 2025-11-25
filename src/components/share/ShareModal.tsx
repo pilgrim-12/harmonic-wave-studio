@@ -12,6 +12,7 @@ import {
 } from "@/services/shareService";
 import { Button } from "@/components/ui/Button";
 import { useTierCheck } from "@/hooks/useTierCheck";
+import { useToast } from "@/contexts/ToastContext";
 
 interface ShareModalProps {
   projectId: string;
@@ -33,6 +34,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   const { user } = useAuth();
   const { radii } = useRadiusStore();
   const { checkLimit } = useTierCheck();
+  const toast = useToast();
   const [name, setName] = useState(projectName);
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState("");
@@ -74,15 +76,16 @@ export const ShareModal: React.FC<ShareModalProps> = ({
         const actualCheck = checkLimit("maxShares", userSharesCount);
 
         if (!actualCheck.allowed) {
-          alert(
-            `🔒 Share limit reached!\n\nYou have ${userSharesCount} shared project${userSharesCount !== 1 ? "s" : ""}.\n\nUpgrade to Pro for unlimited shares!`
+          toast.warning(
+            `You have ${userSharesCount} shared project${userSharesCount !== 1 ? "s" : ""}. Upgrade to Pro for unlimited shares!`,
+            "Share Limit Reached"
           );
           return;
         }
 
         // Show warning when close to limit
         if (!actualCheck.isUnlimited && actualCheck.remaining <= 1 && actualCheck.remaining > 0) {
-          alert(`⚠️ ${actualCheck.remaining} share slot left!`);
+          toast.warning(`Only ${actualCheck.remaining} share slot left!`, "Almost at Limit");
         }
       } catch (error) {
         console.error("Error checking share limit:", error);

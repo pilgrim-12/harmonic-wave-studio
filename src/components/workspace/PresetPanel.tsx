@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Sparkles, Info } from "lucide-react";
+import { Sparkles, Info, Lock } from "lucide-react";
 import { useRadiusStore } from "@/store/radiusStore";
 import { useSimulationStore } from "@/store/simulationStore";
 import { WAVEFORM_PRESETS, WaveformPreset } from "@/lib/presets/waveforms";
@@ -72,8 +72,9 @@ export const PresetPanel: React.FC = () => {
         variant="secondary"
         size="sm"
         className="flex items-center gap-1.5"
-        title="Load preset waveform"
+        title={hasAccess ? "Load preset waveform" : "Sign in to use presets"}
       >
+        {!hasAccess && <Lock size={12} className="text-gray-500" />}
         <Sparkles size={14} />
         Presets
       </Button>

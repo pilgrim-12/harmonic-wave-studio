@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { FileJson, FileSpreadsheet, Image as ImageIcon } from "lucide-react";
+import { FileJson, FileSpreadsheet, Image as ImageIcon, Lock } from "lucide-react";
 import { useRadiusStore } from "@/store/radiusStore";
 import { useSimulationStore } from "@/store/simulationStore";
 import {
@@ -69,8 +69,9 @@ export const ExportPanel: React.FC = () => {
         variant="secondary"
         size="sm"
         className="flex items-center gap-1.5"
-        title="Export project as JSON"
+        title={hasAccess ? "Export project as JSON" : "Sign in to export"}
       >
+        {!hasAccess && <Lock size={12} className="text-gray-500" />}
         <FileJson size={14} />
         JSON
       </Button>
@@ -80,8 +81,9 @@ export const ExportPanel: React.FC = () => {
         variant="secondary"
         size="sm"
         className="flex items-center gap-1.5"
-        title="Export signal data as CSV"
+        title={hasAccess ? "Export signal data as CSV" : "Sign in to export"}
       >
+        {!hasAccess && <Lock size={12} className="text-gray-500" />}
         <FileSpreadsheet size={14} />
         CSV
       </Button>
@@ -91,8 +93,9 @@ export const ExportPanel: React.FC = () => {
         variant="secondary"
         size="sm"
         className="flex items-center gap-1.5"
-        title="Export canvas as PNG"
+        title={hasAccess ? "Export canvas as PNG" : "Sign in to export"}
       >
+        {!hasAccess && <Lock size={12} className="text-gray-500" />}
         <ImageIcon size={14} />
         PNG
       </Button>

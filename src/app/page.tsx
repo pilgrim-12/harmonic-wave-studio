@@ -42,6 +42,7 @@ import { UserMenu } from "@/components/auth/UserMenu";
 import { useAuth } from "@/contexts/AuthContext";
 import { createProject, updateProject, getUserProjects } from "@/services/projectService";
 import { ShareButton } from "@/components/share/ShareButton";
+import { useToast } from "@/contexts/ToastContext";
 import {
   calculateRadiusPositions,
   getFinalPoint,
@@ -80,6 +81,7 @@ function HomeContent() {
   const { applyFilterToSignal, clearFilter, isFilterApplied } =
     useFilterStore();
   const { checkLimit } = useTierCheck();
+  const toast = useToast();
 
   useKeyboardShortcuts();
 
@@ -282,12 +284,13 @@ function HomeContent() {
     );
 
     if (!allowed) {
-      alert(
-        `🔒 Radii limit reached!\n\nYou can't add more radii on your current plan.\n\n${
+      toast.warning(
+        `You can't add more radii on your current plan. ${
           user
             ? "Upgrade to Pro for unlimited radii!"
             : "Sign in for free to get 5 radii!"
-        }`
+        }`,
+        "Radii Limit Reached"
       );
       return;
     }
@@ -310,8 +313,9 @@ function HomeContent() {
     // Show warning when approaching limit
     if (!isUnlimited && remaining <= 1 && remaining > 0) {
       setTimeout(() => {
-        alert(
-          `⚠️ ${remaining} radius slot left!\n\nUpgrade to Pro for unlimited radii.`
+        toast.warning(
+          `Only ${remaining} radius slot left. Upgrade to Pro for unlimited radii.`,
+          "Almost at Limit"
         );
       }, 500);
     }
@@ -369,12 +373,12 @@ function HomeContent() {
 
   const handleSaveProject = async () => {
     if (!user) {
-      alert("❌ Please sign in to save projects");
+      toast.error("Please sign in to save projects", "Sign In Required");
       return;
     }
 
     if (radii.length === 0) {
-      alert("❌ No radii to save. Please add some radii first.");
+      toast.error("No radii to save. Please add some radii first.", "No Radii");
       return;
     }
 
@@ -385,8 +389,9 @@ function HomeContent() {
         const actualCheck = checkLimit("maxProjects", userProjects.length);
 
         if (!actualCheck.allowed) {
-          alert(
-            `🔒 Project limit reached!\n\nYou have ${userProjects.length} projects.\n\nUpgrade to Pro for unlimited projects!`
+          toast.warning(
+            `You have ${userProjects.length} projects. Upgrade to Pro for unlimited projects!`,
+            "Project Limit Reached"
           );
           return;
         }
@@ -394,7 +399,7 @@ function HomeContent() {
         // Show warning when close to limit
         if (!actualCheck.isUnlimited && actualCheck.remaining <= 1 && actualCheck.remaining > 0) {
           setTimeout(() => {
-            alert(`⚠️ ${actualCheck.remaining} project slot left!`);
+            toast.warning(`Only ${actualCheck.remaining} project slot left!`, "Almost at Limit");
           }, 500);
         }
       } catch (error) {
@@ -417,15 +422,15 @@ function HomeContent() {
 
       if (currentProjectId) {
         await updateProject(currentProjectId, name, projectRadii);
-        alert("✅ Project updated successfully!");
+        toast.success("Project updated successfully!", "Success");
       } else {
         const newProjectId = await createProject(user.uid, name, projectRadii);
         setCurrentProject(newProjectId, name, projectRadii);
-        alert("✅ Project saved successfully!");
+        toast.success("Project saved successfully!", "Success");
       }
     } catch (error) {
       console.error("Failed to save project:", error);
-      alert("❌ Failed to save project. Please try again.");
+      toast.error("Failed to save project. Please try again.", "Save Failed");
     } finally {
       setSaving(false);
     }

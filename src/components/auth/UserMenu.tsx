@@ -6,18 +6,59 @@ import {
   User as UserIcon,
   FolderOpen,
   MessageSquare,
+  Crown,
+  Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { FeedbackModal } from "@/components/feedback/FeedbackModal";
+import { UserTier } from "@/config/tiers";
+import { UsageIndicator } from "@/components/tier/UsageIndicator";
+import { useUsageStats } from "@/hooks/useUsageStats";
+import { useRadiusStore } from "@/store/radiusStore";
+
+// Helper function to get tier badge config
+const getTierBadge = (tier: UserTier) => {
+  switch (tier) {
+    case "pro":
+      return {
+        label: "PRO",
+        icon: Crown,
+        bgColor: "bg-gradient-to-r from-purple-500 to-pink-500",
+        textColor: "text-white",
+      };
+    case "free":
+      return {
+        label: "FREE",
+        icon: Sparkles,
+        bgColor: "bg-blue-500/20",
+        textColor: "text-blue-400",
+      };
+    case "anonymous":
+      return {
+        label: "GUEST",
+        icon: UserIcon,
+        bgColor: "bg-gray-500/20",
+        textColor: "text-gray-400",
+      };
+  }
+};
 
 export const UserMenu: React.FC = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, userProfile } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const { radii } = useRadiusStore();
+
+  const currentTier: UserTier = userProfile?.tier || (user ? "free" : "anonymous");
+  const tierBadge = getTierBadge(currentTier);
+  const BadgeIcon = tierBadge.icon;
+
+  // Fetch usage stats
+  const { stats, loading: statsLoading } = useUsageStats(radii.length);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -72,19 +113,61 @@ export const UserMenu: React.FC = () => {
             <UserIcon size={18} className="text-white" />
           </div>
         )}
-        <span className="text-sm text-gray-300 hidden md:block">
-          {user.displayName || "User"}
-        </span>
+        <div className="hidden md:flex items-center gap-2">
+          <span className="text-sm text-gray-300">
+            {user.displayName || "User"}
+          </span>
+          {/* Tier Badge */}
+          <span
+            className={`px-2 py-0.5 rounded-full text-xs font-semibold flex items-center gap-1 ${tierBadge.bgColor} ${tierBadge.textColor}`}
+          >
+            <BadgeIcon size={10} />
+            {tierBadge.label}
+          </span>
+        </div>
       </button>
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-64 bg-[#1a1a1a] rounded-lg border border-[#2a2a2a] shadow-xl z-50">
           <div className="p-4 border-b border-[#2a2a2a]">
-            <p className="text-sm font-semibold text-white">
-              {user.displayName || "User"}
-            </p>
-            <p className="text-xs text-gray-400 mt-1">{user.email}</p>
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-sm font-semibold text-white">
+                {user.displayName || "User"}
+              </p>
+              {/* Tier Badge in dropdown */}
+              <span
+                className={`px-2 py-0.5 rounded-full text-xs font-semibold flex items-center gap-1 ${tierBadge.bgColor} ${tierBadge.textColor}`}
+              >
+                <BadgeIcon size={10} />
+                {tierBadge.label}
+              </span>
+            </div>
+            <p className="text-xs text-gray-400">{user.email}</p>
           </div>
+
+          {/* Usage Indicators */}
+          {!statsLoading && currentTier !== "anonymous" && (
+            <div className="px-4 py-3 border-b border-[#2a2a2a] space-y-2">
+              <div className="text-xs font-semibold text-gray-400 mb-2">
+                Usage
+              </div>
+              <UsageIndicator
+                label="Radii"
+                current={stats.radii.current}
+                limit={stats.radii.limit}
+              />
+              <UsageIndicator
+                label="Projects"
+                current={stats.projects.current}
+                limit={stats.projects.limit}
+              />
+              <UsageIndicator
+                label="Shares"
+                current={stats.shares.current}
+                limit={stats.shares.limit}
+              />
+            </div>
+          )}
 
           <div className="py-2">
             <button
