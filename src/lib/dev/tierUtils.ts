@@ -108,6 +108,62 @@ export function showAvailableTiers(): void {
 }
 
 // ============================================
+// 🎛️ FEATURE FLAG: Enable All Pro Features
+// ============================================
+
+const FEATURE_FLAG_KEY = "dev_enable_all_pro_features";
+
+/**
+ * Включить все Pro фичи для всех пользователей (для разработки/тестирования)
+ */
+export function enableAllProFeatures(): void {
+  localStorage.setItem(FEATURE_FLAG_KEY, "true");
+  console.log("✅ All Pro features enabled for everyone!");
+  console.log("🔄 Please reload the page to see changes");
+
+  if (confirm("All Pro features enabled!\n\nReload the page?")) {
+    window.location.reload();
+  }
+}
+
+/**
+ * Отключить feature flag (вернуть нормальную работу tier system)
+ */
+export function disableAllProFeatures(): void {
+  localStorage.removeItem(FEATURE_FLAG_KEY);
+  console.log("✅ Feature flag disabled. Tier system restored.");
+  console.log("🔄 Please reload the page to see changes");
+
+  if (confirm("Tier system restored!\n\nReload the page?")) {
+    window.location.reload();
+  }
+}
+
+/**
+ * Проверить статус feature flag
+ */
+export function isAllProFeaturesEnabled(): boolean {
+  return localStorage.getItem(FEATURE_FLAG_KEY) === "true";
+}
+
+/**
+ * Показать статус feature flag
+ */
+export function showFeatureFlagStatus(): void {
+  const enabled = isAllProFeaturesEnabled();
+  console.log(
+    `🎛️ All Pro Features: ${enabled ? "✅ ENABLED" : "❌ DISABLED"}`
+  );
+  if (enabled) {
+    console.log("   → Everyone has Pro access");
+    console.log("   → To disable: window.disableAllProFeatures()");
+  } else {
+    console.log("   → Normal tier system active");
+    console.log("   → To enable: window.enableAllProFeatures()");
+  }
+}
+
+// ============================================
 // Экспортируем в window для использования в консоли
 // ============================================
 
@@ -117,6 +173,10 @@ if (typeof window !== "undefined") {
   (window as any).giveProAccess = giveProAccess;
   (window as any).revertToFree = revertToFree;
   (window as any).showAvailableTiers = showAvailableTiers;
+  (window as any).enableAllProFeatures = enableAllProFeatures;
+  (window as any).disableAllProFeatures = disableAllProFeatures;
+  (window as any).isAllProFeaturesEnabled = isAllProFeaturesEnabled;
+  (window as any).showFeatureFlagStatus = showFeatureFlagStatus;
 
   // Helpful message in console
   console.log(
@@ -133,4 +193,12 @@ if (typeof window !== "undefined") {
   console.log("  await window.giveProAccess()");
   console.log("  await window.revertToFree()");
   console.log("  window.showAvailableTiers()");
+  console.log("");
+  console.log(
+    "%c🎛️ Feature Flag commands:",
+    "color: #f59e0b; font-size: 12px; font-weight: bold"
+  );
+  console.log("  window.enableAllProFeatures()  // Give everyone Pro");
+  console.log("  window.disableAllProFeatures() // Restore tier system");
+  console.log("  window.showFeatureFlagStatus()");
 }

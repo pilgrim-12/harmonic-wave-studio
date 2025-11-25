@@ -49,10 +49,20 @@ export const useTierCheck = (
   const { user, userProfile } = useAuth();
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
 
+  // 🎛️ Feature Flag: Check if all Pro features are enabled
+  const isAllProEnabled =
+    typeof window !== "undefined" &&
+    localStorage.getItem("dev_enable_all_pro_features") === "true";
+
   // Определяем текущий тарif
-  const currentTier: UserTier = user
+  let currentTier: UserTier = user
     ? (userProfile?.tier as UserTier) || "free"
     : "anonymous";
+
+  // 🎛️ If feature flag is enabled, override to Pro
+  if (isAllProEnabled) {
+    currentTier = "pro";
+  }
 
   const features = getTierFeatures(currentTier);
 
