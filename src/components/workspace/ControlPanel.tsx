@@ -12,13 +12,22 @@ import { ProjectPanel } from "./ProjectPanel";
 import { TrailLengthControl } from "@/components/settings/TrailLengthControl";
 
 export const ControlPanel: React.FC = () => {
-  const { isPlaying, isPaused, currentTime, fps, play, pause, stop, reset } =
+  const { isPlaying, isPaused, currentTime, fps, play, pause, stop, reset, activeTrackingRadiusId } =
     useSimulationStore();
 
   const handleReset = () => {
+    const trackingId = activeTrackingRadiusId;
     reset();
     // Clear signal processing graphs
     useSignalProcessingStore.getState().resetSignal();
+
+    // Restore tracking and trail for selected radius
+    if (trackingId) {
+      requestAnimationFrame(() => {
+        useSimulationStore.getState().setActiveTrackingRadius(trackingId);
+        useSimulationStore.getState().toggleTrailTracking(trackingId);
+      });
+    }
   };
 
   return (
