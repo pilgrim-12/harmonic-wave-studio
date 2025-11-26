@@ -9,6 +9,7 @@ import { SignalGraph } from "@/components/workspace/SignalGraph";
 import { SettingsPanel } from "@/components/workspace/SettingsPanel";
 import { FrequencyPanel } from "@/components/analysis/FrequencyPanel";
 import { SpectrumGraphPanel } from "@/components/workspace/SpectrumGraphPanel";
+import { DecompositionGraph } from "@/components/workspace/DecompositionGraph";
 import { NoisePanel } from "@/components/signal/NoisePanel";
 import { MetricsPanel } from "@/components/signal/MetricsPanel";
 import { NoisySignalGraph } from "@/components/signal/NoisySignalGraph";
@@ -86,7 +87,7 @@ function HomeContent() {
     useFilterStore();
   const { checkLimit } = useTierCheck();
   const toast = useToast();
-  const { showOriginalSignal, showNoisySignal, showFilteredSignal, showSpectrum } =
+  const { showOriginalSignal, showNoisySignal, showFilteredSignal, showSpectrum, showDecomposition } =
     useGraphVisibilityStore();
 
   useKeyboardShortcuts();
@@ -691,7 +692,7 @@ function HomeContent() {
           </div>
 
           {/* Signal Graphs - 1/3 of space, responsive columns */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-2 min-h-[100px]">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-2 min-h-[100px]">
             {/* Original Signal */}
             {showOriginalSignal && (
               <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-[80px] overflow-hidden">
@@ -724,6 +725,15 @@ function HomeContent() {
               <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-[80px] overflow-hidden">
                 <FullscreenWrapper>
                   <SpectrumGraphPanel />
+                </FullscreenWrapper>
+              </div>
+            )}
+
+            {/* Decomposition */}
+            {showDecomposition && (
+              <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-[80px] overflow-hidden">
+                <FullscreenWrapper>
+                  <DecompositionGraph />
                 </FullscreenWrapper>
               </div>
             )}

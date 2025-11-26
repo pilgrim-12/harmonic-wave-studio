@@ -11,10 +11,12 @@ export const GraphVisibilityPanel: React.FC = () => {
     showNoisySignal,
     showFilteredSignal,
     showSpectrum,
+    showDecomposition,
     toggleOriginalSignal,
     toggleNoisySignal,
     toggleFilteredSignal,
     toggleSpectrum,
+    toggleDecomposition,
   } = useGraphVisibilityStore();
 
   const graphs = [
@@ -41,6 +43,12 @@ export const GraphVisibilityPanel: React.FC = () => {
       visible: showSpectrum,
       toggle: toggleSpectrum,
       color: "text-purple-400",
+    },
+    {
+      label: "Decomp",
+      visible: showDecomposition,
+      toggle: toggleDecomposition,
+      color: "text-cyan-400",
     },
   ];
 
