@@ -77,13 +77,8 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
 
   reset: () => {
     set({
-      isPlaying: false,
-      isPaused: false,
       currentTime: 0,
-      fps: 0,
-      lastUpdateTime: 0,
-      signalData: [],
-      highResSignal: [],
+      lastUpdateTime: performance.now(),
     });
   },
 
