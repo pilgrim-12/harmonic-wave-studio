@@ -148,7 +148,7 @@ function HomeContent() {
         // Set project in store (this triggers useEffect that updates projectName)
         if (projectData.metadata?.projectName) {
           const projectNameFromGallery = `${projectData.metadata.projectName} (from gallery)`;
-          setCurrentProject(null, projectNameFromGallery, firebaseRadii);
+          setCurrentProject(null, projectNameFromGallery);
         }
 
         // Start animation after short delay
@@ -382,7 +382,7 @@ function HomeContent() {
         toast.success("Project updated successfully!", "Success");
       } else {
         const newProjectId = await createProject(user.uid, name, projectRadii);
-        setCurrentProject(newProjectId, name, projectRadii);
+        setCurrentProject(newProjectId, name);
         toast.success("Project saved successfully!", "Success");
       }
     } catch (error) {

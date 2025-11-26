@@ -76,7 +76,7 @@ export default function ProfilePage() {
       setActiveTrackingRadius(lastRadiusId);
     }
 
-    setCurrentProject(project.id!, project.name, project.radii);
+    setCurrentProject(project.id!, project.name);
     router.push("/studio");
   };
 
