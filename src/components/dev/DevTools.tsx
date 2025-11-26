@@ -17,6 +17,10 @@ export const DevTools: React.FC = () => {
         (window as any).giveProAccess = module.giveProAccess;
         (window as any).revertToFree = module.revertToFree;
         (window as any).showAvailableTiers = module.showAvailableTiers;
+        (window as any).enableAllProFeatures = module.enableAllProFeatures;
+        (window as any).disableAllProFeatures = module.disableAllProFeatures;
+        (window as any).isAllProFeaturesEnabled = module.isAllProFeaturesEnabled;
+        (window as any).showFeatureFlagStatus = module.showFeatureFlagStatus;
 
         console.log(
           "%c✅ Dev Tools Loaded",
@@ -30,6 +34,14 @@ export const DevTools: React.FC = () => {
         console.log("  await window.setMyTier('free')");
         console.log("  await window.getMyTier()");
         console.log("  window.showAvailableTiers()");
+        console.log("");
+        console.log(
+          "%c🎛️ Feature Flag commands:",
+          "color: #f59e0b; font-size: 11px; font-weight: bold"
+        );
+        console.log("  window.enableAllProFeatures()  // Give everyone Pro");
+        console.log("  window.disableAllProFeatures() // Restore tier system");
+        console.log("  window.showFeatureFlagStatus()");
       });
     }
   }, []);
