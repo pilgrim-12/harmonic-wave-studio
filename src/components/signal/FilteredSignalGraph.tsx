@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useEffect } from "react";
+import { Filter } from "lucide-react";
 import { useSimulationStore } from "@/store/simulationStore";
 import { useSignalProcessingStore } from "@/store/signalProcessingStore";
 import { useFilterStore } from "@/store/filterStore";
@@ -10,33 +11,11 @@ export const FilteredSignalGraph: React.FC = () => {
   const animationFrameRef = useRef<number | null>(null);
   const frameCountRef = useRef<number>(0);
 
-  // Subscribe to trigger re-renders (values used implicitly)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const originalLength = useSignalProcessingStore(
     (state) => state.original.length
   );
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const filteredLength = useFilterStore((state) => state.filteredSignal.length);
 
-  // Initialize canvas size
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const parent = canvas.parentElement;
-    if (!parent) return;
-
-    const updateSize = () => {
-      canvas.width = parent.clientWidth;
-      canvas.height = parent.clientHeight;
-    };
-
-    updateSize();
-    window.addEventListener("resize", updateSize);
-    return () => window.removeEventListener("resize", updateSize);
-  }, []);
-
-  // Render loop
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -47,51 +26,56 @@ export const FilteredSignalGraph: React.FC = () => {
     const draw = () => {
       frameCountRef.current++;
       if (frameCountRef.current % 2 === 0) {
-        const width = canvas.width;
-        const height = canvas.height;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * window.devicePixelRatio;
+        canvas.height = rect.height * window.devicePixelRatio;
+        ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
 
-        // Clear
+        const width = rect.width;
+        const height = rect.height;
+
         ctx.fillStyle = "#0a0a0a";
         ctx.fillRect(0, 0, width, height);
 
-        // Grid
-        drawGrid(ctx, width, height);
+        const padding = { left: 40, right: 20, top: 30, bottom: 30 };
+        const graphWidth = width - padding.left - padding.right;
+        const graphHeight = height - padding.top - padding.bottom;
 
-        // Get data
-        const { signalBuffer, original, noisy, noiseApplied, scale } =
-          useSignalProcessingStore.getState();
+        const { signalBuffer, noisy, scale } = useSignalProcessingStore.getState();
         const { filteredSignal, isFilterApplied } = useFilterStore.getState();
         const { currentTime, settings } = useSimulationStore.getState();
+        const graphDuration = settings.graphDuration;
+
+        drawGridAndAxes(ctx, width, height, padding, currentTime, graphDuration, scale);
 
         if (signalBuffer.length > 1) {
+          const hasFiltered = isFilterApplied && filteredSignal.length > 0;
           drawSignals(
             ctx,
             signalBuffer,
-            original,
             noisy,
             filteredSignal,
-            noiseApplied,
-            isFilterApplied,
+            hasFiltered,
             scale,
-            width,
-            height,
+            padding,
+            graphWidth,
+            graphHeight,
             currentTime,
-            settings.graphDuration
+            graphDuration
           );
         } else {
           ctx.fillStyle = "#666";
           ctx.font = "12px sans-serif";
           ctx.textAlign = "center";
-          ctx.fillText("No signal data", width / 2, height / 2);
+          ctx.textBaseline = "middle";
+          ctx.fillText("Apply filter first", width / 2, height / 2);
         }
 
-        drawLabels(
-          ctx,
-          width,
-          height,
-          noiseApplied && noisy.length > 0,
-          isFilterApplied
-        );
+        ctx.fillStyle = "#43e97b";
+        ctx.font = "bold 12px sans-serif";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        ctx.fillText("Signal Comparison", padding.left, 8);
       }
 
       animationFrameRef.current = requestAnimationFrame(draw);
@@ -102,185 +86,177 @@ export const FilteredSignalGraph: React.FC = () => {
       if (animationFrameRef.current)
         cancelAnimationFrame(animationFrameRef.current);
     };
-  }, []);
+  }, [originalLength, filteredLength]);
 
   return (
-    <div className="relative w-full h-full">
-      <canvas ref={canvasRef} className="w-full h-full" />
-      <div className="absolute top-2 left-2 text-xs text-gray-500">
-        Signal Comparison
+    <div className="h-full flex flex-col bg-[#0a0a0a] p-3">
+      <div className="flex items-center gap-2 mb-2">
+        <Filter size={16} className="text-[#43e97b]" />
+        <h3 className="text-sm font-bold text-white">Signal Comparison</h3>
+      </div>
+      <div className="flex-1 min-h-0">
+        <canvas ref={canvasRef} className="w-full h-full" />
       </div>
     </div>
   );
 };
 
-function drawGrid(
-  ctx: CanvasRenderingContext2D,
-  width: number,
-  height: number
-) {
-  ctx.strokeStyle = "#1a1a1a";
-  ctx.lineWidth = 1;
-
-  for (let i = 0; i <= 4; i++) {
-    const y = (i * height) / 4;
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(width, y);
-    ctx.stroke();
-  }
-
-  for (let i = 0; i <= 8; i++) {
-    const x = (i * width) / 8;
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, height);
-    ctx.stroke();
-  }
-
-  ctx.strokeStyle = "#2a2a2a";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(0, height / 2);
-  ctx.lineTo(width, height / 2);
-  ctx.stroke();
-}
-
-function drawLabels(
+function drawGridAndAxes(
   ctx: CanvasRenderingContext2D,
   width: number,
   height: number,
-  hasNoise: boolean,
-  hasFilter: boolean
+  padding: { left: number; right: number; top: number; bottom: number },
+  currentTime: number,
+  graphDuration: number,
+  scale: { minY: number; maxY: number }
 ) {
+  const graphWidth = width - padding.left - padding.right;
+  const graphHeight = height - padding.top - padding.bottom;
+  const { minY, maxY } = scale;
+  const yRange = Math.max(Math.abs(maxY), Math.abs(minY)) * 1.2 || 100;
+
+  const timeToX = (t: number) => {
+    const normalizedTime = (t - (currentTime - graphDuration)) / graphDuration;
+    return padding.left + normalizedTime * graphWidth;
+  };
+
+  const yToCanvas = (y: number) => {
+    return padding.top + graphHeight / 2 - (y / yRange) * (graphHeight / 2);
+  };
+
+  ctx.strokeStyle = "#1a1a1a";
+  ctx.lineWidth = 1;
+
+  for (let i = -2; i <= 2; i++) {
+    const y = yToCanvas(i * (yRange / 2));
+    ctx.beginPath();
+    ctx.moveTo(padding.left, y);
+    ctx.lineTo(width - padding.right, y);
+    ctx.stroke();
+  }
+
+  const timeStep = graphDuration / 5;
+  for (let i = 0; i <= 5; i++) {
+    const t = currentTime - graphDuration + i * timeStep;
+    const x = timeToX(t);
+    ctx.beginPath();
+    ctx.moveTo(x, padding.top);
+    ctx.lineTo(x, height - padding.bottom);
+    ctx.stroke();
+  }
+
+  ctx.strokeStyle = "#333";
+  ctx.lineWidth = 2;
+
+  ctx.beginPath();
+  ctx.moveTo(padding.left, yToCanvas(0));
+  ctx.lineTo(width - padding.right, yToCanvas(0));
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(padding.left, padding.top);
+  ctx.lineTo(padding.left, height - padding.bottom);
+  ctx.stroke();
+
   ctx.fillStyle = "#666";
-  ctx.font = "10px monospace";
-  ctx.textAlign = "left";
-  ctx.fillText("Y", 10, 15);
-  ctx.textAlign = "right";
-  ctx.fillText("Time →", width - 10, height - 10);
-
-  const legendX = width - 130;
-  let y = 10;
-
-  // Original
-  ctx.fillStyle = "rgba(102, 126, 234, 0.3)";
-  ctx.fillRect(legendX, y, 15, 3);
-  ctx.fillStyle = "#999";
   ctx.font = "10px sans-serif";
-  ctx.textAlign = "left";
-  ctx.fillText("Original", legendX + 20, y + 5);
-  y += 15;
+  ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
 
-  // Noisy
-  if (hasNoise) {
-    ctx.fillStyle = "rgba(255, 107, 107, 0.6)";
-    ctx.fillRect(legendX, y, 15, 3);
-    ctx.fillStyle = "#999";
-    ctx.fillText("Noisy", legendX + 20, y + 5);
-    y += 15;
+  for (let i = -2; i <= 2; i++) {
+    const value = i * (yRange / 2);
+    const y = yToCanvas(value);
+    ctx.fillText(value.toFixed(0), padding.left - 5, y);
   }
 
-  // Filtered
-  if (hasFilter) {
-    ctx.fillStyle = "#22c55e";
-    ctx.fillRect(legendX, y, 15, 3);
-    ctx.fillStyle = "#999";
-    ctx.fillText("Filtered", legendX + 20, y + 5);
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  for (let i = 0; i <= 5; i++) {
+    const t = currentTime - graphDuration + i * timeStep;
+    const x = timeToX(t);
+    ctx.fillText(t.toFixed(1) + "s", x, height - padding.bottom + 5);
   }
+
+  ctx.fillStyle = "#888";
+  ctx.font = "11px sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "bottom";
+  ctx.fillText("Time (s)", width / 2, height - 5);
+
+  ctx.save();
+  ctx.translate(12, height / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.textAlign = "center";
+  ctx.textBaseline = "bottom";
+  ctx.fillText("Amplitude", 0, 0);
+  ctx.restore();
 }
 
 function drawSignals(
   ctx: CanvasRenderingContext2D,
   signalBuffer: { time: number; y: number }[],
-  original: number[],
   noisy: number[],
   filtered: number[],
-  noiseApplied: boolean,
-  filterApplied: boolean,
+  hasFiltered: boolean,
   scale: { minY: number; maxY: number; avgY: number },
-  width: number,
-  height: number,
+  padding: { left: number; right: number; top: number; bottom: number },
+  graphWidth: number,
+  graphHeight: number,
   currentTime: number,
   graphDuration: number
 ) {
-  // Need noise for this view
-  if (!noiseApplied || noisy.length === 0) {
-    ctx.fillStyle = "#666";
-    ctx.font = "12px sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("Apply noise first", width / 2, height / 2);
-    return;
-  }
-
   const { minY, maxY, avgY } = scale;
-  const centerY = height / 2;
-  const timeScale = (width - 100) / graphDuration;
-  const currentX = width - 50;
-  const yScale = height / (maxY - minY);
+  const yRange = Math.max(Math.abs(maxY), Math.abs(minY)) * 1.2 || 100;
 
-  // Draw original (thin, transparent)
-  ctx.strokeStyle = "rgba(102, 126, 234, 0.3)";
-  ctx.lineWidth = 1.5;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.beginPath();
+  const timeToX = (t: number) => {
+    const normalizedTime = (t - (currentTime - graphDuration)) / graphDuration;
+    return padding.left + normalizedTime * graphWidth;
+  };
 
-  let firstPoint = true;
-  for (let i = 0; i < signalBuffer.length && i < original.length; i++) {
-    const point = signalBuffer[i];
-    const x = currentX - (currentTime - point.time) * timeScale;
-    if (x < 0) continue;
+  const yToCanvas = (y: number) => {
+    const centered = y - avgY;
+    return padding.top + graphHeight / 2 - (centered / yRange) * (graphHeight / 2);
+  };
 
-    const centered = original[i] - avgY;
-    const y = centerY - (centered - (minY + maxY) / 2) * yScale;
-
-    if (firstPoint) {
-      ctx.moveTo(x, y);
-      firstPoint = false;
-    } else {
-      ctx.lineTo(x, y);
-    }
-  }
-  ctx.stroke();
-
-  // Draw noisy (red, medium)
-  ctx.strokeStyle = "rgba(255, 107, 107, 0.6)";
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-
-  firstPoint = true;
-  for (let i = 0; i < signalBuffer.length && i < noisy.length; i++) {
-    const point = signalBuffer[i];
-    const x = currentX - (currentTime - point.time) * timeScale;
-    if (x < 0) continue;
-
-    const centered = noisy[i] - avgY;
-    const y = centerY - (centered - (minY + maxY) / 2) * yScale;
-
-    if (firstPoint) {
-      ctx.moveTo(x, y);
-      firstPoint = false;
-    } else {
-      ctx.lineTo(x, y);
-    }
-  }
-  ctx.stroke();
-
-  // Draw filtered (green, thick)
-  if (filterApplied && filtered.length > 0) {
-    ctx.strokeStyle = "#22c55e";
-    ctx.lineWidth = 3;
+  // Draw noisy (faded if filtered exists)
+  if (noisy.length > 0) {
+    ctx.strokeStyle = hasFiltered ? "rgba(255, 107, 107, 0.3)" : "#ff6b6b";
+    ctx.lineWidth = hasFiltered ? 1.5 : 2;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
     ctx.beginPath();
 
-    firstPoint = true;
+    let firstPoint = true;
+    for (let i = 0; i < signalBuffer.length && i < noisy.length; i++) {
+      const point = signalBuffer[i];
+      const x = timeToX(point.time);
+      if (x < padding.left) continue;
+
+      const y = yToCanvas(noisy[i]);
+
+      if (firstPoint) {
+        ctx.moveTo(x, y);
+        firstPoint = false;
+      } else {
+        ctx.lineTo(x, y);
+      }
+    }
+    ctx.stroke();
+  }
+
+  // Draw filtered
+  if (hasFiltered) {
+    ctx.strokeStyle = "#43e97b";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+
+    let firstPoint = true;
     for (let i = 0; i < signalBuffer.length && i < filtered.length; i++) {
       const point = signalBuffer[i];
-      const x = currentX - (currentTime - point.time) * timeScale;
-      if (x < 0) continue;
+      const x = timeToX(point.time);
+      if (x < padding.left) continue;
 
-      const centered = filtered[i] - avgY;
-      const y = centerY - (centered - (minY + maxY) / 2) * yScale;
+      const y = yToCanvas(filtered[i]);
 
       if (firstPoint) {
         ctx.moveTo(x, y);
