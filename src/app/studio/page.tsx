@@ -20,6 +20,7 @@ import { ResizableSidebar } from "@/components/ui/ResizableSidebar";
 import {
   Settings,
   Plus,
+  Waves,
   BarChart3,
   Save,
   FilePlus,
@@ -457,7 +458,7 @@ function HomeContent() {
         <div className="flex items-center justify-between h-14 px-3 gap-3">
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2">
-              <BarChart3 size={24} className="text-[#667eea]" />
+              <Waves size={24} className="text-[#667eea]" />
               <span className="font-bold text-white text-lg">
                 Harmonic Wave Studio
               </span>
