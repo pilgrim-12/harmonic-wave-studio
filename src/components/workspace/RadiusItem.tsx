@@ -135,7 +135,7 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
                   onClick={(e) => e.stopPropagation()}
                 >
                   {/* Color grid */}
-                  <div className="grid grid-cols-3 gap-2 mb-2">
+                  <div className="grid grid-cols-4 gap-2 mb-2">
                     {commonColors.map((color) => (
                       <button
                         key={color}
