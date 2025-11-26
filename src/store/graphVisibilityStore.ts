@@ -5,15 +5,18 @@ export interface GraphVisibilityState {
   showOriginalSignal: boolean;
   showNoisySignal: boolean;
   showFilteredSignal: boolean;
+  showSpectrum: boolean;
 
   // Actions
   toggleOriginalSignal: () => void;
   toggleNoisySignal: () => void;
   toggleFilteredSignal: () => void;
+  toggleSpectrum: () => void;
   setGraphVisibility: (
     original: boolean,
     noisy: boolean,
-    filtered: boolean
+    filtered: boolean,
+    spectrum: boolean
   ) => void;
 }
 
@@ -24,6 +27,7 @@ export const useGraphVisibilityStore = create<GraphVisibilityState>()(
       showOriginalSignal: true,
       showNoisySignal: true,
       showFilteredSignal: true,
+      showSpectrum: false,
 
       // Actions
       toggleOriginalSignal: () =>
@@ -35,11 +39,15 @@ export const useGraphVisibilityStore = create<GraphVisibilityState>()(
       toggleFilteredSignal: () =>
         set((state) => ({ showFilteredSignal: !state.showFilteredSignal })),
 
-      setGraphVisibility: (original, noisy, filtered) =>
+      toggleSpectrum: () =>
+        set((state) => ({ showSpectrum: !state.showSpectrum })),
+
+      setGraphVisibility: (original, noisy, filtered, spectrum) =>
         set({
           showOriginalSignal: original,
           showNoisySignal: noisy,
           showFilteredSignal: filtered,
+          showSpectrum: spectrum,
         }),
     }),
     {
