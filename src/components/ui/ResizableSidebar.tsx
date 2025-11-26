@@ -71,15 +71,32 @@ export const ResizableSidebar: React.FC<ResizableSidebarProps> = ({
   }
 
   return (
-    <div
-      ref={sidebarRef}
-      className="flex-shrink-0 relative h-full"
-      style={{ width: `${width}px` }}
-    >
-      {/* Collapse button */}
+    <div className="flex-shrink-0 relative h-full flex">
+      {/* Sidebar content */}
+      <div
+        ref={sidebarRef}
+        className="relative h-full"
+        style={{ width: `${width}px` }}
+      >
+        {/* Content */}
+        <div className="h-full flex flex-col gap-3 overflow-hidden pr-1">
+          {children}
+        </div>
+
+        {/* Resize handle */}
+        <div
+          className={`absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-[#667eea]/50 transition-colors ${
+            isResizing ? "bg-[#667eea]" : "bg-transparent"
+          }`}
+          onMouseDown={() => setIsResizing(true)}
+          title="Drag to resize"
+        />
+      </div>
+
+      {/* Collapse button - outside content area */}
       <button
         onClick={() => setIsCollapsed(true)}
-        className="absolute top-2 right-2 z-50 p-1.5 bg-[#1a1a1a] hover:bg-[#2a2a2a] rounded-lg transition-colors group border border-[#333]"
+        className="absolute -right-3 top-2 z-50 p-1.5 bg-[#1a1a1a] hover:bg-[#2a2a2a] rounded-lg transition-colors group border border-[#333] shadow-lg"
         title="Collapse sidebar"
       >
         <ChevronLeft
@@ -87,20 +104,6 @@ export const ResizableSidebar: React.FC<ResizableSidebarProps> = ({
           className="text-gray-400 group-hover:text-white transition-colors"
         />
       </button>
-
-      {/* Content */}
-      <div className="h-full flex flex-col gap-3 overflow-hidden pr-1">
-        {children}
-      </div>
-
-      {/* Resize handle */}
-      <div
-        className={`absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-[#667eea]/50 transition-colors ${
-          isResizing ? "bg-[#667eea]" : "bg-transparent"
-        }`}
-        onMouseDown={() => setIsResizing(true)}
-        title="Drag to resize"
-      />
     </div>
   );
 };
