@@ -60,13 +60,14 @@ function HomeContent() {
   // ✅ Ref for animation loop
   const animationFrameRef = useRef<number | null>(null);
 
-  const { radii, addRadius, selectRadius, clearRadii } =
+  const { radii, addRadius, selectRadius, clearRadii, selectedRadiusId } =
     useRadiusStore();
   const {
     isPlaying,
     settings,
     activeTrackingRadiusId,
     setActiveTrackingRadius,
+    trackedRadiusIds,
     play,
   } = useSimulationStore();
   const {
@@ -181,6 +182,17 @@ function HomeContent() {
       setTimeout(() => play(), 100);
     }
   }, [radii.length, play]);
+
+  // Restore selected radius trail on mount
+  useEffect(() => {
+    if (selectedRadiusId && radii.length > 0 && trackedRadiusIds.length === 0) {
+      requestAnimationFrame(() => {
+        setActiveTrackingRadius(selectedRadiusId);
+        useSimulationStore.getState().toggleTrailTracking(selectedRadiusId);
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ==========================================================================
   // ✅ NEW: CENTRALIZED SIGNAL GENERATION (Single Source of Truth)
