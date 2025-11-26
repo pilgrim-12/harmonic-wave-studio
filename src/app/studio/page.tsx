@@ -139,16 +139,17 @@ function HomeContent() {
           }
         );
 
-        // Select last radius
+        // Select last radius after ensuring all radii are loaded
         if (lastRadiusId) {
           const finalRadiusId = lastRadiusId;
-          selectRadius(finalRadiusId);
-          setActiveTrackingRadius(finalRadiusId);
-          // Автоматически включаем траекторию для последнего радиуса после небольшой задержки
+          // Use setTimeout to ensure radii are fully loaded before selecting
           setTimeout(() => {
+            selectRadius(finalRadiusId);
+            setActiveTrackingRadius(finalRadiusId);
+            // Автоматически включаем траекторию для последнего радиуса
             const { toggleTrailTracking } = useSimulationStore.getState();
             toggleTrailTracking(finalRadiusId);
-          }, 100);
+          }, 150);
         }
 
         // Set project in store (this triggers useEffect that updates projectName)
