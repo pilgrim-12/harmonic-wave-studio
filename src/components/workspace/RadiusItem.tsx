@@ -43,14 +43,8 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (
-      isRoot &&
-      confirm("Delete root radius? This will delete all child radii.")
-    ) {
-      removeRadius(radius.id);
-    } else if (!isRoot) {
-      removeRadius(radius.id);
-    }
+    // Simply delete without confirmation for better UX
+    removeRadius(radius.id);
   };
 
   // Slider handlers

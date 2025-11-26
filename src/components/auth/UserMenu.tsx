@@ -17,6 +17,7 @@ import { UserTier } from "@/config/tiers";
 import { UsageIndicator } from "@/components/tier/UsageIndicator";
 import { useUsageStats } from "@/hooks/useUsageStats";
 import { useRadiusStore } from "@/store/radiusStore";
+import { useToast } from "@/contexts/ToastContext";
 
 // Helper function to get tier badge config
 const getTierBadge = (tier: UserTier) => {
@@ -52,6 +53,7 @@ export const UserMenu: React.FC = () => {
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { radii } = useRadiusStore();
+  const toast = useToast();
 
   const currentTier: UserTier = userProfile?.tier || (user ? "free" : "anonymous");
   const tierBadge = getTierBadge(currentTier);
@@ -82,7 +84,7 @@ export const UserMenu: React.FC = () => {
       setIsOpen(false);
     } catch (error) {
       console.error("Sign out error:", error);
-      alert("Failed to sign out. Please try again.");
+      toast.error("Failed to sign out. Please try again.");
     }
   };
 

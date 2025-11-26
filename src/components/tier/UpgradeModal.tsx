@@ -5,6 +5,7 @@ import { X, Crown, Check, Zap } from "lucide-react";
 import { UserTier, getTierMetadata } from "@/config/tiers";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/Button";
+import { useToast } from "@/contexts/ToastContext";
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 }) => {
   const { user, signInWithGoogle } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     // Закрывать при нажатии Escape
@@ -59,7 +61,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Something went wrong. Please try again.");
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }

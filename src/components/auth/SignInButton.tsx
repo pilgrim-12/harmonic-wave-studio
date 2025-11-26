@@ -4,10 +4,12 @@ import React, { useState } from "react";
 import { LogIn } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/Button";
+import { useToast } from "@/contexts/ToastContext";
 
 export const SignInButton: React.FC = () => {
   const { signInWithGoogle } = useAuth();
   const [loading, setLoading] = useState(false);
+  const toast = useToast();
 
   const handleSignIn = async () => {
     setLoading(true);
@@ -15,7 +17,7 @@ export const SignInButton: React.FC = () => {
       await signInWithGoogle();
     } catch (error) {
       console.error("Sign in error:", error);
-      alert("Failed to sign in. Please try again.");
+      toast.error("Failed to sign in. Please try again.");
     } finally {
       setLoading(false);
     }

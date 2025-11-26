@@ -5,6 +5,7 @@ import { Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { SignalAudioSynthesizer } from "@/lib/audio/synthesizer";
 import { useSimulationStore } from "@/store/simulationStore";
+import { useToast } from "@/contexts/ToastContext";
 
 // Musical notes frequencies (Hz)
 const NOTES = {
@@ -23,6 +24,7 @@ export const AudioPanel: React.FC = () => {
   const [selectedNote, setSelectedNote] = useState<keyof typeof NOTES>("A4");
   const synthRef = useRef<SignalAudioSynthesizer | null>(null);
   const { signalData } = useSimulationStore(); // ⭐ NEW - Get real signal data
+  const toast = useToast();
 
   useEffect(() => {
     // Initialize synthesizer
@@ -43,7 +45,7 @@ export const AudioPanel: React.FC = () => {
     } else {
       // Check if we have signal data
       if (signalData.length === 0) {
-        alert("No signal data available. Please start the animation first!");
+        toast.warning("No signal data available. Please start the animation first!");
         return;
       }
 

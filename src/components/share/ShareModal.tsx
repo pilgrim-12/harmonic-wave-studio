@@ -144,7 +144,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
       // ✅ УБРАЛИ onClose() - modal остается открытым!
     } catch (error) {
       console.error("Failed to share project:", error);
-      alert("Failed to share project. Please try again.");
+      toast.error("Failed to share project. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -153,22 +153,17 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   const handleUnshare = async () => {
     if (!currentShareId) return;
 
-    const confirmed = confirm(
-      "Are you sure you want to unshare this project? The public link will stop working."
-    );
-
-    if (!confirmed) return;
-
     setLoading(true);
     try {
       await unshareProject(projectId, currentShareId);
       setCurrentShareId(null);
       setJustShared(false);
       onSuccess("");
+      toast.success("Project unshared successfully");
       onClose(); // ✅ Только при Unshare закрываем modal
     } catch (error) {
       console.error("Failed to unshare project:", error);
-      alert("Failed to unshare project. Please try again.");
+      toast.error("Failed to unshare project. Please try again.");
     } finally {
       setLoading(false);
     }

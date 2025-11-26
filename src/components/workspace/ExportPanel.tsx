@@ -12,12 +12,14 @@ import {
 import { Button } from "@/components/ui/Button";
 import { useTierCheck } from "@/hooks/useTierCheck";
 import { useUpgradeModal } from "@/components/tier/UpgradeModalProvider";
+import { useToast } from "@/contexts/ToastContext";
 
 export const ExportPanel: React.FC = () => {
   const { radii } = useRadiusStore();
   const { settings, signalData } = useSimulationStore();
   const { hasAccess } = useTierCheck("canExport");
   const { showUpgradeModal } = useUpgradeModal();
+  const toast = useToast();
 
   const handleExportJSON = () => {
     // ✅ Block for Anonymous users
@@ -27,7 +29,7 @@ export const ExportPanel: React.FC = () => {
     }
 
     if (radii.length === 0) {
-      alert("No radii to export. Please add some radii first.");
+      toast.warning("No radii to export. Please add some radii first.");
       return;
     }
     exportProjectJSON(radii, settings);
@@ -41,7 +43,7 @@ export const ExportPanel: React.FC = () => {
     }
 
     if (signalData.length === 0) {
-      alert("No signal data to export. Please start the animation first!");
+      toast.warning("No signal data to export. Please start the animation first!");
       return;
     }
     exportSignalCSV(signalData);
@@ -56,7 +58,7 @@ export const ExportPanel: React.FC = () => {
 
     const canvas = document.querySelector("canvas") as HTMLCanvasElement;
     if (!canvas) {
-      alert("Canvas not found. Please make sure the visualization is running.");
+      toast.error("Canvas not found. Please make sure the visualization is running.");
       return;
     }
     exportCanvasPNG(canvas);
