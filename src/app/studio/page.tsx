@@ -143,6 +143,9 @@ function HomeContent() {
         if (lastRadiusId) {
           selectRadius(lastRadiusId);
           setActiveTrackingRadius(lastRadiusId);
+          // Автоматически включаем траекторию для последнего радиуса
+          const { toggleTrailTracking } = useSimulationStore.getState();
+          toggleTrailTracking(lastRadiusId);
         }
 
         // Set project in store (this triggers useEffect that updates projectName)

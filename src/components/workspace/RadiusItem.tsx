@@ -135,7 +135,7 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
                   onClick={(e) => e.stopPropagation()}
                 >
                   {/* Color grid */}
-                  <div className="grid grid-cols-4 gap-1.5 mb-2">
+                  <div className="grid grid-cols-3 gap-2 mb-2">
                     {commonColors.map((color) => (
                       <button
                         key={color}
@@ -143,7 +143,7 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
                           updateRadius(radius.id, { color });
                           setShowColorPicker(false);
                         }}
-                        className="w-6 h-6 rounded hover:scale-110 transition-transform ring-1 ring-white/20"
+                        className="w-8 h-8 rounded hover:scale-110 transition-transform ring-1 ring-white/20"
                         style={{ backgroundColor: color }}
                       />
                     ))}

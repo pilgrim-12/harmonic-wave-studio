@@ -175,6 +175,9 @@ export const ProjectPanel: React.FC = () => {
         if (lastRadiusId) {
           selectRadius(lastRadiusId);
           setActiveTrackingRadius(lastRadiusId);
+          // Автоматически включаем траекторию для последнего радиуса
+          const { toggleTrailTracking } = useSimulationStore.getState();
+          toggleTrailTracking(lastRadiusId);
         }
 
         toast.success(
