@@ -131,7 +131,7 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
               />
               {showColorPicker && (
                 <div
-                  className="absolute top-6 left-0 z-50 bg-[#1a1a1a] border border-[#333] rounded-lg p-2 shadow-xl"
+                  className="absolute top-6 left-0 z-50 bg-[#1a1a1a] border border-[#333] rounded-lg p-2 shadow-xl w-40"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {/* Color grid */}
