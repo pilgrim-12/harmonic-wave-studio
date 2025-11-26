@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Trash2, Edit2, Activity } from "lucide-react";
+import { Trash2, Edit2, Activity, PenLine } from "lucide-react";
 import { Radius } from "@/types/radius";
 import { useRadiusStore } from "@/store/radiusStore";
 import { useSimulationStore } from "@/store/simulationStore";
@@ -16,13 +16,14 @@ interface RadiusItemProps {
 export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
   const { selectedRadiusId, selectRadius, removeRadius, updateRadius } =
     useRadiusStore();
-  const { activeTrackingRadiusId, setActiveTrackingRadius } =
+  const { activeTrackingRadiusId, setActiveTrackingRadius, trackedRadiusIds, toggleTrailTracking } =
     useSimulationStore();
 
   const [showColorPicker, setShowColorPicker] = useState(false);
 
   const isSelected = selectedRadiusId === radius.id;
   const isTracking = activeTrackingRadiusId === radius.id;
+  const isTrailTracked = trackedRadiusIds.includes(radius.id);
   const isRoot = radius.parentId === null;
 
   // ⭐ Auto-expand when selected!
@@ -40,6 +41,11 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
   const handleSetTracking = (e: React.MouseEvent) => {
     e.stopPropagation();
     setActiveTrackingRadius(radius.id);
+  };
+
+  const handleToggleTrail = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleTrailTracking(radius.id);
   };
 
   const handleDelete = (e: React.MouseEvent) => {
@@ -157,11 +163,26 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
             >
               {radius.name}
             </span>
-            {isTracking && <span className="text-xs text-green-500">📊</span>}
+            <div className="flex gap-1">
+              {isTrailTracked && <span className="text-xs text-purple-400">✏️</span>}
+              {isTracking && <span className="text-xs text-green-500">📊</span>}
+            </div>
           </div>
 
           {/* Action buttons */}
           <div className="flex gap-0.5">
+            <button
+              onClick={handleToggleTrail}
+              className={cn(
+                "p-1 rounded transition-colors",
+                isTrailTracked
+                  ? "bg-purple-500/20 text-purple-400"
+                  : "hover:bg-[#333] text-gray-400"
+              )}
+              title={isTrailTracked ? "Hide trail" : "Show trail"}
+            >
+              <PenLine size={12} />
+            </button>
             <button
               onClick={handleSetTracking}
               className={cn(

@@ -9,7 +9,8 @@ interface SignalDataPoint {
 
 interface SimulationStore extends SimulationState {
   settings: SimulationSettings;
-  activeTrackingRadiusId: string | null;
+  activeTrackingRadiusId: string | null; // For signal graph (single)
+  trackedRadiusIds: string[]; // For trails (multiple)
   signalData: SignalDataPoint[];
   highResSignal: number[]; // NEW: High-resolution signal buffer
 
@@ -22,6 +23,7 @@ interface SimulationStore extends SimulationState {
   updateFps: (fps: number) => void;
   updateSettings: (settings: Partial<SimulationSettings>) => void;
   setActiveTrackingRadius: (radiusId: string | null) => void;
+  toggleTrailTracking: (radiusId: string) => void;
   setSignalData: (data: SignalDataPoint[]) => void;
   getSignalYValues: () => number[];
   generateHighResSignal: () => void; // NEW: Generate signal at high sample rate
@@ -49,6 +51,7 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
   lastUpdateTime: 0,
   settings: DEFAULT_SETTINGS,
   activeTrackingRadiusId: null,
+  trackedRadiusIds: [],
   signalData: [],
   highResSignal: [],
 
@@ -105,6 +108,17 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
 
   setActiveTrackingRadius: (radiusId) => {
     set({ activeTrackingRadiusId: radiusId });
+  },
+
+  toggleTrailTracking: (radiusId) => {
+    set((state) => {
+      const isTracked = state.trackedRadiusIds.includes(radiusId);
+      return {
+        trackedRadiusIds: isTracked
+          ? state.trackedRadiusIds.filter((id) => id !== radiusId)
+          : [...state.trackedRadiusIds, radiusId],
+      };
+    });
   },
 
   setSignalData: (data) => {

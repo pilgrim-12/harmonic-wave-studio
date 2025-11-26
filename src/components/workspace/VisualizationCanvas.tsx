@@ -19,7 +19,7 @@ import { Point2D } from "@/types/radius";
 
 export const VisualizationCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const trailRef = useRef<Point2D[]>([]);
+  const trailsRef = useRef<Map<string, Point2D[]>>(new Map());
   const animationFrameRef = useRef<number | null>(null);
 
   const { radii } = useRadiusStore();
@@ -30,6 +30,7 @@ export const VisualizationCanvas: React.FC = () => {
     updateFps,
     settings,
     activeTrackingRadiusId,
+    trackedRadiusIds,
   } = useSimulationStore();
 
   // Инициализация canvas
@@ -122,35 +123,48 @@ export const VisualizationCanvas: React.FC = () => {
         newTime
       );
 
-      // Обновляем след
-      if (settings.showTrail) {
-        // Определяем какую точку отслеживать для следа
-        let finalPoint = null;
-
-        if (activeTrackingRadiusId) {
-          // Отслеживаем выбранный радиус
-          const trackingPosition = positions.find(
-            (pos) => pos.radiusId === activeTrackingRadiusId
-          );
-          finalPoint = trackingPosition?.endPoint || null;
-        } else {
-          // По умолчанию - последний радиус
-          finalPoint = getFinalPoint(positions);
-        }
-
-        if (finalPoint) {
-          trailRef.current.push(finalPoint);
-
-          // Ограничиваем длину следа
-          if (trailRef.current.length > settings.trailLength) {
-            trailRef.current.shift();
+      // Обновляем следы для множественных радиусов
+      if (settings.showTrail && trackedRadiusIds.length > 0) {
+        // Удаляем следы для радиусов, которые больше не отслеживаются
+        const currentTrails = trailsRef.current;
+        for (const radiusId of currentTrails.keys()) {
+          if (!trackedRadiusIds.includes(radiusId)) {
+            currentTrails.delete(radiusId);
           }
         }
 
-        // Рисуем след
-        drawTrail(ctx, trailRef.current, settings.trailColor);
-      } else {
-        trailRef.current = [];
+        // Обновляем следы для каждого отслеживаемого радиуса
+        for (const radiusId of trackedRadiusIds) {
+          const trackingPosition = positions.find(
+            (pos) => pos.radiusId === radiusId
+          );
+
+          if (trackingPosition) {
+            const finalPoint = trackingPosition.endPoint;
+
+            // Инициализируем массив для нового радиуса
+            if (!currentTrails.has(radiusId)) {
+              currentTrails.set(radiusId, []);
+            }
+
+            const trail = currentTrails.get(radiusId)!;
+            trail.push(finalPoint);
+
+            // Ограничиваем длину следа
+            if (trail.length > settings.trailLength) {
+              trail.shift();
+            }
+          }
+        }
+
+        // Рисуем все следы
+        for (const [radiusId, trail] of currentTrails.entries()) {
+          const radius = radii.find((r) => r.id === radiusId);
+          const color = radius?.color || settings.trailColor;
+          drawTrail(ctx, trail, color);
+        }
+      } else if (!settings.showTrail) {
+        trailsRef.current.clear();
       }
 
       // Рисуем радиусы с выделением активной ветки
@@ -180,10 +194,10 @@ export const VisualizationCanvas: React.FC = () => {
     activeTrackingRadiusId,
   ]);
 
-  // Сброс следа при изменении радиусов или активного радиуса
+  // Сброс следов при изменении радиусов
   useEffect(() => {
-    trailRef.current = [];
-  }, [radii, activeTrackingRadiusId]);
+    trailsRef.current.clear();
+  }, [radii]);
 
   return (
     <canvas
