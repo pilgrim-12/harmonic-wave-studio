@@ -6,6 +6,7 @@ import { Radius } from "@/types/radius";
 import { useRadiusStore } from "@/store/radiusStore";
 import { useSimulationStore } from "@/store/simulationStore";
 import { cn } from "@/lib/utils";
+import { Tooltip } from "@/components/ui/Tooltip";
 
 interface RadiusItemProps {
   radius: Radius;
@@ -198,17 +199,17 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
         {!isExpanded && (
           <div className="grid grid-cols-2 gap-1.5 text-[10px] text-gray-400">
             <div>
-              <span className="text-gray-500">Len:</span>{" "}
-              <span className="text-gray-300">{radius.length}px</span>
+              <span className="text-gray-500">Amp:</span>{" "}
+              <span className="text-gray-300">{radius.length}</span>
             </div>
             <div>
-              <span className="text-gray-500">Spd:</span>{" "}
+              <span className="text-gray-500">Freq:</span>{" "}
               <span className="text-gray-300">
                 {radius.rotationSpeed.toFixed(1)}
               </span>
             </div>
             <div>
-              <span className="text-gray-500">Ang:</span>{" "}
+              <span className="text-gray-500">Phase:</span>{" "}
               <span className="text-gray-300">
                 {Math.round((radius.initialAngle * 180) / Math.PI)}°
               </span>
@@ -232,12 +233,26 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
           className="px-2.5 pb-2.5 space-y-2 border-t border-[#333] pt-2"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Length slider */}
+          {/* Amplitude slider */}
           <div>
             <div className="flex justify-between items-center mb-1">
-              <label className="text-[10px] text-gray-500">Length</label>
+              <Tooltip
+                content={
+                  <div className="max-w-xs">
+                    <div className="font-semibold mb-0.5">Amplitude</div>
+                    <div className="text-[10px] text-gray-300">
+                      Height of the wave. In Fourier series: A in A·sin(ωt + φ)
+                    </div>
+                  </div>
+                }
+                className="whitespace-normal"
+              >
+                <label className="text-[10px] text-gray-500 cursor-help border-b border-dotted border-gray-600">
+                  Amplitude
+                </label>
+              </Tooltip>
               <span className="text-[10px] font-semibold text-[#667eea]">
-                {radius.length}px
+                {radius.length}
               </span>
             </div>
             <input
@@ -255,12 +270,27 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
             />
           </div>
 
-          {/* Speed slider */}
+          {/* Frequency slider */}
           <div>
             <div className="flex justify-between items-center mb-1">
-              <label className="text-[10px] text-gray-500">Speed</label>
+              <Tooltip
+                content={
+                  <div className="max-w-xs">
+                    <div className="font-semibold mb-0.5">Frequency</div>
+                    <div className="text-[10px] text-gray-300">
+                      Rotation speed (cycles per second). In Fourier series: ω in
+                      A·sin(ωt + φ)
+                    </div>
+                  </div>
+                }
+                className="whitespace-normal"
+              >
+                <label className="text-[10px] text-gray-500 cursor-help border-b border-dotted border-gray-600">
+                  Frequency
+                </label>
+              </Tooltip>
               <span className="text-[10px] font-semibold text-[#667eea]">
-                {radius.rotationSpeed.toFixed(1)}x
+                {radius.rotationSpeed.toFixed(1)} Hz
               </span>
             </div>
             <input
@@ -278,10 +308,25 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
             />
           </div>
 
-          {/* Angle slider */}
+          {/* Phase slider */}
           <div>
             <div className="flex justify-between items-center mb-1">
-              <label className="text-[10px] text-gray-500">Initial Angle</label>
+              <Tooltip
+                content={
+                  <div className="max-w-xs">
+                    <div className="font-semibold mb-0.5">Phase</div>
+                    <div className="text-[10px] text-gray-300">
+                      Initial rotation angle. In Fourier series: φ in A·sin(ωt +
+                      φ)
+                    </div>
+                  </div>
+                }
+                className="whitespace-normal"
+              >
+                <label className="text-[10px] text-gray-500 cursor-help border-b border-dotted border-gray-600">
+                  Phase
+                </label>
+              </Tooltip>
               <span className="text-[10px] font-semibold text-[#667eea]">
                 {Math.round((radius.initialAngle * 180) / Math.PI)}°
               </span>
@@ -303,7 +348,24 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
 
           {/* Direction toggle */}
           <div className="flex items-center justify-between pt-1">
-            <label className="text-[10px] text-gray-500">Direction</label>
+            <Tooltip
+              content={
+                <div className="max-w-xs">
+                  <div className="font-semibold mb-0.5">
+                    Rotation Direction
+                  </div>
+                  <div className="text-[10px] text-gray-300">
+                    CW (clockwise) = positive frequency, CCW
+                    (counterclockwise) = negative frequency
+                  </div>
+                </div>
+              }
+              className="whitespace-normal"
+            >
+              <label className="text-[10px] text-gray-500 cursor-help border-b border-dotted border-gray-600">
+                Direction
+              </label>
+            </Tooltip>
             <button
               onClick={handleToggleDirection}
               className="px-2 py-1 bg-[#1a1a1a] hover:bg-[#333] rounded text-[10px] text-gray-300 hover:text-[#667eea] transition-colors"
