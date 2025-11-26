@@ -173,11 +173,14 @@ export const ProjectPanel: React.FC = () => {
 
         // ✨ Select and track the last radius
         if (lastRadiusId) {
-          selectRadius(lastRadiusId);
-          setActiveTrackingRadius(lastRadiusId);
-          // Автоматически включаем траекторию для последнего радиуса
-          const { toggleTrailTracking } = useSimulationStore.getState();
-          toggleTrailTracking(lastRadiusId);
+          const finalRadiusId = lastRadiusId;
+          selectRadius(finalRadiusId);
+          setActiveTrackingRadius(finalRadiusId);
+          // Автоматически включаем траекторию для последнего радиуса после небольшой задержки
+          setTimeout(() => {
+            const { toggleTrailTracking } = useSimulationStore.getState();
+            toggleTrailTracking(finalRadiusId);
+          }, 100);
         }
 
         toast.success(
