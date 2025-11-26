@@ -33,7 +33,7 @@ export const TrailLengthControl: React.FC = () => {
       <div className="flex items-center gap-2 min-w-[100px]">
         <PenLine size={16} className="text-gray-400" />
         <span className="text-xs text-gray-300 whitespace-nowrap">
-          Trail Length
+          Trail Points
         </span>
       </div>
 

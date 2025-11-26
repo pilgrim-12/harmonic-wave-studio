@@ -16,6 +16,9 @@ export interface SimulationSettings {
   /** Длина следа в точках */
   trailLength: number;
 
+  /** Цвет следа траектории */
+  trailColor: string;
+
   /** Показывать ли оси координат */
   showAxes: boolean;
 

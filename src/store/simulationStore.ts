@@ -32,6 +32,7 @@ const DEFAULT_SETTINGS: SimulationSettings = {
   graphDuration: 10,
   showTrail: true,
   trailLength: 100,
+  trailColor: "#667eea",
   showAxes: true,
   showGrid: true,
   gridSize: 50,

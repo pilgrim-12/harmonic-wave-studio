@@ -148,7 +148,7 @@ export const VisualizationCanvas: React.FC = () => {
         }
 
         // Рисуем след
-        drawTrail(ctx, trailRef.current);
+        drawTrail(ctx, trailRef.current, settings.trailColor);
       } else {
         trailRef.current = [];
       }

@@ -68,21 +68,21 @@ export const RadiusEditor: React.FC<RadiusEditorProps> = ({
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           />
 
-          {/* Length */}
+          {/* Amplitude */}
           <Slider
-            label="Length (px)"
+            label="Amplitude"
             min={10}
             max={200}
             value={formData.length}
             onChange={(e) =>
               setFormData({ ...formData, length: Number(e.target.value) })
             }
-            valueFormatter={(v) => `${v}px`}
+            valueFormatter={(v) => `${v}`}
           />
 
-          {/* Initial Angle */}
+          {/* Phase */}
           <Slider
-            label="Initial Angle (°)"
+            label="Phase (°)"
             min={0}
             max={360}
             value={formData.initialAngle}
@@ -92,9 +92,9 @@ export const RadiusEditor: React.FC<RadiusEditorProps> = ({
             valueFormatter={(v) => `${v}°`}
           />
 
-          {/* Rotation Speed */}
+          {/* Frequency */}
           <Slider
-            label="Rotation Speed (rev/s)"
+            label="Frequency (Hz)"
             min={-10}
             max={10}
             step={0.1}
@@ -105,7 +105,7 @@ export const RadiusEditor: React.FC<RadiusEditorProps> = ({
                 rotationSpeed: Number(e.target.value),
               })
             }
-            valueFormatter={(v) => v.toFixed(1)}
+            valueFormatter={(v) => `${v.toFixed(1)} Hz`}
           />
 
           {/* Direction */}
