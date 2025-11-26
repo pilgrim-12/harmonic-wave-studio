@@ -10,6 +10,7 @@ import { AudioPanel } from "./AudioPanel";
 import { PresetPanel } from "./PresetPanel";
 import { ProjectPanel } from "./ProjectPanel";
 import { TrailLengthControl } from "@/components/settings/TrailLengthControl";
+import { GraphVisibilityPanel } from "./GraphVisibilityPanel";
 
 export const ControlPanel: React.FC = () => {
   const { isPlaying, isPaused, currentTime, fps, play, pause, stop, reset, activeTrackingRadiusId } =
@@ -115,6 +116,12 @@ export const ControlPanel: React.FC = () => {
 
       {/* Export */}
       <ExportPanel />
+
+      {/* Divider */}
+      <div className="w-px h-8 bg-[#333]" />
+
+      {/* Graph Visibility Controls */}
+      <GraphVisibilityPanel />
 
       {/* Divider */}
       <div className="w-px h-8 bg-[#333]" />

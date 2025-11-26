@@ -33,6 +33,7 @@ import { useSimulationStore } from "@/store/simulationStore";
 import { useProjectStore } from "@/store/useProjectStore";
 import { useSignalProcessingStore } from "@/store/signalProcessingStore";
 import { useFilterStore } from "@/store/filterStore";
+import { useGraphVisibilityStore } from "@/store/graphVisibilityStore";
 import { RadiusItem } from "@/components/workspace/RadiusItem";
 import { RadiusEditor } from "@/components/workspace/RadiusEditor";
 import { Button } from "@/components/ui/Button";
@@ -84,6 +85,8 @@ function HomeContent() {
     useFilterStore();
   const { checkLimit } = useTierCheck();
   const toast = useToast();
+  const { showOriginalSignal, showNoisySignal, showFilteredSignal } =
+    useGraphVisibilityStore();
 
   useKeyboardShortcuts();
 
@@ -689,25 +692,31 @@ function HomeContent() {
           {/* Signal Graphs - 1/3 of space, responsive columns */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 min-h-[100px]">
             {/* Original Signal */}
-            <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-[80px] overflow-hidden">
-              <FullscreenWrapper>
-                <SignalGraph />
-              </FullscreenWrapper>
-            </div>
+            {showOriginalSignal && (
+              <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-[80px] overflow-hidden">
+                <FullscreenWrapper>
+                  <SignalGraph />
+                </FullscreenWrapper>
+              </div>
+            )}
 
             {/* Noisy Signal */}
-            <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-[80px] overflow-hidden">
-              <FullscreenWrapper>
-                <NoisySignalGraph />
-              </FullscreenWrapper>
-            </div>
+            {showNoisySignal && (
+              <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-[80px] overflow-hidden">
+                <FullscreenWrapper>
+                  <NoisySignalGraph />
+                </FullscreenWrapper>
+              </div>
+            )}
 
             {/* Filtered Signal */}
-            <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-[80px] overflow-hidden">
-              <FullscreenWrapper>
-                <FilteredSignalGraph />
-              </FullscreenWrapper>
-            </div>
+            {showFilteredSignal && (
+              <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-[80px] overflow-hidden">
+                <FullscreenWrapper>
+                  <FilteredSignalGraph />
+                </FullscreenWrapper>
+              </div>
+            )}
           </div>
         </div>
       </div>
