@@ -192,6 +192,7 @@ export const VisualizationCanvas: React.FC = () => {
     setCurrentTime,
     updateFps,
     activeTrackingRadiusId,
+    trackedRadiusIds,
   ]);
 
   // Сброс следов при изменении радиусов
