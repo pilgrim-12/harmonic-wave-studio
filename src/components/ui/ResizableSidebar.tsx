@@ -79,7 +79,7 @@ export const ResizableSidebar: React.FC<ResizableSidebarProps> = ({
       {/* Collapse button */}
       <button
         onClick={() => setIsCollapsed(true)}
-        className="absolute top-2 left-2 z-10 p-1.5 hover:bg-[#2a2a2a] rounded-lg transition-colors group"
+        className="absolute top-2 right-2 z-50 p-1.5 bg-[#1a1a1a] hover:bg-[#2a2a2a] rounded-lg transition-colors group border border-[#333]"
         title="Collapse sidebar"
       >
         <ChevronLeft
