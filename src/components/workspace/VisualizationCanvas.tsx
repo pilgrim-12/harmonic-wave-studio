@@ -200,6 +200,13 @@ export const VisualizationCanvas: React.FC = () => {
     trailsRef.current.clear();
   }, [radii]);
 
+  // Сброс следов при Reset (currentTime === 0 и не играет)
+  useEffect(() => {
+    if (currentTime === 0 && !isPlaying) {
+      trailsRef.current.clear();
+    }
+  }, [currentTime, isPlaying]);
+
   return (
     <canvas
       ref={canvasRef}
