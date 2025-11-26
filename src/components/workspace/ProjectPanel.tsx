@@ -171,20 +171,14 @@ export const ProjectPanel: React.FC = () => {
           lastRadiusId = newId;
         });
 
-        // ✨ Select and track the last radius after ensuring all radii are loaded
+        // ✨ Select and track the last radius after all radii are loaded
         if (lastRadiusId) {
-          const finalRadiusId = lastRadiusId;
-          // Use setTimeout to ensure radii are fully loaded before selecting
-          setTimeout(() => {
-            selectRadius(finalRadiusId);
-            setActiveTrackingRadius(finalRadiusId);
-          }, 100);
-
-          // Автоматически включаем траекторию с дополнительной задержкой
-          setTimeout(() => {
-            const { toggleTrailTracking } = useSimulationStore.getState();
-            toggleTrailTracking(finalRadiusId);
-          }, 250);
+          // Wait for next tick to ensure all radii are in store
+          requestAnimationFrame(() => {
+            selectRadius(lastRadiusId);
+            setActiveTrackingRadius(lastRadiusId);
+            toggleTrailTracking(lastRadiusId);
+          });
         }
 
         toast.success(
