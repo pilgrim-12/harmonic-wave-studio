@@ -14,6 +14,7 @@ import {
   GenerationSettingsDialog,
   GenerationSettings,
 } from "./GenerationSettingsDialog";
+import { useToast } from "@/contexts/ToastContext";
 
 export const FrequencyPanel: React.FC = () => {
   // ⭐ CHANGED: Read from signalProcessingStore instead of simulationStore
@@ -21,6 +22,7 @@ export const FrequencyPanel: React.FC = () => {
   const { isPlaying } = useSimulationStore(); // ⭐ NEW - для real-time FFT
   const { clearRadii, addRadius, selectRadius } = useRadiusStore();
   const { setActiveTrackingRadius } = useSimulationStore();
+  const toast = useToast();
 
   const [analysisResult, setAnalysisResult] =
     useState<FFTAnalysisResult | null>(null);
@@ -73,7 +75,7 @@ export const FrequencyPanel: React.FC = () => {
    */
   const handleAnalyze = () => {
     if (signalBuffer.length === 0) {
-      alert("No signal data available. Please start the animation first!");
+      toast.warning("No signal data available. Please start the animation first!");
       return;
     }
 
@@ -121,12 +123,12 @@ export const FrequencyPanel: React.FC = () => {
    */
   const handleShowGenerationDialog = () => {
     if (!analysisResult) {
-      alert("Please analyze the signal first!");
+      toast.warning("Please analyze the signal first!");
       return;
     }
 
     if (analysisResult.peaks.length === 0) {
-      alert("No significant frequency peaks found in the signal!");
+      toast.warning("No significant frequency peaks found in the signal!");
       return;
     }
 
@@ -150,7 +152,7 @@ export const FrequencyPanel: React.FC = () => {
     });
 
     if (radiiParams.length === 0) {
-      alert("No radii generated. Try adjusting settings.");
+      toast.warning("No radii generated. Try adjusting settings.");
       return;
     }
 
@@ -177,8 +179,9 @@ export const FrequencyPanel: React.FC = () => {
       setActiveTrackingRadius(lastRadiusId);
     }
 
-    alert(
-      `Generated ${radiiParams.length} epicycles from FFT analysis! 🎉\nPress Start to see the result.`
+    toast.success(
+      `Generated ${radiiParams.length} epicycles from FFT analysis! Press Start to see the result.`,
+      "Success"
     );
   };
 

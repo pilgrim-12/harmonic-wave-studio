@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { useRadiusStore } from "@/store/radiusStore";
 import { useSimulationStore } from "@/store/simulationStore";
 import { SaveProjectDialog } from "./SaveProjectDialog";
+import { useToast } from "@/contexts/ToastContext";
 
 interface ProjectRadiusData {
   id: string;
@@ -31,6 +32,7 @@ export const ProjectPanel: React.FC = () => {
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const { radii, clearRadii, addRadius, selectRadius } = useRadiusStore();
   const { setActiveTrackingRadius } = useSimulationStore();
+  const toast = useToast();
 
   /**
    * Save current project to JSON file
@@ -71,11 +73,9 @@ export const ProjectPanel: React.FC = () => {
 
     URL.revokeObjectURL(url);
 
-    alert(
-      `💾 Project saved!\n\n` +
-        `Name: ${projectName}\n` +
-        `Radii: ${radii.length}\n` +
-        `File: ${safeFilename}_${timestamp}.json`
+    toast.success(
+      `Project saved! ${radii.length} radii exported to ${safeFilename}_${timestamp}.json`,
+      `${projectName}`
     );
   };
 
@@ -84,7 +84,7 @@ export const ProjectPanel: React.FC = () => {
    */
   const handleSaveClick = () => {
     if (radii.length === 0) {
-      alert("❌ No radii to save!\n\nAdd some radii first.");
+      toast.warning("No radii to save! Add some radii first.");
       return;
     }
     setShowSaveDialog(true);
@@ -99,7 +99,7 @@ export const ProjectPanel: React.FC = () => {
 
     // Validate file type
     if (!file.name.endsWith(".json")) {
-      alert("❌ Invalid file type!\n\nPlease select a .json file.");
+      toast.error("Invalid file type! Please select a .json file.");
       return;
     }
 
@@ -119,27 +119,12 @@ export const ProjectPanel: React.FC = () => {
           throw new Error("Invalid project file structure");
         }
 
-        // Check version compatibility
+        // Check version compatibility - just show warning but continue
         if (project.version !== "1.0") {
-          const proceed = confirm(
-            `⚠️ Version mismatch!\n\n` +
-              `Project version: ${project.version}\n` +
-              `Expected version: 1.0\n\n` +
-              `The project might not load correctly.\n` +
-              `Continue anyway?`
+          toast.warning(
+            `Version mismatch (${project.version}). Project might not load correctly.`,
+            "Version Warning"
           );
-          if (!proceed) return;
-        }
-
-        // Confirm overwrite
-        if (radii.length > 0) {
-          const confirm = window.confirm(
-            `⚠️ This will replace your current radii!\n\n` +
-              `Current radii: ${radii.length}\n` +
-              `Project radii: ${project.radii.length}\n\n` +
-              `Continue?`
-          );
-          if (!confirm) return;
         }
 
         // Clear existing radii
@@ -184,24 +169,21 @@ export const ProjectPanel: React.FC = () => {
           setActiveTrackingRadius(lastRadiusId);
         }
 
-        alert(
-          `✅ Project loaded successfully!\n\n` +
-            `Name: ${project.name}\n` +
-            `Radii: ${project.radii.length}\n` +
-            `Created: ${new Date(project.created).toLocaleDateString()}`
+        toast.success(
+          `Loaded ${project.radii.length} radii from ${project.name}`,
+          "Project Loaded"
         );
       } catch (error) {
         console.error("Failed to load project:", error);
-        alert(
-          `❌ Failed to load project!\n\n` +
-            `${error instanceof Error ? error.message : "Unknown error"}\n\n` +
-            `Please check that the file is a valid Harmonic Wave Studio project.`
+        toast.error(
+          `Failed to load project: ${error instanceof Error ? error.message : "Unknown error"}`,
+          "Load Error"
         );
       }
     };
 
     reader.onerror = () => {
-      alert("❌ Failed to read file!");
+      toast.error("Failed to read file!");
     };
 
     reader.readAsText(file);
