@@ -146,10 +146,13 @@ function HomeContent() {
           setTimeout(() => {
             selectRadius(finalRadiusId);
             setActiveTrackingRadius(finalRadiusId);
-            // Автоматически включаем траекторию для последнего радиуса
+          }, 100);
+
+          // Автоматически включаем траекторию с дополнительной задержкой
+          setTimeout(() => {
             const { toggleTrailTracking } = useSimulationStore.getState();
             toggleTrailTracking(finalRadiusId);
-          }, 150);
+          }, 250);
         }
 
         // Set project in store (this triggers useEffect that updates projectName)
