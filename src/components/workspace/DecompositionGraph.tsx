@@ -4,11 +4,15 @@ import React, { useEffect, useRef } from "react";
 import { Layers } from "lucide-react";
 import { useRadiusStore } from "@/store/radiusStore";
 import { useSimulationStore } from "@/store/simulationStore";
+import { useSignalProcessingStore } from "@/store/signalProcessingStore";
 
 export const DecompositionGraph: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { radii } = useRadiusStore();
   const { currentTime, settings } = useSimulationStore();
+  const signalBufferLength = useSignalProcessingStore(
+    (state) => state.signalBuffer.length
+  );
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -48,14 +52,10 @@ export const DecompositionGraph: React.FC = () => {
     const graphWidth = width - padding.left - padding.right;
     const graphHeight = height - padding.top - padding.bottom;
 
-    // Calculate Y range based on all components
-    let maxY = 0;
-    radii.forEach((radius) => {
-      maxY = Math.max(maxY, Math.abs(radius.length));
-    });
-
-    // Add padding to range
-    const yRange = maxY * 1.2 || 100;
+    // Get scale from signalProcessingStore to match other graphs
+    const { scale } = useSignalProcessingStore.getState();
+    const { minY, maxY } = scale;
+    const yRange = Math.max(Math.abs(maxY), Math.abs(minY)) * 1.2 || 100;
 
     // Helper: time to X coordinate
     const timeToX = (t: number) => {
@@ -63,9 +63,15 @@ export const DecompositionGraph: React.FC = () => {
       return padding.left + normalizedTime * graphWidth;
     };
 
-    // Helper: Y value to canvas Y coordinate
-    const yToCanvas = (y: number) => {
+    // Helper: Y value to canvas Y coordinate for grid/axes (no centering)
+    const yToCanvasGrid = (y: number) => {
       return padding.top + graphHeight / 2 - (y / yRange) * (graphHeight / 2);
+    };
+
+    // Helper: Y value to canvas Y coordinate for signals (centered around avgY)
+    const yToCanvas = (y: number) => {
+      const centered = y - scale.avgY;
+      return padding.top + graphHeight / 2 - (centered / yRange) * (graphHeight / 2);
     };
 
     // Draw grid
@@ -74,7 +80,7 @@ export const DecompositionGraph: React.FC = () => {
 
     // Horizontal grid lines
     for (let i = -2; i <= 2; i++) {
-      const y = yToCanvas(i * (yRange / 2));
+      const y = yToCanvasGrid(i * (yRange / 2));
       ctx.beginPath();
       ctx.moveTo(padding.left, y);
       ctx.lineTo(width - padding.right, y);
@@ -98,8 +104,8 @@ export const DecompositionGraph: React.FC = () => {
 
     // X axis (time)
     ctx.beginPath();
-    ctx.moveTo(padding.left, yToCanvas(0));
-    ctx.lineTo(width - padding.right, yToCanvas(0));
+    ctx.moveTo(padding.left, yToCanvasGrid(0));
+    ctx.lineTo(width - padding.right, yToCanvasGrid(0));
     ctx.stroke();
 
     // Y axis
@@ -116,7 +122,7 @@ export const DecompositionGraph: React.FC = () => {
 
     for (let i = -2; i <= 2; i++) {
       const value = i * (yRange / 2);
-      const y = yToCanvas(value);
+      const y = yToCanvasGrid(value);
       ctx.fillText(value.toFixed(0), padding.left - 5, y);
     }
 
@@ -175,44 +181,35 @@ export const DecompositionGraph: React.FC = () => {
       ctx.globalAlpha = 1.0;
     });
 
-    // Draw sum (combined signal) as thick white line
-    ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 2;
-    ctx.globalAlpha = 0.9;
-    ctx.beginPath();
+    // Draw sum (original signal from signalBuffer) as thick white line
+    const { signalBuffer } = useSignalProcessingStore.getState();
 
-    let firstPoint = true;
+    if (signalBuffer.length > 1) {
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = 0.9;
+      ctx.beginPath();
 
-    for (let i = 0; i <= numSamples; i++) {
-      const t = currentTime - graphDuration + i * dt;
+      let firstPoint = true;
 
-      if (t < 0) continue;
+      for (let i = 0; i < signalBuffer.length; i++) {
+        const point = signalBuffer[i];
+        const x = timeToX(point.time);
+        if (x < padding.left) continue;
 
-      // Calculate sum of all components
-      // IMPORTANT: We need cumulative angles because radii are chained
-      let y = 0;
-      let cumulativeAngle = 0;
+        const canvasY = yToCanvas(point.y);
 
-      for (const radius of radii) {
-        const direction = radius.direction === "counterclockwise" ? 1 : -1;
-        const angle = radius.initialAngle + direction * radius.rotationSpeed * t * 2 * Math.PI;
-        cumulativeAngle += angle;
-        y += radius.length * Math.sin(cumulativeAngle);
+        if (firstPoint) {
+          ctx.moveTo(x, canvasY);
+          firstPoint = false;
+        } else {
+          ctx.lineTo(x, canvasY);
+        }
       }
 
-      const x = timeToX(t);
-      const canvasY = yToCanvas(y);
-
-      if (firstPoint) {
-        ctx.moveTo(x, canvasY);
-        firstPoint = false;
-      } else {
-        ctx.lineTo(x, canvasY);
-      }
+      ctx.stroke();
+      ctx.globalAlpha = 1.0;
     }
-
-    ctx.stroke();
-    ctx.globalAlpha = 1.0;
 
     // Legend
     const legendX = width - padding.right - 150;
@@ -251,7 +248,7 @@ export const DecompositionGraph: React.FC = () => {
     ctx.fillStyle = "#ffffff";
     ctx.fillText("Sum (Total)", legendX + 25, sumY);
 
-  }, [radii, currentTime, settings.graphDuration]);
+  }, [radii, currentTime, settings.graphDuration, signalBufferLength]);
 
   return (
     <div className="h-full flex flex-col bg-[#0a0a0a] p-3">
