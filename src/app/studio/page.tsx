@@ -141,11 +141,12 @@ function HomeContent() {
 
         // Select last radius after all radii are loaded
         if (lastRadiusId) {
+          const radiusIdToSelect = lastRadiusId;
           // Wait for next tick to ensure all radii are in store
           requestAnimationFrame(() => {
-            selectRadius(lastRadiusId);
-            setActiveTrackingRadius(lastRadiusId);
-            toggleTrailTracking(lastRadiusId);
+            selectRadius(radiusIdToSelect);
+            useSimulationStore.getState().setActiveTrackingRadius(radiusIdToSelect);
+            useSimulationStore.getState().toggleTrailTracking(radiusIdToSelect);
           });
         }
 
