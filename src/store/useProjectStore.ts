@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import { Radius } from "@/services/projectService";
 
 interface ProjectStore {
@@ -11,20 +12,27 @@ interface ProjectStore {
   clearProject: () => void;
 }
 
-export const useProjectStore = create<ProjectStore>((set) => ({
-  currentProjectId: null,
-  currentProjectName: "Untitled Project",
-  radii: [],
-
-  setCurrentProject: (id, name, radii) =>
-    set({ currentProjectId: id, currentProjectName: name, radii }),
-
-  setRadii: (radii) => set({ radii }),
-
-  clearProject: () =>
-    set({
+export const useProjectStore = create<ProjectStore>()(
+  persist(
+    (set) => ({
       currentProjectId: null,
       currentProjectName: "Untitled Project",
       radii: [],
+
+      setCurrentProject: (id, name, radii) =>
+        set({ currentProjectId: id, currentProjectName: name, radii }),
+
+      setRadii: (radii) => set({ radii }),
+
+      clearProject: () =>
+        set({
+          currentProjectId: null,
+          currentProjectName: "Untitled Project",
+          radii: [],
+        }),
     }),
-}));
+    {
+      name: "project-storage", // Уникальное имя для localStorage
+    }
+  )
+);

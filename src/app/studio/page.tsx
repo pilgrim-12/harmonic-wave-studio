@@ -159,10 +159,9 @@ function HomeContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
+  // Sync projectName with currentProjectName from store (on mount and when it changes)
   useEffect(() => {
-    if (currentProjectName) {
-      setProjectName(currentProjectName);
-    }
+    setProjectName(currentProjectName);
   }, [currentProjectName]);
 
   useEffect(() => {
