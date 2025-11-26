@@ -7,6 +7,7 @@ import { useRadiusStore } from "@/store/radiusStore";
 import { useSimulationStore } from "@/store/simulationStore";
 import { SaveProjectDialog } from "./SaveProjectDialog";
 import { useToast } from "@/contexts/ToastContext";
+import { normalizeRadius } from "@/lib/validation/normalizeRadius";
 
 interface ProjectRadiusData {
   id: string;
@@ -146,12 +147,19 @@ export const ProjectPanel: React.FC = () => {
             ? idMap.get(radiusData.parentId) || null
             : null;
 
-          // Add radius and get new ID
-          const newId = addRadius({
-            parentId: mappedParentId,
+          // Normalize values before adding
+          const normalized = normalizeRadius({
             length: radiusData.length,
             initialAngle: radiusData.initialAngle,
             rotationSpeed: radiusData.rotationSpeed,
+          });
+
+          // Add radius and get new ID
+          const newId = addRadius({
+            parentId: mappedParentId,
+            length: normalized.length,
+            initialAngle: normalized.initialAngle,
+            rotationSpeed: normalized.rotationSpeed,
             direction: radiusData.direction,
             color: radiusData.color,
           });

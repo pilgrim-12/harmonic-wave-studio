@@ -21,7 +21,6 @@ import {
   Settings,
   Plus,
   BarChart3,
-  Wand2,
   Save,
   FilePlus,
   Activity,
@@ -49,6 +48,7 @@ import {
 } from "@/lib/canvas/calculator";
 import { FeatureGate } from "@/components/tier/FeatureGate";
 import { useTierCheck } from "@/hooks/useTierCheck";
+import { normalizeRadius } from "@/lib/validation/normalizeRadius";
 
 function HomeContent() {
   const [openPanel, setOpenPanel] = useState<string>("radii");
@@ -60,7 +60,7 @@ function HomeContent() {
   // ✅ Ref for animation loop
   const animationFrameRef = useRef<number | null>(null);
 
-  const { radii, addRadius, selectRadius, updateRadius, clearRadii } =
+  const { radii, addRadius, selectRadius, clearRadii } =
     useRadiusStore();
   const {
     isPlaying,
@@ -110,18 +110,25 @@ function HomeContent() {
         let previousRadiusId: string | null = null;
         let lastRadiusId: string | null = null;
 
-        // Add radii one by one
+        // Add radii one by one with automatic normalization
         firebaseRadii.forEach(
           (fbRadius: {
             frequency: number;
             amplitude: number;
             phase: number;
           }) => {
-            const newRadiusId = addRadius({
-              parentId: previousRadiusId,
+            // Normalize values before adding
+            const normalized = normalizeRadius({
               length: fbRadius.amplitude,
               initialAngle: fbRadius.phase,
               rotationSpeed: Math.abs(fbRadius.frequency),
+            });
+
+            const newRadiusId = addRadius({
+              parentId: previousRadiusId,
+              length: normalized.length,
+              initialAngle: normalized.initialAngle,
+              rotationSpeed: normalized.rotationSpeed,
               direction:
                 fbRadius.frequency >= 0 ? "counterclockwise" : "clockwise",
             });
@@ -320,52 +327,6 @@ function HomeContent() {
     }
   };
 
-  const handleNormalizeAll = () => {
-    if (radii.length === 0) return;
-
-    let normalizedCount = 0;
-
-    radii.forEach((radius) => {
-      let needsUpdate = false;
-      const updates: Partial<Radius> = {};
-
-      let angle = radius.initialAngle % (2 * Math.PI);
-      if (angle < 0) angle += 2 * Math.PI;
-      if (angle !== radius.initialAngle) {
-        updates.initialAngle = angle;
-        updates.currentAngle = angle;
-        needsUpdate = true;
-      }
-
-      const speed = Math.max(0.1, Math.min(radius.rotationSpeed, 10));
-      if (speed !== radius.rotationSpeed) {
-        updates.rotationSpeed = speed;
-        needsUpdate = true;
-      }
-
-      const length = Math.max(5, Math.min(radius.length, 200));
-      if (length !== radius.length) {
-        updates.length = length;
-        needsUpdate = true;
-      }
-
-      if (needsUpdate) {
-        updateRadius(radius.id, updates);
-        normalizedCount++;
-      }
-    });
-
-    if (normalizedCount > 0) {
-      toast.success(
-        `Normalized ${normalizedCount} ${
-          normalizedCount === 1 ? "radius" : "radii"
-        }! Fixed: angles wrapped to [0, 2π), speeds clamped to [0.1, 10], lengths clamped to [5, 200]`,
-        "Normalized Successfully"
-      );
-    } else {
-      toast.info("All radii are already normalized!");
-    }
-  };
 
   const handleSaveProject = async () => {
     if (!user) {
@@ -591,19 +552,7 @@ function HomeContent() {
                     </div>
                   </div>
 
-                  <div className="p-3 pt-2 border-t border-[#2a2a2a] flex-shrink-0 space-y-2">
-                    {radii.length > 0 && (
-                      <Button
-                        onClick={handleNormalizeAll}
-                        variant="secondary"
-                        className="w-full text-sm"
-                        title="Fix invalid angles, speeds, and lengths"
-                      >
-                        <Wand2 size={14} className="mr-1" />
-                        Normalize All
-                      </Button>
-                    )}
-
+                  <div className="p-3 pt-2 border-t border-[#2a2a2a] flex-shrink-0">
                     <Button
                       onClick={handleAddRadius}
                       variant="secondary"
