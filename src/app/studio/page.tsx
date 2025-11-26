@@ -316,6 +316,10 @@ function HomeContent() {
     selectRadius(newRadiusId);
     setActiveTrackingRadius(newRadiusId);
 
+    // Автоматически включаем траекторию для нового радиуса
+    const { toggleTrailTracking } = useSimulationStore.getState();
+    toggleTrailTracking(newRadiusId);
+
     // Show warning when approaching limit
     if (!isUnlimited && remaining <= 1 && remaining > 0) {
       setTimeout(() => {

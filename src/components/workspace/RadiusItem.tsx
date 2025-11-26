@@ -41,6 +41,10 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
   const handleSetTracking = (e: React.MouseEvent) => {
     e.stopPropagation();
     setActiveTrackingRadius(radius.id);
+    // Автоматически включаем траекторию при выборе для графика
+    if (!isTrailTracked) {
+      toggleTrailTracking(radius.id);
+    }
   };
 
   const handleToggleTrail = (e: React.MouseEvent) => {

@@ -10,7 +10,6 @@ import { AudioPanel } from "./AudioPanel";
 import { PresetPanel } from "./PresetPanel";
 import { ProjectPanel } from "./ProjectPanel";
 import { TrailLengthControl } from "@/components/settings/TrailLengthControl";
-import { TrailColorControl } from "@/components/settings/TrailColorControl";
 
 export const ControlPanel: React.FC = () => {
   const { isPlaying, isPaused, currentTime, fps, play, pause, stop, reset } =
@@ -112,9 +111,8 @@ export const ControlPanel: React.FC = () => {
       <div className="w-px h-8 bg-[#333]" />
 
       {/* Trail Controls */}
-      <div className="flex-1 min-w-[400px] space-y-2">
+      <div className="flex-1 min-w-[200px]">
         <TrailLengthControl />
-        <TrailColorControl />
       </div>
     </div>
   );
