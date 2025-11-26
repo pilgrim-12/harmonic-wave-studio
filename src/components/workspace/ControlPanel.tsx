@@ -3,6 +3,7 @@
 import React from "react";
 import { Play, Pause, Square, RotateCcw } from "lucide-react";
 import { useSimulationStore } from "@/store/simulationStore";
+import { useSignalProcessingStore } from "@/store/signalProcessingStore";
 import { Button } from "@/components/ui/Button";
 import { ExportPanel } from "./ExportPanel";
 import { AudioPanel } from "./AudioPanel";
@@ -16,7 +17,8 @@ export const ControlPanel: React.FC = () => {
 
   const handleReset = () => {
     reset();
-    // Keep graphs, only reset time to 0 and continue playing
+    // Clear signal processing graphs
+    useSignalProcessingStore.getState().resetSignal();
   };
 
   return (
@@ -55,7 +57,7 @@ export const ControlPanel: React.FC = () => {
           onClick={handleReset}
           variant="secondary"
           size="sm"
-          title="Reset time to 0"
+          title="Reset and clear all"
         >
           <RotateCcw size={16} className="mr-1" />
           Reset

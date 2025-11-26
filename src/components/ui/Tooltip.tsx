@@ -45,8 +45,8 @@ export const Tooltip: React.FC<TooltipProps> = ({
             "absolute z-50 px-2 py-1.5 text-xs text-white bg-[#1a1a1a] border border-[#444] rounded shadow-lg",
             "whitespace-nowrap pointer-events-none",
             position === "top"
-              ? "bottom-full left-1/2 -translate-x-1/2 mb-1"
-              : "top-full left-1/2 -translate-x-1/2 mt-1",
+              ? "bottom-full left-0 mb-1"
+              : "top-full left-0 mt-1",
             className
           )}
         >
