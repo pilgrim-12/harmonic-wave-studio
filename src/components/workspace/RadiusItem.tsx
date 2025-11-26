@@ -270,7 +270,7 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
                     </div>
                   </div>
                 }
-                className="!whitespace-normal !w-64"
+                className="!whitespace-normal !w-48"
               >
                 <label className="text-[10px] text-gray-500 cursor-help border-b border-dotted border-gray-600">
                   Amplitude
@@ -308,7 +308,7 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
                     </div>
                   </div>
                 }
-                className="!whitespace-normal !w-64"
+                className="!whitespace-normal !w-48"
               >
                 <label className="text-[10px] text-gray-500 cursor-help border-b border-dotted border-gray-600">
                   Frequency
@@ -346,7 +346,7 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
                     </div>
                   </div>
                 }
-                className="!whitespace-normal !w-64"
+                className="!whitespace-normal !w-48"
               >
                 <label className="text-[10px] text-gray-500 cursor-help border-b border-dotted border-gray-600">
                   Phase
