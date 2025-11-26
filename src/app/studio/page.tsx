@@ -514,7 +514,7 @@ function HomeContent() {
       {/* Main layout */}
       <div className="flex gap-3 flex-1 min-h-0">
         {/* Left panel */}
-        <ResizableSidebar>
+        <ResizableSidebar title="Controls">
           {/* Radii Panel */}
           <div
             className={

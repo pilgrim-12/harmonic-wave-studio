@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface ResizableSidebarProps {
   children: React.ReactNode;
+  title?: string;
   defaultWidth?: number;
   minWidth?: number;
   maxWidth?: number;
@@ -12,6 +13,7 @@ interface ResizableSidebarProps {
 
 export const ResizableSidebar: React.FC<ResizableSidebarProps> = ({
   children,
+  title,
   defaultWidth = 260,
   minWidth = 200,
   maxWidth = 400,
@@ -71,39 +73,44 @@ export const ResizableSidebar: React.FC<ResizableSidebarProps> = ({
   }
 
   return (
-    <div className="flex-shrink-0 relative h-full flex">
-      {/* Sidebar content */}
-      <div
-        ref={sidebarRef}
-        className="relative h-full"
-        style={{ width: `${width}px` }}
-      >
-        {/* Content */}
-        <div className="h-full flex flex-col gap-3 overflow-hidden pr-1">
-          {children}
+    <div
+      ref={sidebarRef}
+      className="flex-shrink-0 relative h-full"
+      style={{ width: `${width}px` }}
+    >
+      {/* Header with title and collapse button */}
+      {title && (
+        <div className="flex items-center justify-between px-3 py-2 bg-[#1a1a1a] border-b border-[#2a2a2a]">
+          <h2 className="text-sm font-semibold text-gray-300">{title}</h2>
+          <button
+            onClick={() => setIsCollapsed(true)}
+            className="p-1.5 hover:bg-[#2a2a2a] rounded-lg transition-colors group"
+            title="Collapse sidebar"
+          >
+            <ChevronLeft
+              size={16}
+              className="text-gray-400 group-hover:text-white transition-colors"
+            />
+          </button>
         </div>
+      )}
 
-        {/* Resize handle */}
-        <div
-          className={`absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-[#667eea]/50 transition-colors ${
-            isResizing ? "bg-[#667eea]" : "bg-transparent"
-          }`}
-          onMouseDown={() => setIsResizing(true)}
-          title="Drag to resize"
-        />
+      {/* Content */}
+      <div
+        className="flex flex-col gap-3 overflow-hidden pr-1"
+        style={{ height: title ? "calc(100% - 44px)" : "100%" }}
+      >
+        {children}
       </div>
 
-      {/* Collapse button - outside content area */}
-      <button
-        onClick={() => setIsCollapsed(true)}
-        className="absolute -right-3 top-2 z-50 p-1.5 bg-[#1a1a1a] hover:bg-[#2a2a2a] rounded-lg transition-colors group border border-[#333] shadow-lg"
-        title="Collapse sidebar"
-      >
-        <ChevronLeft
-          size={16}
-          className="text-gray-400 group-hover:text-white transition-colors"
-        />
-      </button>
+      {/* Resize handle */}
+      <div
+        className={`absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-[#667eea]/50 transition-colors ${
+          isResizing ? "bg-[#667eea]" : "bg-transparent"
+        }`}
+        onMouseDown={() => setIsResizing(true)}
+        title="Drag to resize"
+      />
     </div>
   );
 };
