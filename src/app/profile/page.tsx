@@ -72,8 +72,12 @@ export default function ProfilePage() {
     });
 
     if (lastRadiusId) {
-      selectRadius(lastRadiusId);
-      setActiveTrackingRadius(lastRadiusId);
+      const radiusIdToSelect = lastRadiusId;
+      requestAnimationFrame(() => {
+        selectRadius(radiusIdToSelect);
+        useSimulationStore.getState().setActiveTrackingRadius(radiusIdToSelect);
+        useSimulationStore.getState().toggleTrailTracking(radiusIdToSelect);
+      });
     }
 
     setCurrentProject(project.id!, project.name);

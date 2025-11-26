@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Sparkles, Info, Lock } from "lucide-react";
 import { useRadiusStore } from "@/store/radiusStore";
 import { useSimulationStore } from "@/store/simulationStore";
+import { useProjectStore } from "@/store/useProjectStore";
 import { WAVEFORM_PRESETS, WaveformPreset } from "@/lib/presets/waveforms";
 import { Button } from "@/components/ui/Button";
 import { useTierCheck } from "@/hooks/useTierCheck";
@@ -14,6 +15,7 @@ export const PresetPanel: React.FC = () => {
   const [expandedPreset, setExpandedPreset] = useState<string | null>(null); // ✨ NEW
   const { clearRadii, addRadius, selectRadius } = useRadiusStore();
   const { setActiveTrackingRadius } = useSimulationStore();
+  const { setCurrentProject } = useProjectStore();
   const { hasAccess } = useTierCheck("canUsePresets");
   const { showUpgradeModal } = useUpgradeModal();
 
@@ -51,9 +53,16 @@ export const PresetPanel: React.FC = () => {
 
     // Auto-select and track the last radius from preset
     if (lastRadiusId) {
-      selectRadius(lastRadiusId);
-      setActiveTrackingRadius(lastRadiusId);
+      const radiusIdToSelect = lastRadiusId;
+      requestAnimationFrame(() => {
+        selectRadius(radiusIdToSelect);
+        useSimulationStore.getState().setActiveTrackingRadius(radiusIdToSelect);
+        useSimulationStore.getState().toggleTrailTracking(radiusIdToSelect);
+      });
     }
+
+    // Set preset name in project store
+    setCurrentProject(null, preset.name);
 
     // Close dropdown
     setIsOpen(false);
