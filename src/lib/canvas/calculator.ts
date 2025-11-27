@@ -22,10 +22,17 @@ export function calculateRadiusPositions(
     if (!radius.isActive) continue;
 
     // Получаем начальную точку (конец родителя или центр)
-    const startPoint = endPointMap.get(radius.parentId) || {
+    const parentEndPoint = endPointMap.get(radius.parentId);
+    const startPoint = parentEndPoint || {
       x: centerX,
       y: centerY,
     };
+
+    if (!parentEndPoint && radius.parentId !== null) {
+      console.warn(
+        `⚠️ Radius ${radius.id} has parentId ${radius.parentId} but parent endpoint not found! Using center.`
+      );
+    }
 
     // Вычисляем текущий угол с учетом времени
     let currentAngle: number;

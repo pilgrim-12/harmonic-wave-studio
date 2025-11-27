@@ -113,6 +113,10 @@ export const useRadiusStore = create<RadiusStore>()(
           isActive: DEFAULT_RADIUS_VALUES.isActive,
         };
 
+        console.log(
+          `📝 addRadius called: id=${newRadius.id}, parentId=${newRadius.parentId || "null (root)"}, name=${name}`
+        );
+
         set({ radii: [...radii, newRadius] });
         saveToHistory(get, set); // ⭐ Save to history
         return newRadius.id;

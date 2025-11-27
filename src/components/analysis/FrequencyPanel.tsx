@@ -163,11 +163,23 @@ export const FrequencyPanel: React.FC = () => {
     let parentId: string | null = null;
     let lastRadiusId: string | null = null;
 
-    for (const params of radiiParams) {
+    console.log("🔄 Creating radii chain from FFT:", radiiParams.length, "radii");
+
+    for (let i = 0; i < radiiParams.length; i++) {
+      const params = radiiParams[i];
+
+      console.log(
+        `  🔧 Creating radius ${i + 1}: params.parentId=${params.parentId}, overriding with parentId=${parentId || "null (root)"}`
+      );
+
       const newRadiusId = addRadius({
         ...params,
         parentId,
       });
+
+      console.log(
+        `  ✅ Radius ${i + 1}/${radiiParams.length}: ${newRadiusId} created`
+      );
 
       lastRadiusId = newRadiusId;
       parentId = newRadiusId; // Next radius will be child of this one
@@ -175,6 +187,7 @@ export const FrequencyPanel: React.FC = () => {
 
     // Auto-select and track the last radius
     if (lastRadiusId) {
+      console.log("🎯 Selecting last radius:", lastRadiusId);
       selectRadius(lastRadiusId);
       setActiveTrackingRadius(lastRadiusId);
     }
