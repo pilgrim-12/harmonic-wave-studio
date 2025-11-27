@@ -37,7 +37,7 @@ export const FilteredSignalGraph: React.FC = () => {
         ctx.fillStyle = "#0a0a0a";
         ctx.fillRect(0, 0, width, height);
 
-        const padding = { left: 40, right: 20, top: 30, bottom: 30 };
+        const padding = { left: 40, right: 20, top: 15, bottom: 30 };
         const graphWidth = width - padding.left - padding.right;
         const graphHeight = height - padding.top - padding.bottom;
 

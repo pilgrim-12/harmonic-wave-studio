@@ -135,13 +135,6 @@ export const DecompositionGraph: React.FC = () => {
       ctx.fillText(t.toFixed(1) + "s", x, height - padding.bottom + 5);
     }
 
-    // Title
-    ctx.fillStyle = "#667eea";
-    ctx.font = "bold 12px sans-serif";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "top";
-    ctx.fillText("Signal Decomposition", padding.left, 8);
-
     // Draw each radius component
     const numSamples = 500;
     const dt = graphDuration / numSamples;
@@ -256,7 +249,7 @@ export const DecompositionGraph: React.FC = () => {
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <Layers size={16} className="text-[#667eea]" />
-          <h3 className="text-sm font-bold text-white">Signal Decomposition</h3>
+          <h3 className="text-sm font-bold text-[#667eea]">Signal Decomposition</h3>
         </div>
         <span className="text-xs text-gray-400">{radii.length} component{radii.length !== 1 ? 's' : ''}</span>
       </div>

@@ -95,8 +95,8 @@ export const RadiusEditor: React.FC<RadiusEditorProps> = ({
           {/* Amplitude */}
           <Slider
             label="Amplitude"
-            min={5}
-            max={200}
+            min={1}
+            max={500}
             value={formData.length}
             onChange={(e) =>
               setFormData({ ...formData, length: Number(e.target.value) })

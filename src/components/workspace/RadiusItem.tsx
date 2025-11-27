@@ -282,8 +282,8 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
             </div>
             <input
               type="range"
-              min="5"
-              max="200"
+              min="1"
+              max="500"
               step="1"
               value={radius.length}
               onChange={handleLengthChange}
