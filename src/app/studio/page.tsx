@@ -28,6 +28,7 @@ import {
   FilePlus,
   Activity,
   LayoutGrid,
+  Heart,
 } from "lucide-react";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useRadiusStore } from "@/store/radiusStore";
@@ -525,6 +526,17 @@ function HomeContent() {
           )}
 
           <UndoRedoIndicator />
+
+          {/* Support Us Button */}
+          <Link href="/support">
+            <Button
+              variant="secondary"
+              className="flex items-center gap-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border-purple-500/30 hover:from-purple-600/30 hover:to-pink-600/30 transition-all"
+            >
+              <Heart size={16} className="text-pink-400" />
+              <span className="hidden sm:inline">Support Us</span>
+            </Button>
+          </Link>
 
           <div className="flex items-center">
             {loading ? (
