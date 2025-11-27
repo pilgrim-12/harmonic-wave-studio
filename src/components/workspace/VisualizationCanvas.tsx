@@ -207,6 +207,32 @@ export const VisualizationCanvas: React.FC = () => {
     }
   }, [currentTime, isPlaying]);
 
+  // Обработчик масштабирования колесиком мыши
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+
+      const { zoom } = useSimulationStore.getState().settings;
+      const { updateSettings } = useSimulationStore.getState();
+
+      // deltaY < 0 = scroll up = zoom in
+      // deltaY > 0 = scroll down = zoom out
+      const zoomDelta = e.deltaY > 0 ? -0.1 : 0.1;
+      const newZoom = Math.max(0.1, Math.min(5.0, zoom + zoomDelta));
+
+      updateSettings({ zoom: newZoom });
+    };
+
+    canvas.addEventListener("wheel", handleWheel, { passive: false });
+
+    return () => {
+      canvas.removeEventListener("wheel", handleWheel);
+    };
+  }, []);
+
   return (
     <canvas
       ref={canvasRef}
