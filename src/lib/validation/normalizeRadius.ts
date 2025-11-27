@@ -15,8 +15,8 @@ export interface NormalizedRadius extends NormalizeableRadius {
 /**
  * Normalize a single radius to valid ranges:
  * - Angles: [0, 2π)
- * - Speed: [0.1, 10]
- * - Length: [5, 200]
+ * - Speed: [0.01, 50]
+ * - Length: [1, 500]
  */
 export function normalizeRadius<T extends NormalizeableRadius>(
   radius: T
@@ -25,11 +25,11 @@ export function normalizeRadius<T extends NormalizeableRadius>(
   let angle = radius.initialAngle % (2 * Math.PI);
   if (angle < 0) angle += 2 * Math.PI;
 
-  // Clamp speed to [0.1, 10]
-  const speed = Math.max(0.1, Math.min(Math.abs(radius.rotationSpeed), 10));
+  // Clamp speed to [0.01, 50]
+  const speed = Math.max(0.01, Math.min(Math.abs(radius.rotationSpeed), 50));
 
-  // Clamp length to [5, 200]
-  const length = Math.max(5, Math.min(radius.length, 200));
+  // Clamp length to [1, 500]
+  const length = Math.max(1, Math.min(radius.length, 500));
 
   return {
     ...radius,
@@ -58,8 +58,8 @@ export function needsNormalization(radius: NormalizeableRadius): boolean {
 
   const needsAngleNormalization = normalizedAngle !== radius.initialAngle;
   const needsSpeedNormalization =
-    radius.rotationSpeed < 0.1 || radius.rotationSpeed > 10;
-  const needsLengthNormalization = radius.length < 5 || radius.length > 200;
+    radius.rotationSpeed < 0.01 || radius.rotationSpeed > 50;
+  const needsLengthNormalization = radius.length < 1 || radius.length > 500;
 
   return (
     needsAngleNormalization ||

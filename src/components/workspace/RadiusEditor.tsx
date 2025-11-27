@@ -71,8 +71,8 @@ export const RadiusEditor: React.FC<RadiusEditorProps> = ({
           {/* Amplitude */}
           <Slider
             label="Amplitude"
-            min={10}
-            max={200}
+            min={1}
+            max={500}
             value={formData.length}
             onChange={(e) =>
               setFormData({ ...formData, length: Number(e.target.value) })
@@ -95,8 +95,8 @@ export const RadiusEditor: React.FC<RadiusEditorProps> = ({
           {/* Frequency */}
           <Slider
             label="Frequency (Hz)"
-            min={-10}
-            max={10}
+            min={-50}
+            max={50}
             step={0.1}
             value={formData.rotationSpeed}
             onChange={(e) =>
