@@ -5,6 +5,7 @@ import { Save, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useRadiusStore } from "@/store/radiusStore";
 import { useSimulationStore } from "@/store/simulationStore";
+import { useProjectStore } from "@/store/useProjectStore";
 import { SaveProjectDialog } from "./SaveProjectDialog";
 import { useToast } from "@/contexts/ToastContext";
 import { normalizeRadius } from "@/lib/validation/normalizeRadius";
@@ -33,6 +34,7 @@ export const ProjectPanel: React.FC = () => {
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const { radii, clearRadii, addRadius, selectRadius } = useRadiusStore();
   const { setActiveTrackingRadius } = useSimulationStore();
+  const { setCurrentProject } = useProjectStore();
   const toast = useToast();
 
   /**
@@ -181,6 +183,9 @@ export const ProjectPanel: React.FC = () => {
             useSimulationStore.getState().toggleTrailTracking(radiusIdToSelect);
           });
         }
+
+        // ✅ Set project name in project store
+        setCurrentProject(null, project.name);
 
         toast.success(
           `Loaded ${project.radii.length} radii from ${project.name}`,
