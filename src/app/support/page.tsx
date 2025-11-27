@@ -2,13 +2,14 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Heart, ArrowLeft, Check, Copy, CheckCircle2 } from "lucide-react";
+import { Heart, ArrowLeft, Copy, CheckCircle2, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function SupportPage() {
   const { user, signInWithGoogle } = useAuth();
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+  const [isCryptoModalOpen, setIsCryptoModalOpen] = useState(false);
 
   const copyToClipboard = async (address: string, label: string) => {
     try {
@@ -151,99 +152,10 @@ export default function SupportPage() {
             <Button
               variant="primary"
               className="w-full bg-purple-600 hover:bg-purple-500 text-white text-sm"
-              onClick={() => {
-                document.getElementById("crypto-details")?.scrollIntoView({ behavior: "smooth" });
-              }}
+              onClick={() => setIsCryptoModalOpen(true)}
             >
               View Addresses
             </Button>
-          </div>
-        </div>
-
-        {/* Crypto Details Section */}
-        <div id="crypto-details" className="mb-8 bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
-          <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-            <span className="text-2xl">₿</span>
-            Cryptocurrency Addresses
-          </h3>
-          <div className="space-y-3">
-            {/* BSC/BNB */}
-            <div className="bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-semibold text-gray-300">BSC (BNB Chain)</p>
-                <button
-                  onClick={() => copyToClipboard("0x5f9fc192aA7437a482CD40824385D7B8ACB7C3D5", "BSC")}
-                  className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
-                >
-                  {copiedAddress === "BSC" ? (
-                    <>
-                      <CheckCircle2 size={14} />
-                      Copied!
-                    </>
-                  ) : (
-                    <>
-                      <Copy size={14} />
-                      Copy
-                    </>
-                  )}
-                </button>
-              </div>
-              <code className="text-xs text-gray-400 break-all block">
-                0x5f9fc192aA7437a482CD40824385D7B8ACB7C3D5
-              </code>
-            </div>
-
-            {/* TRON */}
-            <div className="bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-semibold text-gray-300">TRON (TRX, USDT TRC20)</p>
-                <button
-                  onClick={() => copyToClipboard("TKpT9iSDZEbvQ5GRW85mabUGCGWQ1CdPyw", "TRON")}
-                  className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
-                >
-                  {copiedAddress === "TRON" ? (
-                    <>
-                      <CheckCircle2 size={14} />
-                      Copied!
-                    </>
-                  ) : (
-                    <>
-                      <Copy size={14} />
-                      Copy
-                    </>
-                  )}
-                </button>
-              </div>
-              <code className="text-xs text-gray-400 break-all block">
-                TKpT9iSDZEbvQ5GRW85mabUGCGWQ1CdPyw
-              </code>
-            </div>
-
-            {/* Ethereum */}
-            <div className="bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-semibold text-gray-300">Ethereum (ETH, USDT, USDC)</p>
-                <button
-                  onClick={() => copyToClipboard("0x5f9fc192aA7437a482CD40824385D7B8ACB7C3D5", "ETH")}
-                  className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
-                >
-                  {copiedAddress === "ETH" ? (
-                    <>
-                      <CheckCircle2 size={14} />
-                      Copied!
-                    </>
-                  ) : (
-                    <>
-                      <Copy size={14} />
-                      Copy
-                    </>
-                  )}
-                </button>
-              </div>
-              <code className="text-xs text-gray-400 break-all block">
-                0x5f9fc192aA7437a482CD40824385D7B8ACB7C3D5
-              </code>
-            </div>
           </div>
         </div>
 
@@ -256,15 +168,6 @@ export default function SupportPage() {
             Whether you donate or not, thank you for using Harmonic Wave Studio!
           </p>
           <div className="flex gap-4 justify-center text-sm">
-            <a
-              href="https://github.com/harmonicwave/studio"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-400 hover:text-blue-300 underline"
-            >
-              Star on GitHub
-            </a>
-            <span className="text-gray-600">•</span>
             <a
               href="mailto:support@harmonicwave.studio"
               className="text-blue-400 hover:text-blue-300 underline"
@@ -281,6 +184,161 @@ export default function SupportPage() {
           </p>
         </div>
       </div>
+
+      {/* Crypto Modal */}
+      {isCryptoModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setIsCryptoModalOpen(false)}
+        >
+          <div
+            className="bg-[#1a1a1a] rounded-2xl border border-[#2a2a2a] shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="relative p-6 border-b border-[#2a2a2a] bg-gradient-to-r from-purple-900/20 to-blue-900/20">
+              <button
+                onClick={() => setIsCryptoModalOpen(false)}
+                className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+              >
+                <X size={24} />
+              </button>
+
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-3xl">₿</span>
+                <h2 className="text-2xl font-bold text-white">
+                  Cryptocurrency Addresses
+                </h2>
+              </div>
+              <p className="text-gray-400 text-sm">
+                Select a network to copy the wallet address
+              </p>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 overflow-y-auto max-h-[70vh]">
+              <div className="space-y-4">
+                {/* BSC/BNB */}
+                <div className="bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg p-5 hover:border-yellow-500/50 transition-colors">
+                  <div className="flex items-center gap-3 mb-3">
+                    <svg className="w-8 h-8" viewBox="0 0 32 32" fill="none">
+                      <circle cx="16" cy="16" r="16" fill="#F3BA2F"/>
+                      <path d="M12.116 14.404L16 10.52l3.886 3.886 2.26-2.26L16 6l-6.144 6.144 2.26 2.26zM6 16l2.26-2.26L10.52 16l-2.26 2.26L6 16zm6.116 1.596L16 21.48l3.886-3.886 2.26 2.259L16 26l-6.144-6.144-.003-.003 2.263-2.257zM21.48 16l2.26-2.26L26 16l-2.26 2.26L21.48 16zm-3.188-.002h.002V16L16 18.294l-2.291-2.29-.004-.004.004-.003.401-.402.195-.195L16 13.706l2.293 2.293z" fill="white"/>
+                    </svg>
+                    <div>
+                      <h3 className="text-white font-semibold">BNB Smart Chain</h3>
+                      <p className="text-xs text-gray-500">BNB, USDT BEP20</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-2 bg-black/30 rounded-lg p-3">
+                    <code className="text-xs text-gray-300 break-all flex-1">
+                      0x5f9fc192aA7437a482CD40824385D7B8ACB7C3D5
+                    </code>
+                    <button
+                      onClick={() => copyToClipboard("0x5f9fc192aA7437a482CD40824385D7B8ACB7C3D5", "BSC")}
+                      className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors whitespace-nowrap ml-2"
+                    >
+                      {copiedAddress === "BSC" ? (
+                        <>
+                          <CheckCircle2 size={16} />
+                          Copied!
+                        </>
+                      ) : (
+                        <>
+                          <Copy size={16} />
+                          Copy
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* TRON */}
+                <div className="bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg p-5 hover:border-red-500/50 transition-colors">
+                  <div className="flex items-center gap-3 mb-3">
+                    <svg className="w-8 h-8" viewBox="0 0 32 32" fill="none">
+                      <circle cx="16" cy="16" r="16" fill="#FF060A"/>
+                      <path d="M21.996 9.464l-13.532-.928L6 24.536l10.068-4.6 5.928-10.472zM9.932 22.068l1.332-9.668 8.732 6.8-10.064 2.868zm10.664-3.4l-8.464-6.6 11.064.8-2.6 5.8z" fill="white"/>
+                    </svg>
+                    <div>
+                      <h3 className="text-white font-semibold">TRON</h3>
+                      <p className="text-xs text-gray-500">TRX, USDT TRC20</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-2 bg-black/30 rounded-lg p-3">
+                    <code className="text-xs text-gray-300 break-all flex-1">
+                      TKpT9iSDZEbvQ5GRW85mabUGCGWQ1CdPyw
+                    </code>
+                    <button
+                      onClick={() => copyToClipboard("TKpT9iSDZEbvQ5GRW85mabUGCGWQ1CdPyw", "TRON")}
+                      className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors whitespace-nowrap ml-2"
+                    >
+                      {copiedAddress === "TRON" ? (
+                        <>
+                          <CheckCircle2 size={16} />
+                          Copied!
+                        </>
+                      ) : (
+                        <>
+                          <Copy size={16} />
+                          Copy
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Ethereum */}
+                <div className="bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg p-5 hover:border-purple-500/50 transition-colors">
+                  <div className="flex items-center gap-3 mb-3">
+                    <svg className="w-8 h-8" viewBox="0 0 32 32" fill="none">
+                      <circle cx="16" cy="16" r="16" fill="#627EEA"/>
+                      <path d="M16.001 4L15.866 4.457v14.896l.135.135 6.193-3.662L16.001 4z" fill="white" fillOpacity="0.602"/>
+                      <path d="M16.001 4L9.808 15.826l6.193 3.662V4z" fill="white"/>
+                      <path d="M16.001 21.284l-.076.093v4.753l.076.222 6.197-8.727-6.197 3.659z" fill="white" fillOpacity="0.602"/>
+                      <path d="M16.001 26.352v-5.068l-6.193-3.659 6.193 8.727z" fill="white"/>
+                      <path d="M16.001 19.488l6.193-3.662-6.193-2.81v6.472z" fill="white" fillOpacity="0.2"/>
+                      <path d="M9.808 15.826l6.193 3.662v-6.472l-6.193 2.81z" fill="white" fillOpacity="0.602"/>
+                    </svg>
+                    <div>
+                      <h3 className="text-white font-semibold">Ethereum</h3>
+                      <p className="text-xs text-gray-500">ETH, USDT ERC20, USDC</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-2 bg-black/30 rounded-lg p-3">
+                    <code className="text-xs text-gray-300 break-all flex-1">
+                      0x5f9fc192aA7437a482CD40824385D7B8ACB7C3D5
+                    </code>
+                    <button
+                      onClick={() => copyToClipboard("0x5f9fc192aA7437a482CD40824385D7B8ACB7C3D5", "ETH")}
+                      className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors whitespace-nowrap ml-2"
+                    >
+                      {copiedAddress === "ETH" ? (
+                        <>
+                          <CheckCircle2 size={16} />
+                          Copied!
+                        </>
+                      ) : (
+                        <>
+                          <Copy size={16} />
+                          Copy
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-[#2a2a2a] bg-[#0f0f0f] text-center">
+              <p className="text-xs text-gray-500">
+                Double-check the network before sending. Wrong network = lost funds.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
