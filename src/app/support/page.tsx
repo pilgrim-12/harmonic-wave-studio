@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Heart, Coffee, ArrowLeft, Check } from "lucide-react";
+import { Heart, ArrowLeft, Check } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -85,27 +85,26 @@ export default function SupportPage() {
 
         {/* Donation Options */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-          {/* Buy Me a Coffee */}
+          {/* PayPal */}
           <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-8 flex flex-col">
-            <Coffee size={48} className="text-yellow-500 mb-4" />
+            <div className="text-5xl mb-4">💳</div>
             <h3 className="text-2xl font-bold text-white mb-2">
-              Buy Me a Coffee
+              PayPal
             </h3>
             <p className="text-gray-400 mb-6 flex-1">
               One-time donation to support development. Any amount is appreciated!
             </p>
             <a
-              href="https://buymeacoffee.com/harmonicwave"
+              href="https://paypal.com/paypalme/yuriichernov"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block"
             >
               <Button
                 variant="primary"
-                className="w-full bg-yellow-600 hover:bg-yellow-500 text-white"
+                className="w-full bg-blue-600 hover:bg-blue-500 text-white"
               >
-                <Coffee size={18} className="mr-2" />
-                Buy Me a Coffee
+                Donate via PayPal
               </Button>
             </a>
           </div>
