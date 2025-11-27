@@ -464,7 +464,7 @@ function HomeContent() {
         <div className="flex items-center justify-between h-14 px-3 gap-3">
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2">
-              <Waves size={24} className="text-[#667eea]" />
+              <span className="text-2xl">🌊</span>
               <span className="font-bold text-white text-lg">
                 Harmonic Wave Studio
               </span>
