@@ -43,7 +43,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
   if (!isOpen) return null;
 
-  const tierMetadata = getTierMetadata(requiredTier);
+  const tierMetadata = getTierMetadata(requiredTier || "free");
   const isSignInRequired = !user;
 
   const handleAction = async () => {
