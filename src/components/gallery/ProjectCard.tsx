@@ -59,14 +59,14 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   return (
     <div
       onClick={handleCardClick}
-      className="group bg-[#1a1a1a] rounded-md border border-[#2a2a2a] overflow-hidden cursor-pointer transition-all hover:border-[#667eea] hover:shadow-lg hover:shadow-[#667eea]/10"
+      className="group bg-[#1a1a1a] rounded-md border border-[#2a2a2a] overflow-hidden cursor-pointer transition-all hover:border-[#667eea] hover:shadow-lg hover:shadow-[#667eea]/10 flex flex-col h-full"
     >
       {/* Compact Preview - thin but visible */}
-      <div className="relative h-28 bg-gradient-to-br from-[#667eea]/20 to-[#764ba2]/20 flex items-center justify-center border-b border-[#2a2a2a] group-hover:from-[#667eea]/30 group-hover:to-[#764ba2]/30 transition-all">
+      <div className="relative h-28 bg-gradient-to-br from-[#667eea]/20 to-[#764ba2]/20 flex items-center justify-center border-b border-[#2a2a2a] group-hover:from-[#667eea]/30 group-hover:to-[#764ba2]/30 transition-all flex-shrink-0">
       </div>
 
       {/* Dense Content */}
-      <div className="p-2">
+      <div className="p-2 flex flex-col flex-1">
         {/* Title - 2 lines max */}
         <h3 className="text-xs font-semibold text-white mb-1 line-clamp-2 group-hover:text-[#667eea] transition-colors leading-snug h-8">
           {project.projectName}
@@ -98,8 +98,8 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           </div>
         )}
 
-        {/* Footer - stats and actions */}
-        <div className="pt-1 border-t border-[#2a2a2a]/50 space-y-1">
+        {/* Footer - stats and actions - pushed to bottom */}
+        <div className="pt-1 border-t border-[#2a2a2a]/50 space-y-1 mt-auto">
           {/* Stats row */}
           <div className="flex items-center gap-2 text-[9px] text-gray-500">
             <div className="flex items-center gap-0.5 flex-1 min-w-0">
