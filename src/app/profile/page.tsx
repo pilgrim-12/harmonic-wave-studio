@@ -11,16 +11,21 @@ import {
 import { useProjectStore } from "@/store/useProjectStore";
 import { useRadiusStore } from "@/store/radiusStore";
 import { useSimulationStore } from "@/store/simulationStore";
-import { Trash2, FolderOpen, ArrowLeft, Share2 } from "lucide-react"; // ✅ ДОБАВЛЕНО Share2
+import { Trash2, FolderOpen, ArrowLeft, Share2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { useToast } from "@/contexts/ToastContext";
 import Link from "next/link";
 import Image from "next/image";
 
 export default function ProfilePage() {
   const { user, userProfile, loading } = useAuth();
   const router = useRouter();
+  const toast = useToast();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
   const { setCurrentProject } = useProjectStore();
   const { clearRadii, addRadius, selectRadius } = useRadiusStore();
   const { setActiveTrackingRadius } = useSimulationStore();
@@ -84,24 +89,29 @@ export default function ProfilePage() {
     router.push("/studio");
   };
 
-  const handleDeleteProject = async (projectId: string) => {
-    if (!confirm("Are you sure you want to delete this project?")) return;
+  const handleDeleteProject = async () => {
+    if (!projectToDelete) return;
 
     try {
-      await deleteProject(projectId);
-      setProjects(projects.filter((p) => p.id !== projectId));
-      alert("✅ Project deleted!");
+      await deleteProject(projectToDelete);
+      setProjects(projects.filter((p) => p.id !== projectToDelete));
+      toast.success("Project deleted successfully!");
     } catch (error) {
       console.error("Error deleting project:", error);
-      alert("Failed to delete project");
+      toast.error("Failed to delete project");
+    } finally {
+      setProjectToDelete(null);
     }
   };
 
-  // ✅ ДОБАВЛЕНО: Handler для копирования share ссылки
-  const handleCopyShareLink = (shareId: string) => {
-    const url = `${window.location.origin}/project/${shareId}`;
-    navigator.clipboard.writeText(url);
-    alert("✅ Share link copied!");
+  const openDeleteDialog = (projectId: string) => {
+    setProjectToDelete(projectId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleViewSharedProject = (shareId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    router.push(`/shared/share_${shareId}`);
   };
 
   if (loading || !user) {
@@ -164,21 +174,19 @@ export default function ProfilePage() {
               {projects.map((project) => (
                 <div
                   key={project.id}
-                  className="bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg p-4 flex items-center justify-between hover:border-[#667eea] transition-colors"
+                  onClick={() => handleLoadProject(project)}
+                  className="bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg p-4 flex items-center justify-between hover:border-[#667eea] transition-colors cursor-pointer group"
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <h3 className="text-white font-medium">{project.name}</h3>
-                      {/* ✅ ДОБАВЛЕНО: Share индикатор */}
+                      <h3 className="text-white font-medium group-hover:text-[#667eea] transition-colors">
+                        {project.name}
+                      </h3>
                       {project.shareId && (
-                        <button
-                          onClick={() => handleCopyShareLink(project.shareId!)}
-                          className="flex items-center gap-1 px-2 py-1 bg-blue-600/20 text-blue-400 rounded text-xs hover:bg-blue-600/30 transition-colors"
-                          title="Copy share link"
-                        >
+                        <span className="flex items-center gap-1 px-2 py-1 bg-blue-600/20 text-blue-400 rounded text-xs">
                           <Share2 size={12} />
                           Shared
-                        </button>
+                        </span>
                       )}
                     </div>
                     <p className="text-sm text-gray-500 mt-1">
@@ -187,19 +195,25 @@ export default function ProfilePage() {
                     </p>
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                    {project.shareId && (
+                      <Button
+                        onClick={(e) => handleViewSharedProject(project.shareId!, e)}
+                        variant="secondary"
+                        className="text-sm"
+                        title="View shared project page"
+                      >
+                        <ExternalLink size={14} />
+                      </Button>
+                    )}
                     <Button
-                      onClick={() => handleLoadProject(project)}
-                      variant="primary"
-                      className="text-sm"
-                    >
-                      <FolderOpen size={14} className="mr-1" />
-                      Load
-                    </Button>
-                    <Button
-                      onClick={() => handleDeleteProject(project.id!)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openDeleteDialog(project.id!);
+                      }}
                       variant="secondary"
                       className="text-sm text-red-400 hover:text-red-300"
+                      title="Delete project"
                     >
                       <Trash2 size={14} />
                     </Button>
@@ -209,6 +223,21 @@ export default function ProfilePage() {
             </div>
           )}
         </div>
+
+        {/* Delete Confirmation Dialog */}
+        <ConfirmDialog
+          isOpen={deleteDialogOpen}
+          onClose={() => {
+            setDeleteDialogOpen(false);
+            setProjectToDelete(null);
+          }}
+          onConfirm={handleDeleteProject}
+          title="Delete Project"
+          message="Are you sure you want to delete this project? This action cannot be undone."
+          confirmText="Delete"
+          cancelText="Cancel"
+          variant="danger"
+        />
       </div>
     </div>
   );
