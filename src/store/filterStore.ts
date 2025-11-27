@@ -6,6 +6,8 @@
 import { create } from "zustand";
 import {
   designButterworthFilter,
+  designChebyshev1Filter,
+  designChebyshev2Filter,
   applyFilter,
   FilterCoefficients,
 } from "@/lib/signal/digitalFilters";
@@ -66,24 +68,46 @@ export const useFilterStore = create<FilterState>((set) => ({
 
       const clampedCutoff = Math.min(0.49, Math.max(0.01, normalizedCutoff));
 
-      // Design filter coefficients
+      // Design filter coefficients based on type
       let coefficients: FilterCoefficients;
+      const filterMode = settings.mode === "highpass" ? "highpass" : "lowpass";
 
-      if (settings.type === "butterworth") {
-        coefficients = designButterworthFilter(
-          settings.order,
-          clampedCutoff,
-          settings.mode === "highpass" ? "highpass" : "lowpass"
-        );
-      } else {
-        // For now, use Butterworth for other types
-        // TODO: Implement Chebyshev filters
-        console.warn(`${settings.type} not implemented yet, using Butterworth`);
-        coefficients = designButterworthFilter(
-          settings.order,
-          clampedCutoff,
-          settings.mode === "highpass" ? "highpass" : "lowpass"
-        );
+      switch (settings.type) {
+        case "butterworth":
+          coefficients = designButterworthFilter(
+            settings.order,
+            clampedCutoff,
+            filterMode
+          );
+          break;
+
+        case "chebyshev1":
+          // Chebyshev Type I with 0.5 dB passband ripple
+          coefficients = designChebyshev1Filter(
+            settings.order,
+            clampedCutoff,
+            0.5,
+            filterMode
+          );
+          break;
+
+        case "chebyshev2":
+          // Chebyshev Type II with 40 dB stopband attenuation
+          coefficients = designChebyshev2Filter(
+            settings.order,
+            clampedCutoff,
+            40,
+            filterMode
+          );
+          break;
+
+        default:
+          console.warn(`Unknown filter type: ${settings.type}, using Butterworth`);
+          coefficients = designButterworthFilter(
+            settings.order,
+            clampedCutoff,
+            filterMode
+          );
       }
 
       // Apply filter

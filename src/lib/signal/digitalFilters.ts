@@ -208,6 +208,218 @@ export function getFrequencyResponse(
   return { magnitude, phase };
 }
 
+/**
+ * Design Chebyshev Type I filter (ripple in passband)
+ * @param order Filter order
+ * @param cutoffFreq Normalized cutoff frequency (0-0.5)
+ * @param ripple Passband ripple in dB (typically 0.1 to 3 dB)
+ * @param mode Filter mode (lowpass or highpass)
+ */
+export function designChebyshev1Filter(
+  order: number,
+  cutoffFreq: number,
+  ripple: number = 0.5,
+  mode: "lowpass" | "highpass" = "lowpass"
+): FilterCoefficients {
+  const epsilon = Math.sqrt(Math.pow(10, ripple / 10) - 1);
+  const w0 = 2 * Math.PI * cutoffFreq;
+
+  // Calculate pole positions
+  const poles: Array<{ real: number; imag: number }> = [];
+  const sinh_val = Math.asinh(1 / epsilon) / order;
+
+  for (let k = 0; k < order; k++) {
+    const theta = ((2 * k + 1) * Math.PI) / (2 * order);
+    const real = -Math.sinh(sinh_val) * Math.sin(theta);
+    const imag = Math.cosh(sinh_val) * Math.cos(theta);
+    poles.push({ real, imag });
+  }
+
+  // Build cascaded biquad sections
+  const numSections = Math.ceil(order / 2);
+  let allA = [1];
+  let allB = [1];
+
+  for (let section = 0; section < numSections; section++) {
+    let biquad: { b: number[]; a: number[] };
+
+    if (section * 2 + 1 === order) {
+      // Odd order - single real pole
+      const pole = poles[section * 2];
+      biquad = chebyshevFirstOrderBiquad(pole.real, w0, mode);
+    } else {
+      // Pair of complex conjugate poles
+      const pole = poles[section * 2];
+      biquad = chebyshevSecondOrderBiquad(pole, w0, mode);
+    }
+
+    allA = convolve(allA, biquad.a);
+    allB = convolve(allB, biquad.b);
+  }
+
+  // Normalize gain for passband
+  const gain = mode === "lowpass" ?
+    (order % 2 === 0 ? 1 / Math.sqrt(1 + epsilon * epsilon) : 1) : 1;
+  allB = allB.map(b => b * gain);
+
+  return { a: allA, b: allB };
+}
+
+/**
+ * Design Chebyshev Type II filter (ripple in stopband)
+ * @param order Filter order
+ * @param cutoffFreq Normalized cutoff frequency (0-0.5)
+ * @param stopbandAtten Stopband attenuation in dB (typically 40-80 dB)
+ * @param mode Filter mode (lowpass or highpass)
+ */
+export function designChebyshev2Filter(
+  order: number,
+  cutoffFreq: number,
+  stopbandAtten: number = 40,
+  mode: "lowpass" | "highpass" = "lowpass"
+): FilterCoefficients {
+  const epsilon = 1 / Math.sqrt(Math.pow(10, stopbandAtten / 10) - 1);
+  const w0 = 2 * Math.PI * cutoffFreq;
+
+  // Calculate zeros and poles
+  const zeros: number[] = [];
+  const poles: Array<{ real: number; imag: number }> = [];
+  const sinh_val = Math.asinh(1 / epsilon) / order;
+
+  for (let k = 0; k < order; k++) {
+    const theta = ((2 * k + 1) * Math.PI) / (2 * order);
+
+    // Zeros on imaginary axis
+    zeros.push(1 / Math.cos(theta));
+
+    // Poles (inverse of Type I)
+    const sinh_theta = Math.sinh(sinh_val) * Math.sin(theta);
+    const cosh_theta = Math.cosh(sinh_val) * Math.cos(theta);
+    const denom = sinh_theta * sinh_theta + cosh_theta * cosh_theta;
+
+    poles.push({
+      real: -sinh_theta / denom,
+      imag: cosh_theta / denom
+    });
+  }
+
+  // Build cascaded biquad sections
+  const numSections = Math.ceil(order / 2);
+  let allA = [1];
+  let allB = [1];
+
+  for (let section = 0; section < numSections; section++) {
+    let biquad: { b: number[]; a: number[] };
+
+    if (section * 2 + 1 === order) {
+      // Odd order
+      const pole = poles[section * 2];
+      biquad = chebyshevFirstOrderBiquad(pole.real, w0, mode);
+    } else {
+      // Even order with zeros
+      const pole = poles[section * 2];
+      const zero = zeros[section * 2];
+      biquad = chebyshev2SecondOrderBiquad(pole, zero, w0, mode);
+    }
+
+    allA = convolve(allA, biquad.a);
+    allB = convolve(allB, biquad.b);
+  }
+
+  return { a: allA, b: allB };
+}
+
+/**
+ * Helper: First-order Chebyshev biquad
+ */
+function chebyshevFirstOrderBiquad(
+  poleReal: number,
+  w0: number,
+  mode: "lowpass" | "highpass"
+): { b: number[]; a: number[] } {
+  const K = Math.tan(w0 / 2);
+  const p = poleReal;
+
+  if (mode === "lowpass") {
+    const norm = K - p;
+    return {
+      b: [K / norm, K / norm],
+      a: [1, (K + p) / norm]
+    };
+  } else {
+    const norm = K - p;
+    return {
+      b: [1 / norm, -1 / norm],
+      a: [1, (K + p) / norm]
+    };
+  }
+}
+
+/**
+ * Helper: Second-order Chebyshev Type I biquad
+ */
+function chebyshevSecondOrderBiquad(
+  pole: { real: number; imag: number },
+  w0: number,
+  mode: "lowpass" | "highpass"
+): { b: number[]; a: number[] } {
+  const K = Math.tan(w0 / 2);
+  const pr = pole.real;
+  const pi = Math.abs(pole.imag);
+
+  const K2 = K * K;
+  const pr2 = pr * pr;
+  const pi2 = pi * pi;
+
+  const norm = K2 - 2 * K * pr + pr2 + pi2;
+
+  if (mode === "lowpass") {
+    return {
+      b: [K2 / norm, 2 * K2 / norm, K2 / norm],
+      a: [1, 2 * (K2 - pr2 - pi2) / norm, (K2 + 2 * K * pr + pr2 + pi2) / norm]
+    };
+  } else {
+    return {
+      b: [1 / norm, -2 / norm, 1 / norm],
+      a: [1, 2 * (K2 - pr2 - pi2) / norm, (K2 + 2 * K * pr + pr2 + pi2) / norm]
+    };
+  }
+}
+
+/**
+ * Helper: Second-order Chebyshev Type II biquad (with zeros)
+ */
+function chebyshev2SecondOrderBiquad(
+  pole: { real: number; imag: number },
+  zero: number,
+  w0: number,
+  mode: "lowpass" | "highpass"
+): { b: number[]; a: number[] } {
+  const K = Math.tan(w0 / 2);
+  const pr = pole.real;
+  const pi = Math.abs(pole.imag);
+  const zi = Math.abs(zero);
+
+  const K2 = K * K;
+  const normA = K2 - 2 * K * pr + pr * pr + pi * pi;
+
+  if (mode === "lowpass") {
+    const normB = K2 + zi * zi;
+    return {
+      b: [K2 / normB, 2 * K2 / normB, K2 / normB],
+      a: [1, 2 * (K2 - pr * pr - pi * pi) / normA,
+          (K2 + 2 * K * pr + pr * pr + pi * pi) / normA]
+    };
+  } else {
+    const normB = K2 + zi * zi;
+    return {
+      b: [(K2 + zi * zi) / normB, -2 * zi * zi / normB, (K2 + zi * zi) / normB],
+      a: [1, 2 * (K2 - pr * pr - pi * pi) / normA,
+          (K2 + 2 * K * pr + pr * pr + pi * pi) / normA]
+    };
+  }
+}
+
 export function generateFrequencyArray(
   numPoints: number = 512,
   nyquist: number = 0.5
