@@ -7,7 +7,6 @@ import { useRadiusStore } from "@/store/radiusStore";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Slider } from "@/components/ui/Slider";
-import { Select } from "@/components/ui/Select";
 
 interface RadiusEditorProps {
   radius: Radius;
@@ -29,6 +28,23 @@ export const RadiusEditor: React.FC<RadiusEditorProps> = ({
     color: radius.color,
   });
 
+  const [showColorPicker, setShowColorPicker] = useState(false);
+
+  const commonColors = [
+    "#667eea",
+    "#764ba2",
+    "#f093fb",
+    "#4facfe",
+    "#43e97b",
+    "#fa709a",
+    "#fee140",
+    "#30cfd0",
+    "#a8edea",
+    "#fed6e3",
+    "#c471ed",
+    "#f64f59",
+  ];
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -43,6 +59,14 @@ export const RadiusEditor: React.FC<RadiusEditorProps> = ({
 
     updateRadius(radius.id, updates);
     onClose();
+  };
+
+  const handleToggleDirection = () => {
+    setFormData({
+      ...formData,
+      direction:
+        formData.direction === "clockwise" ? "counterclockwise" : "clockwise",
+    });
   };
 
   return (
@@ -71,8 +95,8 @@ export const RadiusEditor: React.FC<RadiusEditorProps> = ({
           {/* Amplitude */}
           <Slider
             label="Amplitude"
-            min={1}
-            max={500}
+            min={5}
+            max={200}
             value={formData.length}
             onChange={(e) =>
               setFormData({ ...formData, length: Number(e.target.value) })
@@ -95,8 +119,8 @@ export const RadiusEditor: React.FC<RadiusEditorProps> = ({
           {/* Frequency */}
           <Slider
             label="Frequency (Hz)"
-            min={-50}
-            max={50}
+            min={0.1}
+            max={10}
             step={0.1}
             value={formData.rotationSpeed}
             onChange={(e) =>
@@ -109,42 +133,58 @@ export const RadiusEditor: React.FC<RadiusEditorProps> = ({
           />
 
           {/* Direction */}
-          <Select
-            label="Direction"
-            value={formData.direction}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                direction: e.target.value as "clockwise" | "counterclockwise",
-              })
-            }
-            options={[
-              { value: "counterclockwise", label: "⟲ Counterclockwise" },
-              { value: "clockwise", label: "⟳ Clockwise" },
-            ]}
-          />
+          <div>
+            <label className="block text-sm font-medium text-gray-400 mb-2">
+              Direction
+            </label>
+            <button
+              type="button"
+              onClick={handleToggleDirection}
+              className="w-full px-4 py-2 bg-[#252525] hover:bg-[#333] rounded text-sm text-gray-300 hover:text-[#667eea] transition-colors"
+            >
+              {formData.direction === "counterclockwise"
+                ? "⟲ Counterclockwise"
+                : "⟳ Clockwise"}
+            </button>
+          </div>
 
           {/* Color */}
           <div>
             <label className="block text-sm font-medium text-gray-400 mb-2">
               Color
             </label>
-            <div className="flex gap-3 items-center">
-              <input
-                type="color"
-                value={formData.color}
-                onChange={(e) =>
-                  setFormData({ ...formData, color: e.target.value })
-                }
-                className="w-16 h-10 rounded-md cursor-pointer bg-[#252525] border border-[#333]"
+            <div className="relative">
+              <div
+                onClick={() => setShowColorPicker(!showColorPicker)}
+                className="w-12 h-12 rounded-md cursor-pointer ring-2 ring-white/20 hover:ring-white/40 transition-all"
+                style={{ backgroundColor: formData.color }}
               />
-              <Input
-                value={formData.color}
-                onChange={(e) =>
-                  setFormData({ ...formData, color: e.target.value })
-                }
-                className="flex-1"
-              />
+              {showColorPicker && (
+                <div className="absolute z-10 bg-[#252525] border border-[#333] rounded-lg p-3 shadow-xl mt-2">
+                  <div className="grid grid-cols-4 gap-2 mb-2">
+                    {commonColors.map((color) => (
+                      <button
+                        key={color}
+                        type="button"
+                        onClick={() => {
+                          setFormData({ ...formData, color });
+                          setShowColorPicker(false);
+                        }}
+                        className="w-10 h-10 rounded hover:scale-110 transition-transform"
+                        style={{ backgroundColor: color }}
+                      />
+                    ))}
+                  </div>
+                  <input
+                    type="color"
+                    value={formData.color}
+                    onChange={(e) =>
+                      setFormData({ ...formData, color: e.target.value })
+                    }
+                    className="w-full h-10 rounded cursor-pointer"
+                  />
+                </div>
+              )}
             </div>
           </div>
 

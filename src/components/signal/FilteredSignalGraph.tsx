@@ -70,12 +70,6 @@ export const FilteredSignalGraph: React.FC = () => {
           ctx.textBaseline = "middle";
           ctx.fillText("Apply filter first", width / 2, height / 2);
         }
-
-        ctx.fillStyle = "#43e97b";
-        ctx.font = "bold 12px sans-serif";
-        ctx.textAlign = "left";
-        ctx.textBaseline = "top";
-        ctx.fillText("Signal Comparison", padding.left, 8);
       }
 
       animationFrameRef.current = requestAnimationFrame(draw);
@@ -92,7 +86,7 @@ export const FilteredSignalGraph: React.FC = () => {
     <div className="h-full flex flex-col bg-[#0a0a0a] p-3">
       <div className="flex items-center gap-2 mb-2">
         <Filter size={16} className="text-[#43e97b]" />
-        <h3 className="text-sm font-bold text-white">Signal Comparison</h3>
+        <h3 className="text-sm font-bold text-[#43e97b]">Signal Comparison</h3>
       </div>
       <div className="flex-1 min-h-0">
         <canvas ref={canvasRef} className="w-full h-full" />

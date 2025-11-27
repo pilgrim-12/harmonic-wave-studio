@@ -68,13 +68,6 @@ export const SignalGraph: React.FC = () => {
           ctx.textBaseline = "middle";
           ctx.fillText("No signal data", width / 2, height / 2);
         }
-
-        // Draw title
-        ctx.fillStyle = "#667eea";
-        ctx.font = "bold 12px sans-serif";
-        ctx.textAlign = "left";
-        ctx.textBaseline = "top";
-        ctx.fillText("Original Signal", padding.left, 8);
       }
 
       animationFrameRef.current = requestAnimationFrame(draw);
@@ -91,7 +84,7 @@ export const SignalGraph: React.FC = () => {
     <div className="h-full flex flex-col bg-[#0a0a0a] p-3">
       <div className="flex items-center gap-2 mb-2">
         <Activity size={16} className="text-[#667eea]" />
-        <h3 className="text-sm font-bold text-white">Original Signal</h3>
+        <h3 className="text-sm font-bold text-[#667eea]">Original Signal</h3>
       </div>
       <div className="flex-1 min-h-0">
         <canvas ref={canvasRef} className="w-full h-full" />

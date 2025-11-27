@@ -15,6 +15,16 @@ export const SpectrumGraphPanel: React.FC = () => {
   const [updateCounter, setUpdateCounter] = useState(0);
 
   /**
+   * Clear spectrum when signal is reset
+   */
+  useEffect(() => {
+    if (signalBuffer.length === 0) {
+      setAnalysisResult(null);
+      setUpdateCounter(0);
+    }
+  }, [signalBuffer.length]);
+
+  /**
    * Perform FFT analysis on signal data
    */
   const performFFT = () => {
@@ -68,7 +78,7 @@ export const SpectrumGraphPanel: React.FC = () => {
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <BarChart3 size={16} className="text-[#667eea]" />
-          <h3 className="text-sm font-bold text-white">Frequency Spectrum</h3>
+          <h3 className="text-sm font-bold text-[#667eea]">Frequency Spectrum</h3>
         </div>
         {isPlaying && (
           <span className="text-xs text-green-400 flex items-center gap-1">

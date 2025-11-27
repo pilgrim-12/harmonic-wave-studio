@@ -68,12 +68,6 @@ export const NoisySignalGraph: React.FC = () => {
           ctx.textBaseline = "middle";
           ctx.fillText("Apply noise first", width / 2, height / 2);
         }
-
-        ctx.fillStyle = "#ff6b6b";
-        ctx.font = "bold 12px sans-serif";
-        ctx.textAlign = "left";
-        ctx.textBaseline = "top";
-        ctx.fillText("Signal with Noise", padding.left, 8);
       }
 
       animationFrameRef.current = requestAnimationFrame(draw);
@@ -90,7 +84,7 @@ export const NoisySignalGraph: React.FC = () => {
     <div className="h-full flex flex-col bg-[#0a0a0a] p-3">
       <div className="flex items-center gap-2 mb-2">
         <Sparkles size={16} className="text-[#ff6b6b]" />
-        <h3 className="text-sm font-bold text-white">Signal with Noise</h3>
+        <h3 className="text-sm font-bold text-[#ff6b6b]">Signal with Noise</h3>
       </div>
       <div className="flex-1 min-h-0">
         <canvas ref={canvasRef} className="w-full h-full" />
