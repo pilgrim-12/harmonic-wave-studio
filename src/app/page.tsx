@@ -34,10 +34,10 @@ export default function LandingPage() {
               Features
             </Link>
             <Link
-              href="#examples"
+              href="/about"
               className="text-gray-300 hover:text-white transition-colors"
             >
-              Examples
+              About
             </Link>
             <Link
               href="/pricing"
@@ -279,6 +279,11 @@ export default function LandingPage() {
             <div>
               <h4 className="font-semibold text-white mb-4">Resources</h4>
               <ul className="space-y-2 text-gray-400 text-sm">
+                <li>
+                  <Link href="/about" className="hover:text-white transition-colors">
+                    About
+                  </Link>
+                </li>
                 <li>
                   <Link href="/gallery" className="hover:text-white transition-colors">
                     Gallery
