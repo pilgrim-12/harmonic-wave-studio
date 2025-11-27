@@ -18,61 +18,61 @@ export const FILTER_TYPE_INFO: Record<
   butterworth: {
     name: "Butterworth Filter",
     description:
-      "Максимально плоская амплитудно-частотная характеристика (АЧХ) в полосе пропускания. Отсутствие пульсаций делает его идеальным для общего применения.",
+      "Maximally flat frequency response in the passband. No ripples makes it ideal for general-purpose applications.",
     characteristics: [
-      "Максимально плоская АЧХ в полосе пропускания",
-      "Монотонное затухание в полосе задерживания",
-      "Умеренная крутизна спада (-20 dB/decade на порядок)",
-      "Хорошая фазовая характеристика",
+      "Maximally flat frequency response in passband",
+      "Monotonic attenuation in stopband",
+      "Moderate roll-off (-20 dB/decade per order)",
+      "Good phase characteristics",
     ],
     useCases: [
-      "Универсальная фильтрация без искажений",
-      "Аудио обработка где важна точность амплитуд",
-      "Медицинские сигналы (ЭКГ, ЭЭГ)",
-      "Измерительные приборы",
+      "General-purpose filtering without distortion",
+      "Audio processing where amplitude accuracy matters",
+      "Medical signals (ECG, EEG)",
+      "Measurement instruments",
     ],
     technicalDetails:
-      "Фильтр Баттерворта обеспечивает максимально плоскую АЧХ за счет размещения полюсов на окружности в s-плоскости. Фазовые искажения минимальны, но переходная характеристика может иметь небольшое перерегулирование.",
+      "Butterworth filter provides maximally flat response by placing poles on a circle in the s-plane. Phase distortion is minimal, but transient response may have slight overshoot.",
   },
 
   chebyshev1: {
     name: "Chebyshev Type I",
     description:
-      "Более крутой спад чем у Баттерворта, но с равномерными пульсациями в полосе пропускания. Обеспечивает лучшее подавление нежелательных частот при том же порядке.",
+      "Steeper roll-off than Butterworth, but with equiripple in the passband. Provides better rejection of unwanted frequencies for the same order.",
     characteristics: [
-      "Пульсации в полосе пропускания (0.5 dB по умолчанию)",
-      "Монотонное затухание в полосе задерживания",
-      "Крутой спад (-40+ dB/decade)",
-      "Быстрая переходная характеристика",
+      "Ripple in passband (0.5 dB by default)",
+      "Monotonic attenuation in stopband",
+      "Steep roll-off (-40+ dB/decade)",
+      "Fast transient response",
     ],
     useCases: [
-      "Когда важна крутизна спада",
-      "Разделение близких частотных компонент",
-      "Системы связи и радио",
-      "Когда небольшие пульсации допустимы",
+      "When steep roll-off is critical",
+      "Separating closely-spaced frequency components",
+      "Communication and radio systems",
+      "When small ripples are acceptable",
     ],
     technicalDetails:
-      "Type I использует полиномы Чебышева для размещения полюсов на эллипсе. Пульсации в полосе пропускания обменивают на более крутой спад. Чем больше пульсации, тем круче спад, но выше искажения.",
+      "Type I uses Chebyshev polynomials to place poles on an ellipse. Passband ripples are traded for steeper roll-off. More ripple means steeper roll-off but higher distortion.",
   },
 
   chebyshev2: {
     name: "Chebyshev Type II",
     description:
-      "Инверсный Чебышев с плоской АЧХ в полосе пропускания и пульсациями в полосе задерживания. Сочетает преимущества Баттерворта и Чебышева Type I.",
+      "Inverse Chebyshev with flat passband response and ripples in the stopband. Combines advantages of Butterworth and Chebyshev Type I.",
     characteristics: [
-      "Плоская АЧХ в полосе пропускания",
-      "Пульсации в полосе задерживания (40 dB по умолчанию)",
-      "Крутой спад с нулями передачи",
-      "Меньшие фазовые искажения чем Type I",
+      "Flat frequency response in passband",
+      "Ripple in stopband (40 dB by default)",
+      "Steep roll-off with transmission zeros",
+      "Lower phase distortion than Type I",
     ],
     useCases: [
-      "Когда важна точность в полосе пропускания",
-      "Подавление конкретных частот (notch эффект)",
-      "Прецизионная аудио обработка",
-      "Научные измерения",
+      "When passband accuracy is important",
+      "Rejecting specific frequencies (notch effect)",
+      "Precision audio processing",
+      "Scientific measurements",
     ],
     technicalDetails:
-      "Type II размещает нули на мнимой оси для создания выемок (notches) в АЧХ. Обеспечивает плоскую полосу пропускания как у Баттерворта, но с более крутым спадом благодаря нулям передачи.",
+      "Type II places zeros on the imaginary axis to create notches in the frequency response. Provides flat passband like Butterworth, but with steeper roll-off thanks to transmission zeros.",
   },
 };
 
@@ -85,39 +85,39 @@ export const FILTER_MODE_INFO: Record<
   }
 > = {
   lowpass: {
-    name: "Low-pass (ФНЧ)",
+    name: "Low-pass",
     description:
-      "Пропускает низкие частоты ниже частоты среза, подавляет высокие. Используется для удаления шума и сглаживания сигнала.",
+      "Passes frequencies below the cutoff frequency, attenuates higher frequencies. Used for noise removal and signal smoothing.",
     icon: "📉",
   },
   highpass: {
-    name: "High-pass (ФВЧ)",
+    name: "High-pass",
     description:
-      "Пропускает высокие частоты выше частоты среза, подавляет низкие. Удаляет постоянную составляющую и медленные тренды.",
+      "Passes frequencies above the cutoff frequency, attenuates lower frequencies. Removes DC offset and slow trends.",
     icon: "📈",
   },
   bandpass: {
-    name: "Band-pass (ПФ)",
+    name: "Band-pass",
     description:
-      "Пропускает диапазон частот между двумя границами. Используется для выделения конкретной частотной полосы из сигнала.",
+      "Passes a range of frequencies between two boundaries. Used to isolate a specific frequency band from the signal.",
     icon: "📊",
   },
   bandstop: {
-    name: "Band-stop (РФ)",
+    name: "Band-stop",
     description:
-      "Подавляет диапазон частот между двумя границами (notch filter). Удаляет нежелательные частоты, например, сетевую наводку 50/60 Hz.",
+      "Attenuates a range of frequencies between two boundaries (notch filter). Removes unwanted frequencies, such as power line interference (50/60 Hz).",
     icon: "🚫",
   },
 };
 
 export function getFilterOrderAdvice(order: number): string {
   if (order === 1) {
-    return "Первый порядок: Простой фильтр с спадом -20 dB/decade. Минимальные фазовые искажения.";
+    return "First order: Simple filter with -20 dB/decade roll-off. Minimal phase distortion.";
   } else if (order === 2) {
-    return "Второй порядок: Оптимальный баланс между крутизной спада (-40 dB/decade) и сложностью реализации.";
+    return "Second order: Optimal balance between roll-off steepness (-40 dB/decade) and implementation complexity.";
   } else if (order <= 4) {
-    return `${order}-й порядок: Крутой спад -${order * 20} dB/decade. Хорошая производительность, умеренная задержка.`;
+    return `${order}th order: Steep roll-off -${order * 20} dB/decade. Good performance, moderate delay.`;
   } else {
-    return `${order}-й порядок: Очень крутой спад -${order * 20} dB/decade. Высокая селективность, но увеличенная задержка и фазовые искажения.`;
+    return `${order}th order: Very steep roll-off -${order * 20} dB/decade. High selectivity, but increased delay and phase distortion.`;
   }
 }

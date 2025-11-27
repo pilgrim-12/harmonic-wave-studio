@@ -24,7 +24,7 @@ export const FilterInfoPanel: React.FC<FilterInfoPanelProps> = ({
         <div className="flex items-center gap-2 text-gray-400">
           <Info size={16} />
           <span className="text-sm">
-            Выберите тип фильтра чтобы увидеть информацию
+            Select a filter type to see information
           </span>
         </div>
       </div>
@@ -68,7 +68,7 @@ export const FilterInfoPanel: React.FC<FilterInfoPanelProps> = ({
           {/* Description */}
           <div>
             <h4 className="text-sm font-semibold text-[#667eea] mb-2">
-              Описание
+              Description
             </h4>
             <p className="text-sm text-gray-300">{filterInfo.description}</p>
           </div>
@@ -76,7 +76,7 @@ export const FilterInfoPanel: React.FC<FilterInfoPanelProps> = ({
           {/* Mode Info */}
           <div>
             <h4 className="text-sm font-semibold text-[#667eea] mb-2">
-              Режим фильтрации
+              Filter Mode
             </h4>
             <p className="text-sm text-gray-300">{modeInfo.description}</p>
           </div>
@@ -84,7 +84,7 @@ export const FilterInfoPanel: React.FC<FilterInfoPanelProps> = ({
           {/* Order */}
           <div>
             <h4 className="text-sm font-semibold text-[#667eea] mb-2">
-              Порядок фильтра
+              Filter Order
             </h4>
             <p className="text-sm text-gray-300">{orderAdvice}</p>
           </div>
@@ -92,7 +92,7 @@ export const FilterInfoPanel: React.FC<FilterInfoPanelProps> = ({
           {/* Characteristics */}
           <div>
             <h4 className="text-sm font-semibold text-[#667eea] mb-2">
-              Характеристики
+              Characteristics
             </h4>
             <ul className="space-y-1">
               {filterInfo.characteristics.map((char, idx) => (
@@ -107,7 +107,7 @@ export const FilterInfoPanel: React.FC<FilterInfoPanelProps> = ({
           {/* Use Cases */}
           <div>
             <h4 className="text-sm font-semibold text-[#667eea] mb-2">
-              Применение
+              Use Cases
             </h4>
             <ul className="space-y-1">
               {filterInfo.useCases.map((useCase, idx) => (
@@ -122,7 +122,7 @@ export const FilterInfoPanel: React.FC<FilterInfoPanelProps> = ({
           {/* Technical Details */}
           <div className="bg-[#252525] rounded-lg p-3 border border-[#333]">
             <h4 className="text-xs font-semibold text-[#667eea] mb-2 uppercase tracking-wide">
-              Технические детали
+              Technical Details
             </h4>
             <p className="text-xs text-gray-400 leading-relaxed">
               {filterInfo.technicalDetails}
