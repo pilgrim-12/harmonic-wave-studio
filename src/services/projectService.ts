@@ -7,6 +7,7 @@ import {
   query,
   where,
   getDocs,
+  getDoc,
   serverTimestamp,
   orderBy,
 } from "firebase/firestore";
@@ -77,5 +78,27 @@ export async function updateProject(
 
 // Удалить проект
 export async function deleteProject(projectId: string): Promise<void> {
-  await deleteDoc(doc(db, "projects", projectId));
+  // Get the project document to check if it's shared
+  const projectRef = doc(db, "projects", projectId);
+  const projectDoc = await getDoc(projectRef);
+
+  if (projectDoc.exists()) {
+    const projectData = projectDoc.data();
+    const shareId = projectData?.shareId;
+
+    // If the project is shared, delete from shared-projects collection first
+    if (shareId) {
+      try {
+        const sharedProjectRef = doc(db, "shared-projects", shareId);
+        await deleteDoc(sharedProjectRef);
+        console.log(`Deleted shared project: ${shareId}`);
+      } catch (error) {
+        console.error("Failed to delete shared project:", error);
+        // Continue with project deletion even if shared project deletion fails
+      }
+    }
+  }
+
+  // Delete the project itself
+  await deleteDoc(projectRef);
 }
