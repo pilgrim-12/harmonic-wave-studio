@@ -63,15 +63,6 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
     >
       {/* Compact Preview - thin but visible */}
       <div className="relative h-28 bg-gradient-to-br from-[#667eea]/20 to-[#764ba2]/20 flex items-center justify-center border-b border-[#2a2a2a] group-hover:from-[#667eea]/30 group-hover:to-[#764ba2]/30 transition-all">
-        {/* Info button - shows on hover */}
-        <Button
-          onClick={handleDetailsClick}
-          variant="secondary"
-          className="absolute top-1 right-1 p-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-          title="View details"
-        >
-          <Info size={12} />
-        </Button>
       </div>
 
       {/* Dense Content */}
@@ -107,24 +98,36 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           </div>
         )}
 
-        {/* Footer - all info in one line */}
-        <div className="flex items-center gap-2 text-[9px] text-gray-500 pt-1 border-t border-[#2a2a2a]/50">
-          <div className="flex items-center gap-0.5 flex-1 min-w-0">
-            <User size={8} className="flex-shrink-0" />
-            <span className="truncate">{project.userName}</span>
-          </div>
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <div className="flex items-center gap-0.5">
-              <Eye size={8} />
-              <span>{project.viewCount}</span>
+        {/* Footer - stats and actions */}
+        <div className="pt-1 border-t border-[#2a2a2a]/50 space-y-1">
+          {/* Stats row */}
+          <div className="flex items-center gap-2 text-[9px] text-gray-500">
+            <div className="flex items-center gap-0.5 flex-1 min-w-0">
+              <User size={8} className="flex-shrink-0" />
+              <span className="truncate">{project.userName}</span>
             </div>
-            <div className="flex items-center gap-0.5">
-              <Calendar size={8} />
-              <span>
-                {createdDate.split("/")[0]}/{createdDate.split("/")[1]}
-              </span>
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <div className="flex items-center gap-0.5">
+                <Eye size={8} />
+                <span>{project.viewCount}</span>
+              </div>
+              <div className="flex items-center gap-0.5">
+                <Calendar size={8} />
+                <span>
+                  {createdDate.split("/")[0]}/{createdDate.split("/")[1]}
+                </span>
+              </div>
             </div>
           </div>
+
+          {/* Details button */}
+          <button
+            onClick={handleDetailsClick}
+            className="w-full flex items-center justify-center gap-1 py-1 px-2 bg-[#667eea]/10 hover:bg-[#667eea]/20 text-[#667eea] rounded text-[9px] transition-colors"
+          >
+            <Info size={10} />
+            <span>View Details</span>
+          </button>
         </div>
       </div>
     </div>
