@@ -73,8 +73,8 @@ export default function SupportPage() {
           </p>
         </div>
 
-        {/* Donation Options - 3 columns */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        {/* Donation Options - 4 columns */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {/* PayPal */}
           <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
             <div className="text-3xl mb-3">💳</div>
@@ -93,6 +93,28 @@ export default function SupportPage() {
                 className="w-full bg-blue-600 hover:bg-blue-500 text-white text-sm"
               >
                 Donate
+              </Button>
+            </a>
+          </div>
+
+          {/* Ko-fi */}
+          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
+            <div className="text-3xl mb-3">☕</div>
+            <h3 className="text-lg font-bold text-white mb-2">Ko-fi</h3>
+            <p className="text-gray-400 text-sm mb-4">
+              One-time & monthly
+            </p>
+            <a
+              href="https://ko-fi.com/yuriichernov"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block w-full"
+            >
+              <Button
+                variant="primary"
+                className="w-full bg-[#13C3FF] hover:bg-[#0FA3D9] text-white text-sm"
+              >
+                Support
               </Button>
             </a>
           </div>
