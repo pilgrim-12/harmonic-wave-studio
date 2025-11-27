@@ -2,8 +2,9 @@
 
 import React from "react";
 import { SharedProject } from "@/types/share";
-import { Eye, User, Calendar, Play } from "lucide-react";
+import { Eye, User, Calendar, Info } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/Button";
 
 interface ProjectCardProps {
   project: SharedProject;
@@ -16,13 +17,39 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
 }) => {
   const router = useRouter();
 
-  const handleClick = () => {
+  const handleCardClick = () => {
     if (onClick) {
       onClick();
     } else {
-      // Use shareId for shared projects in gallery
-      router.push(`/shared/${project.id}`);
+      // Load project directly into studio
+      loadProjectIntoStudio();
     }
+  };
+
+  const loadProjectIntoStudio = () => {
+    try {
+      const projectData = {
+        radii: project.radii,
+        settings: {
+          animationSpeed: project.settings?.animationSpeed || 1,
+          trailLength: project.settings?.trailLength || 1000,
+        },
+        metadata: {
+          projectName: project.projectName,
+          userName: project.userName,
+          shareId: project.id,
+        },
+      };
+      const encodedData = btoa(JSON.stringify(projectData));
+      router.push(`/studio?loadShared=${encodedData}`);
+    } catch (error) {
+      console.error("Error loading project:", error);
+    }
+  };
+
+  const handleDetailsClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    router.push(`/shared/${project.id}`);
   };
 
   const createdDate = project.createdAt
@@ -31,15 +58,20 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
 
   return (
     <div
-      onClick={handleClick}
+      onClick={handleCardClick}
       className="group bg-[#1a1a1a] rounded-md border border-[#2a2a2a] overflow-hidden cursor-pointer transition-all hover:border-[#667eea] hover:shadow-lg hover:shadow-[#667eea]/10"
     >
       {/* Compact Preview - thin but visible */}
-      <div className="h-28 bg-gradient-to-br from-[#667eea]/20 to-[#764ba2]/20 flex items-center justify-center border-b border-[#2a2a2a] group-hover:from-[#667eea]/30 group-hover:to-[#764ba2]/30 transition-all">
-        <Play
-          size={16}
-          className="text-[#667eea] opacity-50 group-hover:opacity-100 transition-opacity"
-        />
+      <div className="relative h-28 bg-gradient-to-br from-[#667eea]/20 to-[#764ba2]/20 flex items-center justify-center border-b border-[#2a2a2a] group-hover:from-[#667eea]/30 group-hover:to-[#764ba2]/30 transition-all">
+        {/* Info button - shows on hover */}
+        <Button
+          onClick={handleDetailsClick}
+          variant="secondary"
+          className="absolute top-1 right-1 p-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+          title="View details"
+        >
+          <Info size={12} />
+        </Button>
       </div>
 
       {/* Dense Content */}
