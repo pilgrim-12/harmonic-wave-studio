@@ -225,16 +225,16 @@ export const ProjectPanel: React.FC = () => {
         style={{ display: "none" }}
       />
 
-      {/* Save button */}
+      {/* Export JSON button */}
       <Button
         onClick={handleSaveClick}
         variant="secondary"
         size="sm"
-        title="Save project to JSON file"
+        title="Export project to JSON file"
         disabled={radii.length === 0}
       >
         <Save size={14} className="mr-1" />
-        Save
+        Export
       </Button>
 
       {/* Load button */}

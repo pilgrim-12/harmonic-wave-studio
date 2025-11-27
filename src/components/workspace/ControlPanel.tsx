@@ -6,7 +6,6 @@ import { useSimulationStore } from "@/store/simulationStore";
 import { useSignalProcessingStore } from "@/store/signalProcessingStore";
 import { Button } from "@/components/ui/Button";
 import { ExportPanel } from "./ExportPanel";
-import { AudioPanel } from "./AudioPanel";
 import { PresetPanel } from "./PresetPanel";
 import { ProjectPanel } from "./ProjectPanel";
 import { TrailLengthControl } from "@/components/settings/TrailLengthControl";
@@ -102,19 +101,13 @@ export const ControlPanel: React.FC = () => {
       {/* Divider */}
       <div className="w-px h-8 bg-[#333]" />
 
-      {/* ✨ NEW: Projects (Save/Load) */}
+      {/* Projects (Save/Load JSON) */}
       <ProjectPanel />
 
       {/* Divider */}
       <div className="w-px h-8 bg-[#333]" />
 
-      {/* Audio */}
-      <AudioPanel />
-
-      {/* Divider */}
-      <div className="w-px h-8 bg-[#333]" />
-
-      {/* Export */}
+      {/* Export (CSV, PNG) */}
       <ExportPanel />
 
       {/* Divider */}
