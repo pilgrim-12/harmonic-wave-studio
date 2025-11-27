@@ -150,12 +150,12 @@ function HomeContent() {
         // Select last radius after all radii are loaded
         if (lastRadiusId) {
           const radiusIdToSelect = lastRadiusId;
-          // Wait for next tick to ensure all radii are in store
-          requestAnimationFrame(() => {
+          // Use setTimeout to ensure radii are fully loaded into store
+          setTimeout(() => {
             selectRadius(radiusIdToSelect);
             useSimulationStore.getState().setActiveTrackingRadius(radiusIdToSelect);
             useSimulationStore.getState().toggleTrailTracking(radiusIdToSelect);
-          });
+          }, 100);
         }
 
         // Set project in store (this triggers useEffect that updates projectName)
