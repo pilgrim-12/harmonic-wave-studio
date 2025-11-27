@@ -8,7 +8,7 @@
  * 3. Используйте useTierCheck("featureName") в компонентах
  */
 
-export type UserTier = "anonymous" | "free" | "pro";
+export type UserTier = "anonymous" | "free";
 
 export interface TierFeatures {
   // === Radii & Projects ===
@@ -128,34 +128,34 @@ export const TIER_CONFIG: Record<UserTier, TierConfig> = {
   },
 
   // ==========================================
-  // 🆓 FREE (Залогиненные бесплатно)
+  // 🆓 FREE (Зарегистрированные пользователи - полный доступ)
   // ==========================================
   free: {
     features: {
-      // Limits
-      maxRadii: 5,
-      maxProjects: 3,
-      maxShares: 1,
-      maxTrailLength: 500,
-      maxSampleRate: 500,
+      // Limits - все unlimited для зарегистрированных
+      maxRadii: -1, // unlimited
+      maxProjects: -1, // unlimited
+      maxShares: -1, // unlimited
+      maxTrailLength: 2000,
+      maxSampleRate: 2000,
       hasWatermark: false,
 
-      // Features
+      // Features - все доступны
       canUsePresets: true,
       canExport: true,
       canUseAudio: true,
-      canUseFilters: false, // 🔒 Pro only
-      canUseFFT: false, // 🔒 Pro only
+      canUseFilters: true, // ✅ Теперь доступно
+      canUseFFT: true, // ✅ Теперь доступно
       canUseNoise: true,
 
-      // Export
+      // Export - все форматы доступны
       canExportJSON: true,
       canExportCSV: true,
       canExportPNG: true,
-      canExportHighRes: false, // 🔒 Pro only
-      canBatchExport: false, // 🔒 Pro only
+      canExportHighRes: true, // ✅ Теперь доступно
+      canBatchExport: true, // ✅ Теперь доступно
 
-      // Social
+      // Social - все доступно
       canShareToGallery: true,
       canCommentOnProjects: true,
       canLikeProjects: true,
@@ -167,69 +167,10 @@ export const TIER_CONFIG: Record<UserTier, TierConfig> = {
     },
     metadata: {
       name: "free",
-      displayName: "Free",
+      displayName: "Registered",
       price: 0,
-      description: "Perfect for learning and experimenting",
+      description: "Full access for registered users",
       color: "#3b82f6", // blue
-      benefits: [
-        "5 radii limit",
-        "3 saved projects",
-        "All presets",
-        "Export to JSON/CSV/PNG",
-        "Audio generation",
-        "Share 1 project to gallery",
-      ],
-    },
-  },
-
-  // ==========================================
-  // 💎 PRO (Платная подписка)
-  // ==========================================
-  pro: {
-    features: {
-      // Limits
-      maxRadii: -1, // unlimited
-      maxProjects: -1, // unlimited
-      maxShares: -1, // unlimited
-      maxTrailLength: 2000,
-      maxSampleRate: 2000,
-      hasWatermark: false,
-
-      // Features
-      canUsePresets: true,
-      canExport: true,
-      canUseAudio: true,
-      canUseFilters: true, // ✅
-      canUseFFT: true, // ✅
-      canUseNoise: true,
-
-      // Export
-      canExportJSON: true,
-      canExportCSV: true,
-      canExportPNG: true,
-      canExportHighRes: true, // ✅ 4K export
-      canBatchExport: true, // ✅
-
-      // Social
-      canShareToGallery: true,
-      canCommentOnProjects: true,
-      canLikeProjects: true,
-
-      // UI/UX
-      showAds: false,
-      prioritySupport: true,
-      hasBadge: true,
-      badgeColor: "from-yellow-400 to-orange-500",
-      badgeText: "PRO",
-    },
-    metadata: {
-      name: "pro",
-      displayName: "Pro",
-      price: 4.99,
-      yearlyPrice: 49.99, // ~17% discount
-      description: "For professionals and power users",
-      color: "#f59e0b", // amber
-      popular: true,
       benefits: [
         "✨ Unlimited radii",
         "✨ Unlimited projects",
@@ -240,9 +181,9 @@ export const TIER_CONFIG: Record<UserTier, TierConfig> = {
         "⚡ Sample rate up to 2000 Hz",
         "🖼️ 4K PNG export",
         "📦 Batch export",
-        "💎 Pro badge",
-        "🚀 Priority support",
-        "🎯 No watermarks",
+        "All presets",
+        "Audio generation",
+        "100% Free - No payment required",
       ],
     },
   },
@@ -318,8 +259,8 @@ export const checkLimit = (
 };
 
 /**
- * Получить список всех тарифов для Pricing page
+ * Получить список всех тарифов
  */
 export const getAllTiers = (): TierConfig[] => {
-  return [TIER_CONFIG.anonymous, TIER_CONFIG.free, TIER_CONFIG.pro];
+  return [TIER_CONFIG.anonymous, TIER_CONFIG.free];
 };

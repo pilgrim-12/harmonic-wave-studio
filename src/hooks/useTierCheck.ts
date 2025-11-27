@@ -47,10 +47,9 @@ export const useTierCheck = (
   featureName?: keyof TierFeatures
 ): TierCheckResult => {
   const { user, userProfile } = useAuth();
-  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const [isAllProEnabled, setIsAllProEnabled] = useState(false);
 
-  // 🎛️ Feature Flag: Check if all Pro features are enabled (client-side only)
+  // 🎛️ Feature Flag: Check if all features are enabled (client-side only)
   useEffect(() => {
     if (typeof window !== "undefined") {
       setIsAllProEnabled(localStorage.getItem("dev_enable_all_pro_features") === "true");
@@ -62,9 +61,9 @@ export const useTierCheck = (
     ? (userProfile?.tier as UserTier) || "free"
     : "anonymous";
 
-  // 🎛️ If feature flag is enabled, override to Pro
+  // 🎛️ If feature flag is enabled, override to Free (full access)
   if (isAllProEnabled) {
-    currentTier = "pro";
+    currentTier = "free";
   }
 
   const features = getTierFeatures(currentTier);
@@ -76,28 +75,16 @@ export const useTierCheck = (
   if (featureName) {
     hasAccess = hasFeatureAccess(currentTier, featureName);
 
-    // Если нет доступа, определяем, какой тарif нужен
+    // Если нет доступа, нужна регистрация (только free tier)
     if (!hasAccess) {
-      if (currentTier === "anonymous") {
-        // Проверяем, доступно ли на Free
-        if (hasFeatureAccess("free", featureName)) {
-          requiredTier = "free";
-        } else {
-          requiredTier = "pro";
-        }
-      } else if (currentTier === "free") {
-        requiredTier = "pro";
-      }
+      requiredTier = "free"; // Только регистрация нужна, не оплата
     }
   }
 
   const showUpgrade = useCallback(() => {
-    setUpgradeModalOpen(true);
-    // TODO: Открыть модалку upgrade через глобальный state или event
-    console.log("🔒 Feature locked:", featureName, "Required:", requiredTier);
+    console.log("🔒 Feature locked:", featureName, "Required: Sign In");
 
-    // Можно использовать глобальный store или Context для модалки
-    // Или emit custom event
+    // Emit custom event to show sign-in modal
     window.dispatchEvent(
       new CustomEvent("show-upgrade-modal", {
         detail: {

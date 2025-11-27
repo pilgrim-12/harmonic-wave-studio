@@ -60,14 +60,12 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
         {/* Overlay */}
         <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm rounded-lg">
           <div className="text-center">
-            <Lock size={32} className="mx-auto text-yellow-500 mb-2" />
+            <Lock size={32} className="mx-auto text-blue-500 mb-2" />
             <p className="text-white font-semibold mb-1">
-              {requiredTier === "free" ? "Sign In Required" : "Pro Feature"}
+              Sign In Required
             </p>
             <p className="text-sm text-gray-400 mb-3">
-              {requiredTier === "free"
-                ? "Create a free account to unlock this"
-                : "Upgrade to Pro to unlock this"}
+              Create a free account to unlock all features
             </p>
             <button
               onClick={() => {
@@ -76,7 +74,7 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
               }}
               className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-500 hover:to-blue-500 transition-all"
             >
-              {requiredTier === "free" ? "Sign In Free" : "Upgrade to Pro"}
+              Sign In Free
             </button>
           </div>
         </div>

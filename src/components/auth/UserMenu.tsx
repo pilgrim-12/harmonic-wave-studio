@@ -6,7 +6,7 @@ import {
   User as UserIcon,
   FolderOpen,
   MessageSquare,
-  Crown,
+  Heart,
   Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,16 +22,9 @@ import { useToast } from "@/contexts/ToastContext";
 // Helper function to get tier badge config
 const getTierBadge = (tier: UserTier) => {
   switch (tier) {
-    case "pro":
-      return {
-        label: "PRO",
-        icon: Crown,
-        bgColor: "bg-gradient-to-r from-purple-500 to-pink-500",
-        textColor: "text-white",
-      };
     case "free":
       return {
-        label: "FREE",
+        label: "REGISTERED",
         icon: Sparkles,
         bgColor: "bg-blue-500/20",
         textColor: "text-blue-400",
@@ -189,6 +182,17 @@ export const UserMenu: React.FC = () => {
             >
               <MessageSquare size={16} />
               Send Feedback
+            </button>
+
+            <button
+              className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-[#252525] transition-colors flex items-center gap-2"
+              onClick={() => {
+                setIsOpen(false);
+                router.push("/support");
+              }}
+            >
+              <Heart size={16} />
+              Support Us
             </button>
 
             <hr className="my-2 border-[#2a2a2a]" />

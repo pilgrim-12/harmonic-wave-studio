@@ -44,20 +44,16 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   if (!isOpen) return null;
 
   const tierMetadata = getTierMetadata(requiredTier);
-  const isSignInRequired = !user && requiredTier === "free";
-  const isUpgradeRequired = user && requiredTier === "pro";
+  const isSignInRequired = !user;
 
   const handleAction = async () => {
     setIsLoading(true);
 
     try {
       if (isSignInRequired) {
-        // Sign in with Google
+        // Sign in with Google to get full access
         await signInWithGoogle();
         onClose();
-      } else if (isUpgradeRequired) {
-        // Redirect to pricing page
-        window.location.href = "/pricing";
       }
     } catch (error) {
       console.error("Error:", error);
@@ -83,96 +79,50 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
           </button>
 
           <div className="flex items-center gap-3 mb-2">
-            {requiredTier === "pro" ? (
-              <Crown size={32} className="text-yellow-500" />
-            ) : (
-              <Zap size={32} className="text-blue-500" />
-            )}
+            <Zap size={32} className="text-blue-500" />
             <h2 className="text-2xl font-bold text-white">
-              {isSignInRequired
-                ? "Sign In to Continue"
-                : `Upgrade to ${tierMetadata.displayName}`}
+              Sign In to Continue
             </h2>
           </div>
 
           {feature && (
             <p className="text-gray-400 text-sm">
-              {isSignInRequired
-                ? `Sign in free to unlock ${feature}`
-                : `Upgrade to unlock ${feature} and more`}
+              Sign in free to unlock {feature} and all features
             </p>
           )}
         </div>
 
         {/* Content */}
         <div className="p-6 overflow-y-auto max-h-[60vh]">
-          {isSignInRequired ? (
-            // Sign In Flow
-            <div className="space-y-4">
-              <p className="text-gray-300">
-                Create a free account to unlock:
+          <div className="space-y-4">
+            <p className="text-gray-300">
+              Create a free account to unlock all features:
+            </p>
+
+            <div className="space-y-3">
+              {getTierMetadata("free").benefits.map((benefit, idx) => (
+                <div key={idx} className="flex items-start gap-3">
+                  <Check size={20} className="text-green-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-300">{benefit}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+              <p className="text-sm text-blue-300">
+                ✨ <strong>100% Free Forever</strong> - No credit card required, no payments
               </p>
-
-              <div className="space-y-3">
-                {getTierMetadata("free").benefits.map((benefit, idx) => (
-                  <div key={idx} className="flex items-start gap-3">
-                    <Check size={20} className="text-green-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-300">{benefit}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                <p className="text-sm text-blue-300">
-                  ✨ <strong>100% Free</strong> - No credit card required
-                </p>
-              </div>
             </div>
-          ) : (
-            // Upgrade to Pro Flow
-            <div className="space-y-6">
-              {/* Price */}
-              <div className="text-center">
-                <div className="inline-flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-white">
-                    ${tierMetadata.price}
-                  </span>
-                  <span className="text-gray-400">/month</span>
-                </div>
-                {tierMetadata.yearlyPrice && (
-                  <p className="text-sm text-gray-500 mt-1">
-                    or ${tierMetadata.yearlyPrice}/year (save 17%)
-                  </p>
-                )}
-              </div>
 
-              {/* Benefits */}
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-3">
-                  Everything in Free, plus:
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {tierMetadata.benefits.map((benefit, idx) => (
-                    <div key={idx} className="flex items-start gap-2">
-                      <Check
-                        size={18}
-                        className="text-yellow-400 flex-shrink-0 mt-0.5"
-                      />
-                      <span className="text-gray-300 text-sm">{benefit}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Highlight */}
-              <div className="p-4 bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-lg">
-                <p className="text-sm text-purple-200">
-                  🚀 <strong>Join 1,000+ Pro users</strong> creating amazing
-                  harmonic visualizations
-                </p>
-              </div>
+            <div className="mt-4 p-4 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+              <p className="text-sm text-purple-300">
+                💜 <strong>Support the project</strong> - If you find this useful, consider{" "}
+                <a href="/support" className="underline hover:text-purple-200">
+                  making a donation
+                </a>
+              </p>
             </div>
-          )}
+          </div>
         </div>
 
         {/* Footer */}
@@ -197,19 +147,11 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
                   Loading...
                 </>
-              ) : isSignInRequired ? (
-                "Sign In Free"
               ) : (
-                "Upgrade Now"
+                "Sign In Free"
               )}
             </Button>
           </div>
-
-          {isUpgradeRequired && (
-            <p className="text-xs text-center text-gray-500 mt-3">
-              30-day money-back guarantee • Cancel anytime
-            </p>
-          )}
         </div>
       </div>
     </div>
