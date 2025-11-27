@@ -117,17 +117,32 @@ export default function SupportPage() {
               Crypto Donations
             </h3>
             <p className="text-gray-400 mb-4 flex-1">
-              Support with cryptocurrency (USDT, USDC, ETH, BTC)
+              Support with cryptocurrency
             </p>
-            <div className="bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg p-4 mb-4">
-              <p className="text-xs text-gray-500 mb-2">USDT/USDC (ERC-20):</p>
-              <code className="text-sm text-blue-400 break-all">
-                0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb
+
+            {/* BSC/BNB Address */}
+            <div className="bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg p-4 mb-3">
+              <p className="text-xs text-gray-500 mb-2">BSC (BNB Chain):</p>
+              <code className="text-xs text-blue-400 break-all">
+                0x5f9fc192aA7437a482CD40824385D7B8ACB7C3D5
               </code>
             </div>
-            <p className="text-xs text-gray-500 text-center">
-              More addresses available on request
-            </p>
+
+            {/* TRON Address */}
+            <div className="bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg p-4 mb-3">
+              <p className="text-xs text-gray-500 mb-2">TRON (TRX, USDT TRC20):</p>
+              <code className="text-xs text-blue-400 break-all">
+                TKpT9iSDZEbvQ5GRW85mabUGCGWQ1CdPyw
+              </code>
+            </div>
+
+            {/* Ethereum Address */}
+            <div className="bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg p-4">
+              <p className="text-xs text-gray-500 mb-2">Ethereum (ETH, USDT, USDC):</p>
+              <code className="text-xs text-blue-400 break-all">
+                0x5f9fc192aA7437a482CD40824385D7B8ACB7C3D5
+              </code>
+            </div>
           </div>
         </div>
 
