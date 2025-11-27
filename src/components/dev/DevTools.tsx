@@ -14,8 +14,8 @@ export const DevTools: React.FC = () => {
         // Manually export to window to ensure it's available
         (window as any).setMyTier = module.setMyTier;
         (window as any).getMyTier = module.getMyTier;
-        (window as any).giveProAccess = module.giveProAccess;
-        (window as any).revertToFree = module.revertToFree;
+        (window as any).giveFullAccess = module.giveFullAccess;
+        (window as any).revertToAnonymous = module.revertToAnonymous;
         (window as any).showAvailableTiers = module.showAvailableTiers;
         (window as any).enableAllProFeatures = module.enableAllProFeatures;
         (window as any).disableAllProFeatures = module.disableAllProFeatures;

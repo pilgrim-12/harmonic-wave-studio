@@ -18,7 +18,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   isOpen,
   onClose,
   feature,
-  requiredTier = "pro",
+  requiredTier = "free",
 }) => {
   const { user, signInWithGoogle } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -43,7 +43,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
   if (!isOpen) return null;
 
-  const tierMetadata = getTierMetadata(requiredTier || "free");
+  const tierMetadata = getTierMetadata(requiredTier ?? "free");
   const isSignInRequired = !user;
 
   const handleAction = async () => {

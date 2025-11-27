@@ -79,24 +79,24 @@ export async function getMyTier(): Promise<UserTier | null> {
 }
 
 /**
- * Дать себе Pro (быстрый шорткат)
+ * Дать себе полный доступ (быстрый шорткат)
  */
-export async function giveProAccess(): Promise<void> {
-  await setMyTier("pro");
+export async function giveFullAccess(): Promise<void> {
+  await setMyTier("free");
 }
 
 /**
- * Вернуть себе Free
+ * Вернуть себе анонимный доступ
  */
-export async function revertToFree(): Promise<void> {
-  await setMyTier("free");
+export async function revertToAnonymous(): Promise<void> {
+  await setMyTier("anonymous");
 }
 
 /**
  * Показать все доступные тарифы
  */
 export function showAvailableTiers(): void {
-  const tiers: UserTier[] = ["anonymous", "free", "pro"];
+  const tiers: UserTier[] = ["anonymous", "free"];
 
   console.log("📋 Available tiers:");
   console.table(
@@ -170,8 +170,8 @@ export function showFeatureFlagStatus(): void {
 if (typeof window !== "undefined") {
   (window as any).setMyTier = setMyTier;
   (window as any).getMyTier = getMyTier;
-  (window as any).giveProAccess = giveProAccess;
-  (window as any).revertToFree = revertToFree;
+  (window as any).giveFullAccess = giveFullAccess;
+  (window as any).revertToAnonymous = revertToAnonymous;
   (window as any).showAvailableTiers = showAvailableTiers;
   (window as any).enableAllProFeatures = enableAllProFeatures;
   (window as any).disableAllProFeatures = disableAllProFeatures;
