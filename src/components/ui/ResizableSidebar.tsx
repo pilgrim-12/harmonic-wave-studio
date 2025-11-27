@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 interface ResizableSidebarProps {
   children: React.ReactNode;
   title?: string;
+  icon?: React.ReactNode;
   defaultWidth?: number;
   minWidth?: number;
   maxWidth?: number;
@@ -14,6 +15,7 @@ interface ResizableSidebarProps {
 export const ResizableSidebar: React.FC<ResizableSidebarProps> = ({
   children,
   title,
+  icon,
   defaultWidth = 260,
   minWidth = 200,
   maxWidth = 400,
@@ -81,7 +83,10 @@ export const ResizableSidebar: React.FC<ResizableSidebarProps> = ({
       {/* Header with title and collapse button */}
       {title && (
         <div className="flex items-center justify-between px-3 py-2 bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl flex-shrink-0">
-          <h2 className="text-sm font-semibold text-gray-300">{title}</h2>
+          <div className="flex items-center gap-2">
+            {icon && <span className="text-lg">{icon}</span>}
+            <h2 className="text-sm font-semibold text-gray-300">{title}</h2>
+          </div>
           <button
             onClick={() => setIsCollapsed(true)}
             className="p-1.5 hover:bg-[#2a2a2a] rounded-lg transition-colors group"
