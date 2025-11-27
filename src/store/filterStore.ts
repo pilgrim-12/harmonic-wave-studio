@@ -8,6 +8,8 @@ import {
   designButterworthFilter,
   designChebyshev1Filter,
   designChebyshev2Filter,
+  createBandPassFilter,
+  createBandStopFilter,
   applyFilter,
   FilterCoefficients,
 } from "@/lib/signal/digitalFilters";
@@ -16,7 +18,8 @@ export interface FilterSettings {
   type: "butterworth" | "chebyshev1" | "chebyshev2";
   mode: "lowpass" | "highpass" | "bandpass" | "bandstop";
   order: number;
-  cutoffFreq: number; // In Hz
+  cutoffFreq: number; // In Hz (for lowpass/highpass) or center frequency (for bandpass/bandstop)
+  bandwidth?: number; // In Hz (only for bandpass/bandstop)
   enabled: boolean;
 }
 
@@ -68,46 +71,76 @@ export const useFilterStore = create<FilterState>((set) => ({
 
       const clampedCutoff = Math.min(0.49, Math.max(0.01, normalizedCutoff));
 
-      // Design filter coefficients based on type
+      // Design filter coefficients based on type and mode
       let coefficients: FilterCoefficients;
-      const filterMode = settings.mode === "highpass" ? "highpass" : "lowpass";
 
-      switch (settings.type) {
-        case "butterworth":
-          coefficients = designButterworthFilter(
-            settings.order,
-            clampedCutoff,
-            filterMode
-          );
-          break;
+      // Handle band-pass and band-stop modes
+      if (settings.mode === "bandpass" || settings.mode === "bandstop") {
+        const bandwidth = settings.bandwidth || settings.cutoffFreq * 0.2; // Default 20% bandwidth
+        const centerFreq = settings.cutoffFreq / sampleRate;
+        const bandwidthNorm = bandwidth / sampleRate;
 
-        case "chebyshev1":
-          // Chebyshev Type I with 0.5 dB passband ripple
-          coefficients = designChebyshev1Filter(
-            settings.order,
-            clampedCutoff,
-            0.5,
-            filterMode
-          );
-          break;
+        const lowCutoff = Math.max(0.01, centerFreq - bandwidthNorm / 2);
+        const highCutoff = Math.min(0.49, centerFreq + bandwidthNorm / 2);
 
-        case "chebyshev2":
-          // Chebyshev Type II with 40 dB stopband attenuation
-          coefficients = designChebyshev2Filter(
+        if (settings.mode === "bandpass") {
+          coefficients = createBandPassFilter(
+            settings.type,
             settings.order,
-            clampedCutoff,
-            40,
-            filterMode
+            lowCutoff,
+            highCutoff,
+            0.5
           );
-          break;
+        } else {
+          coefficients = createBandStopFilter(
+            settings.type,
+            settings.order,
+            lowCutoff,
+            highCutoff,
+            0.5
+          );
+        }
+      } else {
+        // Lowpass or Highpass
+        const filterMode = settings.mode === "highpass" ? "highpass" : "lowpass";
 
-        default:
-          console.warn(`Unknown filter type: ${settings.type}, using Butterworth`);
-          coefficients = designButterworthFilter(
-            settings.order,
-            clampedCutoff,
-            filterMode
-          );
+        switch (settings.type) {
+          case "butterworth":
+            coefficients = designButterworthFilter(
+              settings.order,
+              clampedCutoff,
+              filterMode
+            );
+            break;
+
+          case "chebyshev1":
+            // Chebyshev Type I with 0.5 dB passband ripple
+            coefficients = designChebyshev1Filter(
+              settings.order,
+              clampedCutoff,
+              0.5,
+              filterMode
+            );
+            break;
+
+          case "chebyshev2":
+            // Chebyshev Type II with 40 dB stopband attenuation
+            coefficients = designChebyshev2Filter(
+              settings.order,
+              clampedCutoff,
+              40,
+              filterMode
+            );
+            break;
+
+          default:
+            console.warn(`Unknown filter type: ${settings.type}, using Butterworth`);
+            coefficients = designButterworthFilter(
+              settings.order,
+              clampedCutoff,
+              filterMode
+            );
+        }
       }
 
       // Apply filter

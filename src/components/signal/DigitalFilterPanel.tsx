@@ -6,6 +6,7 @@ import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { Filter, TrendingUp, TrendingDown } from "lucide-react";
 import { useSimulationStore } from "@/store/simulationStore";
+import { FilterInfoPanel } from "./FilterInfoPanel";
 
 export interface FilterSettings {
   type: "butterworth" | "chebyshev1" | "chebyshev2";
@@ -130,8 +131,6 @@ export const DigitalFilterPanel: React.FC<DigitalFilterPanelProps> = ({
                 ? "bg-[#667eea] text-white"
                 : "bg-[#2a2a2a] text-gray-400 hover:bg-[#333]"
             }`}
-            disabled
-            title="Coming soon"
           >
             Band-pass
           </button>
@@ -142,8 +141,6 @@ export const DigitalFilterPanel: React.FC<DigitalFilterPanelProps> = ({
                 ? "bg-[#667eea] text-white"
                 : "bg-[#2a2a2a] text-gray-400 hover:bg-[#333]"
             }`}
-            disabled
-            title="Coming soon"
           >
             Band-stop
           </button>
@@ -226,23 +223,20 @@ export const DigitalFilterPanel: React.FC<DigitalFilterPanelProps> = ({
         </div>
       )}
 
-      {/* Description */}
-      <div className="p-2 bg-[#1a1a1a] rounded">
-        <p className="text-[10px] text-gray-500 leading-relaxed">
-          {filterMode === "lowpass" && (
-            <>
-              <strong className="text-gray-400">Low-pass:</strong> Removes
-              high-frequency components, smooths the signal
-            </>
-          )}
-          {filterMode === "highpass" && (
-            <>
-              <strong className="text-gray-400">High-pass:</strong> Removes
-              low-frequency components, emphasizes changes
-            </>
-          )}
-        </p>
-      </div>
+      {/* Filter Info Panel */}
+      <FilterInfoPanel
+        filterSettings={
+          isFilterApplied
+            ? {
+                type: filterType,
+                mode: filterMode,
+                order,
+                cutoffFreq,
+                enabled: true,
+              }
+            : null
+        }
+      />
     </div>
   );
 };

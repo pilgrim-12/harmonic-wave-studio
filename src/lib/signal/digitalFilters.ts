@@ -420,6 +420,85 @@ function chebyshev2SecondOrderBiquad(
   }
 }
 
+/**
+ * Create band-pass filter by cascading lowpass and highpass
+ * @param lowCutoff Lower cutoff frequency (normalized 0-0.5)
+ * @param highCutoff Upper cutoff frequency (normalized 0-0.5)
+ */
+export function createBandPassFilter(
+  filterType: "butterworth" | "chebyshev1" | "chebyshev2",
+  order: number,
+  lowCutoff: number,
+  highCutoff: number,
+  ripple: number = 0.5
+): FilterCoefficients {
+  // Create highpass at lowCutoff (removes low frequencies)
+  let hpFilter: FilterCoefficients;
+  // Create lowpass at highCutoff (removes high frequencies)
+  let lpFilter: FilterCoefficients;
+
+  if (filterType === "butterworth") {
+    hpFilter = designButterworthFilter(order, lowCutoff, "highpass");
+    lpFilter = designButterworthFilter(order, highCutoff, "lowpass");
+  } else if (filterType === "chebyshev1") {
+    hpFilter = designChebyshev1Filter(order, lowCutoff, ripple, "highpass");
+    lpFilter = designChebyshev1Filter(order, highCutoff, ripple, "lowpass");
+  } else {
+    hpFilter = designChebyshev2Filter(order, lowCutoff, ripple, "highpass");
+    lpFilter = designChebyshev2Filter(order, highCutoff, ripple, "lowpass");
+  }
+
+  // Cascade: convolve coefficients
+  return {
+    a: convolve(hpFilter.a, lpFilter.a),
+    b: convolve(hpFilter.b, lpFilter.b),
+  };
+}
+
+/**
+ * Create band-stop (notch) filter by parallel combination
+ * @param lowCutoff Lower cutoff frequency (normalized 0-0.5)
+ * @param highCutoff Upper cutoff frequency (normalized 0-0.5)
+ */
+export function createBandStopFilter(
+  filterType: "butterworth" | "chebyshev1" | "chebyshev2",
+  order: number,
+  lowCutoff: number,
+  highCutoff: number,
+  ripple: number = 0.5
+): FilterCoefficients {
+  // Create lowpass at lowCutoff (keeps low frequencies)
+  let lpFilter: FilterCoefficients;
+  // Create highpass at highCutoff (keeps high frequencies)
+  let hpFilter: FilterCoefficients;
+
+  if (filterType === "butterworth") {
+    lpFilter = designButterworthFilter(order, lowCutoff, "lowpass");
+    hpFilter = designButterworthFilter(order, highCutoff, "highpass");
+  } else if (filterType === "chebyshev1") {
+    lpFilter = designChebyshev1Filter(order, lowCutoff, ripple, "lowpass");
+    hpFilter = designChebyshev1Filter(order, highCutoff, ripple, "highpass");
+  } else {
+    lpFilter = designChebyshev2Filter(order, lowCutoff, ripple, "lowpass");
+    hpFilter = designChebyshev2Filter(order, highCutoff, ripple, "highpass");
+  }
+
+  // For band-stop, we add the outputs (parallel combination)
+  // This is approximated by averaging coefficients
+  const maxLenA = Math.max(lpFilter.a.length, hpFilter.a.length);
+  const maxLenB = Math.max(lpFilter.b.length, hpFilter.b.length);
+
+  const a = new Array(maxLenA).fill(0);
+  const b = new Array(maxLenB).fill(0);
+
+  for (let i = 0; i < lpFilter.a.length; i++) a[i] += lpFilter.a[i] / 2;
+  for (let i = 0; i < hpFilter.a.length; i++) a[i] += hpFilter.a[i] / 2;
+  for (let i = 0; i < lpFilter.b.length; i++) b[i] += lpFilter.b[i] / 2;
+  for (let i = 0; i < hpFilter.b.length; i++) b[i] += hpFilter.b[i] / 2;
+
+  return { a, b };
+}
+
 export function generateFrequencyArray(
   numPoints: number = 512,
   nyquist: number = 0.5
