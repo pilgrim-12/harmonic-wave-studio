@@ -5,11 +5,13 @@ import Link from "next/link";
 import { Heart, ArrowLeft, Copy, CheckCircle2, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/contexts/AuthContext";
+import { FeedbackModal } from "@/components/feedback/FeedbackModal";
 
 export default function SupportPage() {
   const { user, signInWithGoogle } = useAuth();
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const [isCryptoModalOpen, setIsCryptoModalOpen] = useState(false);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
   const copyToClipboard = async (address: string, label: string) => {
     try {
@@ -168,12 +170,12 @@ export default function SupportPage() {
             Whether you donate or not, thank you for using Harmonic Wave Studio!
           </p>
           <div className="flex gap-4 justify-center text-sm">
-            <a
-              href="mailto:support@harmonicwave.studio"
-              className="text-blue-400 hover:text-blue-300 underline"
+            <button
+              onClick={() => setIsFeedbackOpen(true)}
+              className="text-blue-400 hover:text-blue-300 underline cursor-pointer"
             >
               Send Feedback
-            </a>
+            </button>
           </div>
         </div>
 
@@ -339,6 +341,12 @@ export default function SupportPage() {
           </div>
         </div>
       )}
+
+      {/* Feedback Modal */}
+      <FeedbackModal
+        isOpen={isFeedbackOpen}
+        onClose={() => setIsFeedbackOpen(false)}
+      />
     </div>
   );
 }
