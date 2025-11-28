@@ -12,7 +12,7 @@ import { TrailLengthControl } from "@/components/settings/TrailLengthControl";
 import { GraphVisibilityPanel } from "./GraphVisibilityPanel";
 
 export const ControlPanel: React.FC = () => {
-  const { isPlaying, isPaused, currentTime, fps, play, pause, stop, reset, activeTrackingRadiusId } =
+  const { isPlaying, isPaused, play, pause, stop, reset, activeTrackingRadiusId } =
     useSimulationStore();
 
   const handleReset = () => {
@@ -71,25 +71,6 @@ export const ControlPanel: React.FC = () => {
           <RotateCcw size={16} className="mr-1" />
           Reset
         </Button>
-      </div>
-
-      {/* Divider */}
-      <div className="w-px h-8 bg-[#333]" />
-
-      {/* Info */}
-      <div className="flex gap-4 text-sm">
-        <div>
-          <span className="text-gray-500">Time:</span>{" "}
-          <span className="text-[#667eea] font-semibold">
-            {currentTime.toFixed(2)}s
-          </span>
-        </div>
-        <div>
-          <span className="text-gray-500">FPS:</span>{" "}
-          <span className="text-[#667eea] font-semibold">
-            {Math.round(fps)}
-          </span>
-        </div>
       </div>
 
       {/* Divider */}
