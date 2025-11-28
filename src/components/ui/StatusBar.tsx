@@ -21,23 +21,29 @@ export const StatusBar: React.FC = () => {
   const sampleRate = settings.signalSampleRate || 30;
   const bufferSize = original.length;
 
-  // Estimate CPU load based on complexity and performance
+  // Estimate computational load based on complexity
   useEffect(() => {
     if (!isPlaying) {
       setCpuLoad(0);
       return;
     }
 
-    // Base load factors
-    const radiiFactor = Math.min(radii.length * 5, 40); // Up to 40% from radii count
-    const fpsFactor = Math.max(0, (60 - fps) * 1.5); // FPS drop indicates CPU strain
-    const bufferFactor = Math.min(bufferSize / 100, 20); // Buffer size impact
-    const filterFactor = isFilterApplied ? 15 : 0; // Filter adds load
+    // Calculate load factors (more conservative)
+    const radiiFactor = Math.min(radii.length * 3, 25); // 3% per radius, max 25%
+
+    // Only penalize if FPS is significantly below target
+    const targetFps = 60;
+    const fpsFactor = fps > 0 && fps < targetFps
+      ? Math.min((targetFps - fps) * 0.8, 30) // Max 30% from FPS
+      : 0;
+
+    const bufferFactor = Math.min(bufferSize / 200, 15); // Reduced buffer impact
+    const filterFactor = isFilterApplied ? 10 : 0; // Reduced filter overhead
 
     const estimatedLoad = Math.min(100, radiiFactor + fpsFactor + bufferFactor + filterFactor);
 
-    // Smooth the changes
-    const smoothedLoad = Math.round(estimatedLoad * 0.4 + cpuLoad * 0.6);
+    // Smooth the changes more gradually
+    const smoothedLoad = Math.round(estimatedLoad * 0.3 + cpuLoad * 0.7);
     setCpuLoad(smoothedLoad);
 
   }, [isPlaying, radii.length, fps, bufferSize, isFilterApplied, cpuLoad]);
@@ -69,7 +75,7 @@ export const StatusBar: React.FC = () => {
         <div className="flex items-center gap-1.5">
           <Cpu size={12} className={cpuLoad > 80 ? "text-red-500" : cpuLoad > 50 ? "text-yellow-500" : "text-green-500"} />
           <span className={cpuLoad > 80 ? "text-red-400" : cpuLoad > 50 ? "text-yellow-400" : "text-green-400"}>
-            CPU: {cpuLoad}%
+            Load: {cpuLoad}%
           </span>
         </div>
       </div>
