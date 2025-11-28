@@ -112,7 +112,7 @@ export default function LandingPage() {
             {/* Feature 1 */}
             <div className="p-6 bg-[#1a1a1a] rounded-lg border border-gray-800 hover:border-[#667eea] transition-all">
               <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center mb-4">
-                <Waves className="text-blue-400" size={24} />
+                <span className="text-2xl">🌊</span>
               </div>
               <h3 className="text-xl font-semibold text-white mb-2">
                 Real-time Visualization
@@ -238,7 +238,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <Waves className="text-[#667eea]" size={24} />
+                <span className="text-2xl">🌊</span>
                 <span className="font-bold text-white">
                   Harmonic Wave Studio
                 </span>
