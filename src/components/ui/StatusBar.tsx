@@ -28,25 +28,30 @@ export const StatusBar: React.FC = () => {
       return;
     }
 
-    // Calculate load factors (more conservative)
-    const radiiFactor = Math.min(radii.length * 3, 25); // 3% per radius, max 25%
+    // Update load periodically to avoid cascading renders
+    const interval = setInterval(() => {
+      setCpuLoad((prevLoad) => {
+        // Calculate load factors (more conservative)
+        const radiiFactor = Math.min(radii.length * 3, 25); // 3% per radius, max 25%
 
-    // Only penalize if FPS is significantly below target
-    const targetFps = 60;
-    const fpsFactor = fps > 0 && fps < targetFps
-      ? Math.min((targetFps - fps) * 0.8, 30) // Max 30% from FPS
-      : 0;
+        // Only penalize if FPS is significantly below target
+        const targetFps = 60;
+        const fpsFactor = fps > 0 && fps < targetFps
+          ? Math.min((targetFps - fps) * 0.8, 30) // Max 30% from FPS
+          : 0;
 
-    const bufferFactor = Math.min(bufferSize / 200, 15); // Reduced buffer impact
-    const filterFactor = isFilterApplied ? 10 : 0; // Reduced filter overhead
+        const bufferFactor = Math.min(bufferSize / 200, 15); // Reduced buffer impact
+        const filterFactor = isFilterApplied ? 10 : 0; // Reduced filter overhead
 
-    const estimatedLoad = Math.min(100, radiiFactor + fpsFactor + bufferFactor + filterFactor);
+        const estimatedLoad = Math.min(100, radiiFactor + fpsFactor + bufferFactor + filterFactor);
 
-    // Smooth the changes more gradually
-    const smoothedLoad = Math.round(estimatedLoad * 0.3 + cpuLoad * 0.7);
-    setCpuLoad(smoothedLoad);
+        // Smooth the changes more gradually
+        return Math.round(estimatedLoad * 0.3 + prevLoad * 0.7);
+      });
+    }, 500);
 
-  }, [isPlaying, radii.length, fps, bufferSize, isFilterApplied, cpuLoad]);
+    return () => clearInterval(interval);
+  }, [isPlaying, radii.length, fps, bufferSize, isFilterApplied]);
 
   return (
     <div className="h-6 bg-[#0f0f0f] border-t border-[#2a2a2a] flex items-center justify-between px-3 text-[10px] text-gray-500 flex-shrink-0">
