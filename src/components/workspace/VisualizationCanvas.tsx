@@ -198,15 +198,12 @@ export const VisualizationCanvas: React.FC = () => {
           const avgFrameTime =
             frameTimes.reduce((sum, t) => sum + t, 0) / frameTimes.length;
 
-          // Convert to load percentage
-          // Target: 16.67ms (60fps) = 0% load
-          // Double: 33.33ms = 100% load
-          const targetFrameTime = 1000 / 60;
-          const rawLoad = Math.max(
-            0,
-            ((avgFrameTime - targetFrameTime) / targetFrameTime) * 100
-          );
-          const cappedLoad = Math.min(100, rawLoad);
+          // Convert to load percentage based on actual frame time
+          // 0ms = 0%, 16.67ms (target 60fps) = 100%
+          // This shows how much of the frame budget is being used
+          const targetFrameTime = 1000 / 60; // 16.67ms
+          const rawLoad = (avgFrameTime / targetFrameTime) * 100;
+          const cappedLoad = Math.min(100, Math.max(0, rawLoad));
 
           updateComputeLoad(Math.round(cappedLoad));
         }
