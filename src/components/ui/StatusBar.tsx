@@ -1,17 +1,18 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useSimulationStore } from "@/store/simulationStore";
 import { useRadiusStore } from "@/store/radiusStore";
 import { useSignalProcessingStore } from "@/store/signalProcessingStore";
 import { useFilterStore } from "@/store/filterStore";
-import { Activity, Zap, Layers, Filter } from "lucide-react";
+import { Activity, Zap, Layers, Filter, Cpu } from "lucide-react";
 
 export const StatusBar: React.FC = () => {
   const { isPlaying, currentTime, settings, fps } = useSimulationStore();
   const { radii } = useRadiusStore();
   const { original } = useSignalProcessingStore();
   const { isFilterApplied, filterSettings } = useFilterStore();
+  const [cpuLoad, setCpuLoad] = useState<number>(0);
 
   const formatTime = (time: number) => {
     return `${time.toFixed(2)}s`;
@@ -19,6 +20,38 @@ export const StatusBar: React.FC = () => {
 
   const sampleRate = settings.signalSampleRate || 30;
   const bufferSize = original.length;
+
+  // Monitor CPU usage through frame time tracking
+  useEffect(() => {
+    let lastTime = performance.now();
+    let frameCount = 0;
+    let totalFrameTime = 0;
+
+    const measureCPU = () => {
+      const currentTime = performance.now();
+      const frameTime = currentTime - lastTime;
+
+      frameCount++;
+      totalFrameTime += frameTime;
+
+      // Update CPU load every 30 frames (~1 second at 30fps)
+      if (frameCount >= 30) {
+        const avgFrameTime = totalFrameTime / frameCount;
+        const targetFrameTime = 1000 / 60; // 60 FPS target
+        const load = Math.min(100, Math.round((avgFrameTime / targetFrameTime) * 100));
+        setCpuLoad(load);
+
+        frameCount = 0;
+        totalFrameTime = 0;
+      }
+
+      lastTime = currentTime;
+      requestAnimationFrame(measureCPU);
+    };
+
+    const animationId = requestAnimationFrame(measureCPU);
+    return () => cancelAnimationFrame(animationId);
+  }, []);
 
   return (
     <div className="h-6 bg-[#0f0f0f] border-t border-[#2a2a2a] flex items-center justify-between px-3 text-[10px] text-gray-500 flex-shrink-0">
@@ -40,6 +73,15 @@ export const StatusBar: React.FC = () => {
         <div className="flex items-center gap-1.5">
           <Zap size={12} className="text-blue-500" />
           <span>FPS: {fps}</span>
+        </div>
+
+        <div className="h-3 w-px bg-[#2a2a2a]" />
+
+        <div className="flex items-center gap-1.5">
+          <Cpu size={12} className={cpuLoad > 80 ? "text-red-500" : cpuLoad > 50 ? "text-yellow-500" : "text-green-500"} />
+          <span className={cpuLoad > 80 ? "text-red-400" : cpuLoad > 50 ? "text-yellow-400" : "text-green-400"}>
+            CPU: {cpuLoad}%
+          </span>
         </div>
       </div>
 
