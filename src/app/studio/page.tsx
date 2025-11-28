@@ -29,6 +29,7 @@ import {
   LayoutGrid,
   Heart,
   Sliders,
+  FunctionSquare,
 } from "lucide-react";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useRadiusStore } from "@/store/radiusStore";
@@ -55,6 +56,7 @@ import {
 import { FeatureGate } from "@/components/tier/FeatureGate";
 import { useTierCheck } from "@/hooks/useTierCheck";
 import { normalizeRadius } from "@/lib/validation/normalizeRadius";
+import { FormulaDisplay } from "@/components/studio/FormulaDisplay";
 
 function HomeContent() {
   const [openPanel, setOpenPanel] = useState<string>("radii");
@@ -684,6 +686,32 @@ function HomeContent() {
                   <FeatureGate feature="canUseFFT" showLockedOverlay>
                     <FrequencyPanel />
                   </FeatureGate>
+                </div>
+              )}
+            </AccordionItem>
+          </div>
+
+          {/* Formula Panel */}
+          <div
+            className={
+              openPanel === "formula"
+                ? "flex-1 min-h-0 overflow-hidden"
+                : "flex-shrink-0"
+            }
+          >
+            <AccordionItem
+              title="Formula"
+              icon={<FunctionSquare size={16} className="text-[#667eea]" />}
+              isOpen={openPanel === "formula"}
+              onToggle={() => handleToggle("formula")}
+            >
+              {openPanel === "formula" && (
+                <div className="h-full overflow-y-auto custom-scrollbar px-3 pb-3">
+                  <FormulaDisplay radii={radii.map((r) => ({
+                    frequency: r.direction === "counterclockwise" ? r.rotationSpeed : -r.rotationSpeed,
+                    amplitude: r.length,
+                    phase: r.initialAngle,
+                  }))} />
                 </div>
               )}
             </AccordionItem>
