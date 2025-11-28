@@ -98,34 +98,6 @@ export const SpectrumGraphPanel: React.FC = () => {
             height={0}
             showGrid={true}
           />
-
-          {/* Quick Stats */}
-          <div className="mt-2 grid grid-cols-4 gap-2">
-            <div className="bg-[#1a1a1a] rounded p-2 text-center border border-[#2a2a2a]">
-              <div className="text-[10px] text-gray-400 mb-0.5">Fundamental</div>
-              <div className="text-sm font-bold text-[#667eea]">
-                {analysisResult.fundamentalFrequency?.toFixed(2) || "N/A"} Hz
-              </div>
-            </div>
-            <div className="bg-[#1a1a1a] rounded p-2 text-center border border-[#2a2a2a]">
-              <div className="text-[10px] text-gray-400 mb-0.5">Peaks</div>
-              <div className="text-sm font-bold text-[#667eea]">
-                {analysisResult.peaks.length}
-              </div>
-            </div>
-            <div className="bg-[#1a1a1a] rounded p-2 text-center border border-[#2a2a2a]">
-              <div className="text-[10px] text-gray-400 mb-0.5">THD</div>
-              <div className="text-sm font-bold text-[#667eea]">
-                {analysisResult.thd.toFixed(1)}%
-              </div>
-            </div>
-            <div className="bg-[#1a1a1a] rounded p-2 text-center border border-[#2a2a2a]">
-              <div className="text-[10px] text-gray-400 mb-0.5">DC Offset</div>
-              <div className="text-sm font-bold text-[#667eea]">
-                {analysisResult.dcOffset.toFixed(3)}
-              </div>
-            </div>
-          </div>
         </div>
       ) : (
         <div className="flex-1 flex items-center justify-center text-gray-500">

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Heart, ArrowLeft, Copy, CheckCircle2, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -26,6 +26,14 @@ export default function SupportPage() {
   return (
     <div className="min-h-screen bg-[#0f0f0f] py-8 px-4">
       <div className="max-w-4xl mx-auto">
+        {/* Header with logo */}
+        <Link href="/" className="flex items-center gap-2 mb-6 hover:opacity-80 transition-opacity w-fit">
+          <span className="text-2xl">🌊</span>
+          <span className="text-xl font-bold text-white">
+            Harmonic Wave Studio
+          </span>
+        </Link>
+
         {/* Back button */}
         <Link href="/studio">
           <Button variant="secondary" className="mb-6">
