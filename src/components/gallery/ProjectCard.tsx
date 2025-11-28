@@ -5,6 +5,7 @@ import { SharedProject } from "@/types/share";
 import { Eye, User, Calendar, Info } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { TrajectoryPreview } from "./TrajectoryPreview";
 
 interface ProjectCardProps {
   project: SharedProject;
@@ -61,8 +62,9 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
       onClick={handleCardClick}
       className="group bg-[#1a1a1a] rounded-md border border-[#2a2a2a] overflow-hidden cursor-pointer transition-all hover:border-[#667eea] hover:shadow-lg hover:shadow-[#667eea]/10 flex flex-col h-full"
     >
-      {/* Compact Preview - thin but visible */}
-      <div className="relative h-28 bg-gradient-to-br from-[#667eea]/20 to-[#764ba2]/20 flex items-center justify-center border-b border-[#2a2a2a] group-hover:from-[#667eea]/30 group-hover:to-[#764ba2]/30 transition-all flex-shrink-0">
+      {/* Trajectory Preview */}
+      <div className="relative h-28 bg-[#0a0a0a] border-b border-[#2a2a2a] flex-shrink-0 overflow-hidden">
+        <TrajectoryPreview radii={project.radii} trailLength={300} />
       </div>
 
       {/* Dense Content */}

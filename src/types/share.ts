@@ -30,4 +30,5 @@ export interface SharedProject {
   createdAt: Timestamp;
   viewCount: number;
   isDiscoverable: boolean;
+  thumbnailDataUrl?: string; // Optional base64 data URL of trajectory preview
 }
