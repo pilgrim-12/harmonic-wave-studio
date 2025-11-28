@@ -53,18 +53,17 @@ export const TrajectoryPreview: React.FC<TrajectoryPreviewProps> = ({
       const t = i * timeStep;
       let x = centerX;
       let y = centerY;
-      let cumulativeAngle = 0;
 
       // Calculate position at time t
       // Note: frequency = rotationSpeed (in Hz), phase = initialAngle, amplitude = length
+      // Each radius rotates independently from its starting point
       for (const radius of radii) {
-        const angle =
-          radius.phase +
-          radius.frequency * t * 2 * Math.PI;
-        cumulativeAngle += angle;
+        // Calculate angle for this radius at time t
+        const angle = radius.phase + radius.frequency * t * 2 * Math.PI;
 
-        x += radius.amplitude * Math.cos(cumulativeAngle) * scale;
-        y += radius.amplitude * Math.sin(cumulativeAngle) * scale;
+        // Update position - each radius extends from current position
+        x += radius.amplitude * Math.cos(angle) * scale;
+        y += radius.amplitude * Math.sin(angle) * scale;
       }
 
       trailPoints.push({ x, y });
