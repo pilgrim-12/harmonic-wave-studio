@@ -8,6 +8,7 @@ import { SharedProject } from "@/types/share";
 import { Button } from "@/components/ui/Button";
 import { ArrowLeft, Eye, User, Calendar, ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { TrajectoryPreview } from "@/components/gallery/TrajectoryPreview";
 
 export default function SharedProjectPage() {
   const params = useParams();
@@ -145,9 +146,9 @@ export default function SharedProjectPage() {
           </div>
         </div>
 
-        {/* Minimal Preview Area */}
-        <div className="mb-3 h-44 bg-gradient-to-br from-[#667eea]/20 to-[#764ba2]/20 rounded-lg flex items-center justify-center border border-[#2a2a2a]">
-          <ExternalLink size={20} className="text-[#667eea] opacity-50" />
+        {/* Trajectory Preview */}
+        <div className="mb-3 h-44 bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden">
+          <TrajectoryPreview radii={project.radii} trailLength={800} />
         </div>
 
         {/* Ultra Compact Config + Actions */}
