@@ -21,28 +21,26 @@ export const StatusBar: React.FC = () => {
   const sampleRate = settings.signalSampleRate || 30;
   const bufferSize = original.length;
 
-  // Monitor CPU usage based on FPS
+  // Estimate CPU load based on complexity and performance
   useEffect(() => {
     if (!isPlaying) {
       setCpuLoad(0);
       return;
     }
 
-    const interval = setInterval(() => {
-      const currentFps = fps;
-      const targetFps = 60;
+    // Base load factors
+    const radiiFactor = Math.min(radii.length * 5, 40); // Up to 40% from radii count
+    const fpsFactor = Math.max(0, (60 - fps) * 1.5); // FPS drop indicates CPU strain
+    const bufferFactor = Math.min(bufferSize / 100, 20); // Buffer size impact
+    const filterFactor = isFilterApplied ? 15 : 0; // Filter adds load
 
-      if (currentFps > 0) {
-        // Calculate CPU load based on FPS deviation from target
-        // Lower FPS = higher CPU load
-        const fpsRatio = currentFps / targetFps;
-        const load = Math.min(100, Math.max(0, Math.round((1 - fpsRatio) * 100 + 20)));
-        setCpuLoad(load);
-      }
-    }, 500); // Update every 500ms
+    const estimatedLoad = Math.min(100, radiiFactor + fpsFactor + bufferFactor + filterFactor);
 
-    return () => clearInterval(interval);
-  }, [isPlaying, fps]);
+    // Smooth the changes
+    const smoothedLoad = Math.round(estimatedLoad * 0.4 + cpuLoad * 0.6);
+    setCpuLoad(smoothedLoad);
+
+  }, [isPlaying, radii.length, fps, bufferSize, isFilterApplied, cpuLoad]);
 
   return (
     <div className="h-6 bg-[#0f0f0f] border-t border-[#2a2a2a] flex items-center justify-between px-3 text-[10px] text-gray-500 flex-shrink-0">
