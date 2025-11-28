@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import {
   Sparkles,
   Wand2,
@@ -94,6 +95,21 @@ export default function LandingPage() {
           <div className="mt-12 text-sm text-gray-500">
             No installation required • Works in your browser • Free to start
           </div>
+
+          {/* Hero Screenshot */}
+          <div className="mt-16 relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-[#667eea]/20 to-[#764ba2]/20 blur-3xl rounded-full" />
+            <div className="relative rounded-xl overflow-hidden border border-gray-700 shadow-2xl shadow-purple-500/10">
+              <Image
+                src="/screenshots/studio-main.jpg"
+                alt="Harmonic Wave Studio Interface"
+                width={1920}
+                height={1080}
+                className="w-full h-auto"
+                priority
+              />
+            </div>
+          </div>
         </div>
       </section>
 
@@ -110,87 +126,153 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Feature 1 */}
-            <div className="p-6 bg-[#1a1a1a] rounded-lg border border-gray-800 hover:border-[#667eea] transition-all">
-              <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center mb-4">
-                <span className="text-2xl">🌊</span>
+            <div className="bg-[#1a1a1a] rounded-lg border border-gray-800 hover:border-[#667eea] transition-all overflow-hidden group">
+              <div className="h-40 overflow-hidden">
+                <Image
+                  src="/screenshots/astrix-project.jpg"
+                  alt="Real-time Visualization"
+                  width={600}
+                  height={300}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">
-                Real-time Visualization
-              </h3>
-              <p className="text-gray-400">
-                Watch epicycles rotate in real-time as they construct complex
-                waveforms through Fourier series.
-              </p>
+              <div className="p-6">
+                <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center mb-4">
+                  <span className="text-2xl">🌊</span>
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  Real-time Visualization
+                </h3>
+                <p className="text-gray-400">
+                  Watch epicycles rotate in real-time as they construct complex
+                  waveforms through Fourier series.
+                </p>
+              </div>
             </div>
 
             {/* Feature 2 */}
-            <div className="p-6 bg-[#1a1a1a] rounded-lg border border-gray-800 hover:border-[#667eea] transition-all">
-              <div className="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center mb-4">
-                <BarChart3 className="text-purple-400" size={24} />
+            <div className="bg-[#1a1a1a] rounded-lg border border-gray-800 hover:border-[#667eea] transition-all overflow-hidden group">
+              <div className="h-40 overflow-hidden">
+                <Image
+                  src="/screenshots/spectrum-fullscreen.jpg"
+                  alt="FFT Analysis"
+                  width={600}
+                  height={300}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">
-                FFT Analysis
-              </h3>
-              <p className="text-gray-400">
-                Analyze frequency components with Fast Fourier Transform and
-                visualize the frequency spectrum.
-              </p>
+              <div className="p-6">
+                <div className="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center mb-4">
+                  <BarChart3 className="text-purple-400" size={24} />
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  FFT Analysis
+                </h3>
+                <p className="text-gray-400">
+                  Analyze frequency components with Fast Fourier Transform and
+                  visualize the frequency spectrum.
+                </p>
+              </div>
             </div>
 
             {/* Feature 3 */}
-            <div className="p-6 bg-[#1a1a1a] rounded-lg border border-gray-800 hover:border-[#667eea] transition-all">
-              <div className="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center mb-4">
-                <Wand2 className="text-green-400" size={24} />
+            <div className="bg-[#1a1a1a] rounded-lg border border-gray-800 hover:border-[#667eea] transition-all overflow-hidden group">
+              <div className="h-40 overflow-hidden">
+                <Image
+                  src="/screenshots/filters-panel.jpg"
+                  alt="Digital Filters"
+                  width={600}
+                  height={300}
+                  className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300"
+                />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">
-                Digital Filters
-              </h3>
-              <p className="text-gray-400">
-                Apply low-pass, high-pass, band-pass, and notch filters to shape
-                your signals in real-time.
-              </p>
+              <div className="p-6">
+                <div className="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center mb-4">
+                  <Wand2 className="text-green-400" size={24} />
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  Digital Filters
+                </h3>
+                <p className="text-gray-400">
+                  Apply low-pass, high-pass, band-pass, and notch filters to shape
+                  your signals in real-time.
+                </p>
+              </div>
             </div>
 
             {/* Feature 4 */}
-            <div className="p-6 bg-[#1a1a1a] rounded-lg border border-gray-800 hover:border-[#667eea] transition-all">
-              <div className="w-12 h-12 bg-yellow-500/10 rounded-lg flex items-center justify-center mb-4">
-                <Sparkles className="text-yellow-400" size={24} />
+            <div className="bg-[#1a1a1a] rounded-lg border border-gray-800 hover:border-[#667eea] transition-all overflow-hidden group">
+              <div className="h-40 overflow-hidden">
+                <Image
+                  src="/screenshots/decomposition.jpg"
+                  alt="Signal Decomposition"
+                  width={600}
+                  height={300}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">
-                Preset Waveforms
-              </h3>
-              <p className="text-gray-400">
-                Start with classic waveforms like Square, Sawtooth, Triangle, and
-                more complex patterns.
-              </p>
+              <div className="p-6">
+                <div className="w-12 h-12 bg-yellow-500/10 rounded-lg flex items-center justify-center mb-4">
+                  <Sparkles className="text-yellow-400" size={24} />
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  Signal Decomposition
+                </h3>
+                <p className="text-gray-400">
+                  See how complex signals are built from individual sine waves,
+                  each with its own frequency and amplitude.
+                </p>
+              </div>
             </div>
 
             {/* Feature 5 */}
-            <div className="p-6 bg-[#1a1a1a] rounded-lg border border-gray-800 hover:border-[#667eea] transition-all">
-              <div className="w-12 h-12 bg-red-500/10 rounded-lg flex items-center justify-center mb-4">
-                <Download className="text-red-400" size={24} />
+            <div className="bg-[#1a1a1a] rounded-lg border border-gray-800 hover:border-[#667eea] transition-all overflow-hidden group">
+              <div className="h-40 overflow-hidden">
+                <Image
+                  src="/screenshots/formula-panel.jpg"
+                  alt="Mathematical Formulas"
+                  width={600}
+                  height={300}
+                  className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300"
+                />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">
-                Export Projects
-              </h3>
-              <p className="text-gray-400">
-                Save your work as JSON, export signal data as CSV, or capture
-                visualizations as PNG images.
-              </p>
+              <div className="p-6">
+                <div className="w-12 h-12 bg-red-500/10 rounded-lg flex items-center justify-center mb-4">
+                  <Download className="text-red-400" size={24} />
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  Math Formulas & Export
+                </h3>
+                <p className="text-gray-400">
+                  Get the mathematical formula of your signal in LaTeX or Mathematica
+                  format. Export as JSON, CSV, or PNG.
+                </p>
+              </div>
             </div>
 
             {/* Feature 6 */}
-            <div className="p-6 bg-[#1a1a1a] rounded-lg border border-gray-800 hover:border-[#667eea] transition-all">
-              <div className="w-12 h-12 bg-pink-500/10 rounded-lg flex items-center justify-center mb-4">
-                <Users className="text-pink-400" size={24} />
+            <div className="bg-[#1a1a1a] rounded-lg border border-gray-800 hover:border-[#667eea] transition-all overflow-hidden group">
+              <div className="h-40 overflow-hidden">
+                <Image
+                  src="/screenshots/gallery-featured.jpg"
+                  alt="Community Gallery"
+                  width={600}
+                  height={300}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">
-                Share & Collaborate
-              </h3>
-              <p className="text-gray-400">
-                Share your creations with a public link and explore projects from
-                the community gallery.
-              </p>
+              <div className="p-6">
+                <div className="w-12 h-12 bg-pink-500/10 rounded-lg flex items-center justify-center mb-4">
+                  <Users className="text-pink-400" size={24} />
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  Share & Collaborate
+                </h3>
+                <p className="text-gray-400">
+                  Share your creations with a public link and explore projects from
+                  the community gallery.
+                </p>
+              </div>
             </div>
           </div>
         </div>
