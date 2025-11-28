@@ -8,16 +8,15 @@ import { useFilterStore } from "@/store/filterStore";
 import { Activity, Zap, Layers, Filter } from "lucide-react";
 
 export const StatusBar: React.FC = () => {
-  const { isPlaying, currentTime, settings } = useSimulationStore();
+  const { isPlaying, currentTime, settings, fps } = useSimulationStore();
   const { radii } = useRadiusStore();
-  const { original, noisy } = useSignalProcessingStore();
+  const { original } = useSignalProcessingStore();
   const { isFilterApplied, filterSettings } = useFilterStore();
 
   const formatTime = (time: number) => {
     return `${time.toFixed(2)}s`;
   };
 
-  const fps = settings.fps || 0;
   const sampleRate = settings.signalSampleRate || 30;
   const bufferSize = original.length;
 
