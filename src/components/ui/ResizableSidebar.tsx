@@ -83,9 +83,9 @@ export const ResizableSidebar: React.FC<ResizableSidebarProps> = ({
       {/* Header with title and collapse button */}
       {title && (
         <div className="flex items-center justify-between px-3 py-2 bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl flex-shrink-0">
-          <div className="flex items-center gap-2">
-            {icon && <span className="text-lg">{icon}</span>}
-            <h2 className="text-sm font-semibold text-gray-300">{title}</h2>
+          <div className="flex items-center gap-2 min-w-0">
+            {icon && <span className="flex-shrink-0">{icon}</span>}
+            <h2 className="text-sm font-semibold text-gray-300 truncate">{title}</h2>
           </div>
           <button
             onClick={() => setIsCollapsed(true)}

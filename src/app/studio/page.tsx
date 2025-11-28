@@ -22,7 +22,6 @@ import { ResizableSidebar } from "@/components/ui/ResizableSidebar";
 import {
   Settings,
   Plus,
-  Waves,
   BarChart3,
   Save,
   FilePlus,
@@ -40,6 +39,7 @@ import { useGraphVisibilityStore } from "@/store/graphVisibilityStore";
 import { RadiusItem } from "@/components/workspace/RadiusItem";
 import { RadiusEditor } from "@/components/workspace/RadiusEditor";
 import { Button } from "@/components/ui/Button";
+import { StatusBar } from "@/components/ui/StatusBar";
 import { Radius } from "@/types/radius";
 import { SignInButton } from "@/components/auth/SignInButton";
 import { UserMenu } from "@/components/auth/UserMenu";
@@ -553,7 +553,7 @@ function HomeContent() {
       {/* Main layout */}
       <div className="flex gap-3 flex-1 min-h-0">
         {/* Left panel */}
-        <ResizableSidebar title="Wave Studio" icon="🌊">
+        <ResizableSidebar title="Parameters" icon={<Settings size={18} className="text-[#667eea]" />}>
           {/* Radii Panel */}
           <div
             className={
@@ -752,6 +752,9 @@ function HomeContent() {
           </div>
         </div>
       </div>
+
+      {/* Status Bar */}
+      <StatusBar />
 
       {editingRadius && (
         <RadiusEditor
