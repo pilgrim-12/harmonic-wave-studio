@@ -21,37 +21,28 @@ export const StatusBar: React.FC = () => {
   const sampleRate = settings.signalSampleRate || 30;
   const bufferSize = original.length;
 
-  // Monitor CPU usage through frame time tracking
+  // Monitor CPU usage based on FPS
   useEffect(() => {
-    let lastTime = performance.now();
-    let frameCount = 0;
-    let totalFrameTime = 0;
+    if (!isPlaying) {
+      setCpuLoad(0);
+      return;
+    }
 
-    const measureCPU = () => {
-      const currentTime = performance.now();
-      const frameTime = currentTime - lastTime;
+    const interval = setInterval(() => {
+      const currentFps = fps;
+      const targetFps = 60;
 
-      frameCount++;
-      totalFrameTime += frameTime;
-
-      // Update CPU load every 30 frames (~1 second at 30fps)
-      if (frameCount >= 30) {
-        const avgFrameTime = totalFrameTime / frameCount;
-        const targetFrameTime = 1000 / 60; // 60 FPS target
-        const load = Math.min(100, Math.round((avgFrameTime / targetFrameTime) * 100));
+      if (currentFps > 0) {
+        // Calculate CPU load based on FPS deviation from target
+        // Lower FPS = higher CPU load
+        const fpsRatio = currentFps / targetFps;
+        const load = Math.min(100, Math.max(0, Math.round((1 - fpsRatio) * 100 + 20)));
         setCpuLoad(load);
-
-        frameCount = 0;
-        totalFrameTime = 0;
       }
+    }, 500); // Update every 500ms
 
-      lastTime = currentTime;
-      requestAnimationFrame(measureCPU);
-    };
-
-    const animationId = requestAnimationFrame(measureCPU);
-    return () => cancelAnimationFrame(animationId);
-  }, []);
+    return () => clearInterval(interval);
+  }, [isPlaying, fps]);
 
   return (
     <div className="h-6 bg-[#0f0f0f] border-t border-[#2a2a2a] flex items-center justify-between px-3 text-[10px] text-gray-500 flex-shrink-0">
