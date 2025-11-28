@@ -28,6 +28,7 @@ import {
   Activity,
   LayoutGrid,
   Heart,
+  Sliders,
 } from "lucide-react";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useRadiusStore } from "@/store/radiusStore";
@@ -553,7 +554,7 @@ function HomeContent() {
       {/* Main layout */}
       <div className="flex gap-3 flex-1 min-h-0">
         {/* Left panel */}
-        <ResizableSidebar title="Parameters" icon={<Settings size={18} className="text-[#667eea]" />}>
+        <ResizableSidebar title="Parameters" icon={<Settings size={16} className="text-[#667eea]" />}>
           {/* Radii Panel */}
           <div
             className={
@@ -564,7 +565,7 @@ function HomeContent() {
           >
             <AccordionItem
               title="Radii"
-              icon={<span className="text-lg">⚙️</span>}
+              icon={<Sliders size={16} className="text-[#667eea]" />}
               isOpen={openPanel === "radii"}
               onToggle={() => handleToggle("radii")}
             >
