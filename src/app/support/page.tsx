@@ -49,7 +49,7 @@ export default function SupportPage() {
             Support Harmonic Wave Studio
           </h1>
           <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-            100% free forever. If you find it useful, consider supporting development.
+            If you find it useful, consider supporting development.
           </p>
         </div>
 
@@ -58,17 +58,17 @@ export default function SupportPage() {
           <div className="mb-8 p-5 bg-gradient-to-r from-purple-900/20 to-blue-900/20 border border-purple-500/30 rounded-xl">
             <div className="text-center">
               <h2 className="text-xl font-bold text-white mb-2">
-                Get Full Access - 100% Free
+                Get Full Access
               </h2>
               <p className="text-gray-300 mb-3 text-sm">
-                Sign in to unlock all features at no cost. No credit card required.
+                Sign in to unlock all features. No credit card required.
               </p>
               <Button
                 onClick={signInWithGoogle}
                 variant="primary"
                 className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500"
               >
-                Sign In Free
+                Sign In
               </Button>
             </div>
           </div>
@@ -190,7 +190,7 @@ export default function SupportPage() {
         {/* Transparency Note */}
         <div className="text-center">
           <p className="text-xs text-gray-500">
-            🔒 All features will always remain free for registered users.
+            🔒 All features are currently free for registered users.
           </p>
         </div>
       </div>

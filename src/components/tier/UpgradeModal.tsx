@@ -110,7 +110,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
             <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
               <p className="text-sm text-blue-300">
-                ✨ <strong>100% Free Forever</strong> - No credit card required, no payments
+                ✨ <strong>Currently Free</strong> - No credit card required, no payments
               </p>
             </div>
 
