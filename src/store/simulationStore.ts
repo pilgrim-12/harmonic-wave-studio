@@ -13,6 +13,7 @@ interface SimulationStore extends SimulationState {
   trackedRadiusIds: string[]; // For trails (multiple)
   signalData: SignalDataPoint[];
   highResSignal: number[]; // NEW: High-resolution signal buffer
+  computeLoad: number; // Real-time compute load (0-100%)
 
   // Actions
   play: () => void;
@@ -21,6 +22,7 @@ interface SimulationStore extends SimulationState {
   reset: () => void;
   setCurrentTime: (time: number) => void;
   updateFps: (fps: number) => void;
+  updateComputeLoad: (load: number) => void;
   updateSettings: (settings: Partial<SimulationSettings>) => void;
   setActiveTrackingRadius: (radiusId: string | null) => void;
   toggleTrailTracking: (radiusId: string) => void;
@@ -54,6 +56,7 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
   trackedRadiusIds: [],
   signalData: [],
   highResSignal: [],
+  computeLoad: 0,
 
   play: () => {
     set({
@@ -94,6 +97,10 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
 
   updateFps: (fps) => {
     set({ fps });
+  },
+
+  updateComputeLoad: (load) => {
+    set({ computeLoad: load });
   },
 
   updateSettings: (newSettings) => {

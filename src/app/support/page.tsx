@@ -138,7 +138,7 @@ export default function SupportPage() {
               Monthly support
             </p>
             <a
-              href="https://patreon.com/harmonicwave"
+              href="https://www.patreon.com/c/YuriiChernov"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block w-full"
@@ -147,7 +147,7 @@ export default function SupportPage() {
                 variant="primary"
                 className="w-full bg-orange-600 hover:bg-orange-500 text-white text-sm"
               >
-                Coming Soon
+                Support
               </Button>
             </a>
           </div>

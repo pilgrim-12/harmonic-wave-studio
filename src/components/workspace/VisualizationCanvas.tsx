@@ -28,6 +28,7 @@ export const VisualizationCanvas: React.FC = () => {
     currentTime,
     setCurrentTime,
     updateFps,
+    updateComputeLoad,
     settings,
     activeTrackingRadiusId,
     trackedRadiusIds,
@@ -65,7 +66,14 @@ export const VisualizationCanvas: React.FC = () => {
     let frameCount = 0;
     let fpsTime = 0;
 
+    // For compute load measurement
+    let frameStartTime = 0;
+    const frameTimes: number[] = [];
+    const maxFrameSamples = 60;
+
     const animate = (time: number) => {
+      frameStartTime = performance.now(); // Start measuring frame computation
+
       const deltaTime = (time - lastTime) / 1000;
       lastTime = time;
 
@@ -173,6 +181,41 @@ export const VisualizationCanvas: React.FC = () => {
       // Restore transform
       ctx.restore();
 
+      // Measure frame computation time
+      const frameEndTime = performance.now();
+      const frameComputeTime = frameEndTime - frameStartTime;
+
+      if (isPlaying) {
+        frameTimes.push(frameComputeTime);
+
+        // Keep only last N samples
+        if (frameTimes.length > maxFrameSamples) {
+          frameTimes.shift();
+        }
+
+        // Calculate and update compute load
+        if (frameTimes.length >= 10) {
+          const avgFrameTime =
+            frameTimes.reduce((sum, t) => sum + t, 0) / frameTimes.length;
+
+          // Convert to load percentage
+          // Target: 16.67ms (60fps) = 0% load
+          // Double: 33.33ms = 100% load
+          const targetFrameTime = 1000 / 60;
+          const rawLoad = Math.max(
+            0,
+            ((avgFrameTime - targetFrameTime) / targetFrameTime) * 100
+          );
+          const cappedLoad = Math.min(100, rawLoad);
+
+          updateComputeLoad(Math.round(cappedLoad));
+        }
+      } else {
+        // Reset when not playing
+        frameTimes.length = 0;
+        updateComputeLoad(0);
+      }
+
       // ✅ Следующий кадр - ВСЕГДА продолжаем
       animationFrameRef.current = requestAnimationFrame(animate);
     };
@@ -191,6 +234,7 @@ export const VisualizationCanvas: React.FC = () => {
     settings,
     setCurrentTime,
     updateFps,
+    updateComputeLoad,
     activeTrackingRadiusId,
     trackedRadiusIds,
   ]);
