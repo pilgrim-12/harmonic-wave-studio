@@ -23,14 +23,13 @@ export const StatusBar: React.FC = () => {
 
   // Estimate computational load based on complexity
   useEffect(() => {
-    if (!isPlaying) {
-      setCpuLoad(0);
-      return;
-    }
-
     // Update load periodically to avoid cascading renders
     const interval = setInterval(() => {
       setCpuLoad((prevLoad) => {
+        if (!isPlaying) {
+          return 0;
+        }
+
         // Calculate load factors (more conservative)
         const radiiFactor = Math.min(radii.length * 3, 25); // 3% per radius, max 25%
 
