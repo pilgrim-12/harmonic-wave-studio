@@ -19,6 +19,7 @@ import { UndoRedoIndicator } from "@/components/ui/UndoRedoIndicator";
 import { AccordionItem } from "@/components/ui/Accordion";
 import { FullscreenWrapper } from "@/components/ui/FullscreenWrapper";
 import { ResizableSidebar } from "@/components/ui/ResizableSidebar";
+import { CollapsibleBottomPanel } from "@/components/ui/CollapsibleBottomPanel";
 import {
   Settings,
   Plus,
@@ -734,66 +735,73 @@ function HomeContent() {
         </ResizableSidebar>
 
         {/* Right workspace - IMPROVED RESPONSIVE */}
-        <div className="flex-1 grid grid-rows-[auto_2fr_1fr] gap-3 min-w-0 min-h-0">
+        <div className="flex-1 flex flex-col gap-3 min-w-0 min-h-0">
           {/* Control Panel */}
           <div className="flex-shrink-0">
             <ControlPanel />
           </div>
 
-          {/* Visualization Canvas - 2/3 of space, min height */}
-          <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-[200px] overflow-hidden">
+          {/* Visualization Canvas - takes remaining space */}
+          <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] flex-1 min-h-[200px] overflow-hidden">
             <FullscreenWrapper>
               <VisualizationCanvas />
             </FullscreenWrapper>
           </div>
 
-          {/* Signal Graphs - 1/3 of space, responsive columns */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-2 min-h-[100px]">
-            {/* Original Signal */}
-            {showOriginalSignal && (
-              <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-[80px] overflow-hidden">
-                <FullscreenWrapper>
-                  <SignalGraph />
-                </FullscreenWrapper>
-              </div>
-            )}
+          {/* Signal Graphs - Collapsible bottom panel */}
+          <CollapsibleBottomPanel
+            title="Signal Graphs"
+            defaultHeight={180}
+            minHeight={100}
+            maxHeight={350}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-2 h-full p-2">
+              {/* Original Signal */}
+              {showOriginalSignal && (
+                <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] overflow-hidden">
+                  <FullscreenWrapper>
+                    <SignalGraph />
+                  </FullscreenWrapper>
+                </div>
+              )}
 
-            {/* Noisy Signal */}
-            {showNoisySignal && (
-              <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-[80px] overflow-hidden">
-                <FullscreenWrapper>
-                  <NoisySignalGraph />
-                </FullscreenWrapper>
-              </div>
-            )}
+              {/* Noisy Signal */}
+              {showNoisySignal && (
+                <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] overflow-hidden">
+                  <FullscreenWrapper>
+                    <NoisySignalGraph />
+                  </FullscreenWrapper>
+                </div>
+              )}
 
-            {/* Filtered Signal */}
-            {showFilteredSignal && (
-              <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-[80px] overflow-hidden">
-                <FullscreenWrapper>
-                  <FilteredSignalGraph />
-                </FullscreenWrapper>
-              </div>
-            )}
+              {/* Filtered Signal */}
+              {showFilteredSignal && (
+                <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] overflow-hidden">
+                  <FullscreenWrapper>
+                    <FilteredSignalGraph />
+                  </FullscreenWrapper>
+                </div>
+              )}
 
-            {/* Spectrum */}
-            {showSpectrum && (
-              <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-[80px] overflow-hidden">
-                <FullscreenWrapper>
-                  <SpectrumGraphPanel />
-                </FullscreenWrapper>
-              </div>
-            )}
+              {/* Spectrum */}
+              {showSpectrum && (
+                <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] overflow-hidden">
+                  <FullscreenWrapper>
+                    <SpectrumGraphPanel />
+                  </FullscreenWrapper>
+                </div>
+              )}
 
-            {/* Decomposition */}
-            {showDecomposition && (
-              <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] min-h-[80px] overflow-hidden">
-                <FullscreenWrapper>
-                  <DecompositionGraph />
-                </FullscreenWrapper>
-              </div>
-            )}
-          </div>
+              {/* Decomposition */}
+              {showDecomposition && (
+                <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] overflow-hidden">
+                  <FullscreenWrapper>
+                    <DecompositionGraph />
+                  </FullscreenWrapper>
+                </div>
+              )}
+            </div>
+          </CollapsibleBottomPanel>
         </div>
       </div>
 
