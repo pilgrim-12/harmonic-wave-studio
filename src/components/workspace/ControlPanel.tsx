@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { Play, Pause, Square, RotateCcw } from "lucide-react";
+import React, { useState } from "react";
+import { Play, Pause, Square, RotateCcw, Box } from "lucide-react";
 import { useSimulationStore } from "@/store/simulationStore";
 import { useSignalProcessingStore } from "@/store/signalProcessingStore";
 import { Button } from "@/components/ui/Button";
@@ -10,10 +10,14 @@ import { PresetPanel } from "./PresetPanel";
 import { ProjectPanel } from "./ProjectPanel";
 import { TrailLengthControl } from "@/components/settings/TrailLengthControl";
 import { GraphVisibilityPanel } from "./GraphVisibilityPanel";
+import { Visualization3DModal } from "@/components/studio/Visualization3DModal";
+import { useRadiusStore } from "@/store/radiusStore";
 
 export const ControlPanel: React.FC = () => {
   const { isPlaying, isPaused, play, pause, stop, reset, activeTrackingRadiusId } =
     useSimulationStore();
+  const { radii } = useRadiusStore();
+  const [show3DModal, setShow3DModal] = useState(false);
 
   const handleReset = () => {
     const trackingId = activeTrackingRadiusId;
@@ -104,6 +108,33 @@ export const ControlPanel: React.FC = () => {
       <div className="flex-1 min-w-[200px]">
         <TrailLengthControl />
       </div>
+
+      {/* Divider */}
+      <div className="w-px h-8 bg-[#333]" />
+
+      {/* 3D Visualization Button */}
+      <Button
+        onClick={() => setShow3DModal(true)}
+        variant="secondary"
+        size="sm"
+        title="View 3D Visualization"
+        disabled={radii.length === 0}
+      >
+        <Box size={16} className="mr-1" />
+        View 3D
+      </Button>
+
+      {/* 3D Modal */}
+      {show3DModal && radii.length > 0 && (
+        <Visualization3DModal
+          radii={radii.map((r) => ({
+            frequency: r.direction === "counterclockwise" ? r.rotationSpeed : -r.rotationSpeed,
+            amplitude: r.length,
+            phase: r.initialAngle,
+          }))}
+          onClose={() => setShow3DModal(false)}
+        />
+      )}
     </div>
   );
 };
