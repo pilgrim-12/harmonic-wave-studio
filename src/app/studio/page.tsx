@@ -811,9 +811,13 @@ function HomeContent() {
       {show3DModal && radii.length > 0 && (
         <Visualization3DModal
           radii={radii.map((r) => ({
+            id: r.id,
+            name: r.name,
             frequency: r.direction === "counterclockwise" ? r.rotationSpeed : -r.rotationSpeed,
             amplitude: r.length,
             phase: r.initialAngle,
+            color: r.color,
+            isActive: r.isActive,
           }))}
           onClose={() => setShow3DModal(false)}
         />
