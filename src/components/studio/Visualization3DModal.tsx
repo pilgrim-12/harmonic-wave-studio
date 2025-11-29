@@ -40,7 +40,11 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
   const cameraAngleRef = useRef({ theta: 0, phi: Math.PI / 4 });
   const cameraDistanceRef = useRef(15);
 
-  // Generate curve points from harmonics
+  // Calculate total amplitude for auto-scaling
+  const totalAmplitude = radii.reduce((sum, r) => sum + r.amplitude, 0);
+  const autoScale = totalAmplitude > 0 ? 5 / totalAmplitude : 1;
+
+  // Generate curve points from harmonics (flat XY trajectory for tube)
   const generateCurvePoints = useCallback(
     (numPoints: number, maxTime: number): THREE.Vector3[] => {
       const points: THREE.Vector3[] = [];
@@ -56,39 +60,57 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
           y += r.amplitude * Math.sin(angle);
         }
 
-        // Scale down for 3D view
-        const scale = 0.05;
-        points.push(new THREE.Vector3(x * scale, y * scale, t * 0.5));
+        // Scale to fit nicely in view, trajectory in XY plane
+        points.push(new THREE.Vector3(x * autoScale, y * autoScale, 0));
       }
 
       return points;
     },
-    [radii]
+    [radii, autoScale]
   );
 
-  // Create tube geometry
+  // Create tube geometry - trajectory as tube centerline
   const createTube = useCallback(
     (thicknessVal: number, detailVal: number, maxTime: number): THREE.Mesh => {
-      const points = generateCurvePoints(detailVal, maxTime);
+      const points: THREE.Vector3[] = [];
+
+      // Generate 3D curve with Z as time progression for tube
+      for (let i = 0; i <= detailVal; i++) {
+        const t = (i / detailVal) * maxTime;
+        let x = 0,
+          y = 0;
+
+        for (const r of radii) {
+          const angle = 2 * Math.PI * r.frequency * t + r.phase;
+          x += r.amplitude * Math.cos(angle);
+          y += r.amplitude * Math.sin(angle);
+        }
+
+        // Z progresses with time for 3D spiral effect
+        const zProgress = (i / detailVal) * 5; // 5 units of Z depth
+        points.push(new THREE.Vector3(x * autoScale, y * autoScale, zProgress));
+      }
+
       const curve = new THREE.CatmullRomCurve3(points);
 
       const geometry = new THREE.TubeGeometry(
         curve,
-        detailVal,
-        thicknessVal * 0.1,
-        16,
+        detailVal * 2,
+        thicknessVal * 0.15,
+        12,
         false
       );
 
-      const material = new THREE.MeshPhongMaterial({
+      const material = new THREE.MeshStandardMaterial({
         color: 0x667eea,
-        shininess: 100,
+        roughness: 0.3,
+        metalness: 0.6,
         side: THREE.DoubleSide,
       });
 
       return new THREE.Mesh(geometry, material);
     },
-    [generateCurvePoints]
+    [radii, autoScale]
   );
 
   // Create extrude geometry (contour extruded along z-axis)
@@ -107,32 +129,32 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
           y += r.amplitude * Math.sin(angle);
         }
 
-        const scale = 0.05;
-        points2D.push(new THREE.Vector2(x * scale, y * scale));
+        points2D.push(new THREE.Vector2(x * autoScale, y * autoScale));
       }
 
       const shape = new THREE.Shape(points2D);
 
       const extrudeSettings = {
-        depth: heightVal * 2,
+        depth: heightVal * 3,
         bevelEnabled: true,
-        bevelThickness: 0.1,
-        bevelSize: 0.1,
-        bevelSegments: 3,
+        bevelThickness: 0.08,
+        bevelSize: 0.08,
+        bevelSegments: 2,
       };
 
       const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-      geometry.translate(0, 0, -heightVal);
+      geometry.translate(0, 0, -heightVal * 1.5);
 
-      const material = new THREE.MeshPhongMaterial({
+      const material = new THREE.MeshStandardMaterial({
         color: 0x764ba2,
-        shininess: 100,
+        roughness: 0.4,
+        metalness: 0.5,
         side: THREE.DoubleSide,
       });
 
       return new THREE.Mesh(geometry, material);
     },
-    [radii]
+    [radii, autoScale]
   );
 
   // Create lathe geometry (profile rotated around Y-axis)
@@ -151,68 +173,67 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
           y += r.amplitude * Math.sin(angle);
         }
 
-        const scale = 0.05 * scaleVal;
-        const radius = Math.sqrt(x * x + y * y) * scale;
-        const height = t * 0.5;
-        points2D.push(new THREE.Vector2(Math.abs(radius) + 0.01, height));
+        const radius = Math.sqrt(x * x + y * y) * autoScale * scaleVal;
+        const height = (i / detailVal) * 6; // Height along Y axis
+        points2D.push(new THREE.Vector2(Math.abs(radius) + 0.05, height - 3));
       }
 
-      const geometry = new THREE.LatheGeometry(points2D, 64);
+      const geometry = new THREE.LatheGeometry(points2D, 48);
 
-      const material = new THREE.MeshPhongMaterial({
+      const material = new THREE.MeshStandardMaterial({
         color: 0x667eea,
-        shininess: 100,
+        roughness: 0.3,
+        metalness: 0.6,
         side: THREE.DoubleSide,
       });
 
       return new THREE.Mesh(geometry, material);
     },
-    [radii]
+    [radii, autoScale]
   );
 
-  // Create surface geometry (radius = height)
+  // Create surface geometry (wave surface)
   const createSurface = useCallback(
     (
       heightScaleVal: number,
       detailVal: number,
       maxTime: number
     ): THREE.Mesh => {
-      const gridSize = Math.floor(Math.sqrt(detailVal));
-      const geometry = new THREE.PlaneGeometry(10, 10, gridSize, gridSize);
+      const gridSize = Math.floor(Math.sqrt(detailVal)) + 10;
+      const geometry = new THREE.PlaneGeometry(12, 12, gridSize, gridSize);
       const positions = geometry.attributes.position;
 
       for (let i = 0; i < positions.count; i++) {
-        const x = positions.getX(i);
-        const z = positions.getY(i);
-        const t = ((x + 5) / 10) * maxTime;
+        const px = positions.getX(i);
+        const pz = positions.getY(i);
+        const t = ((px + 6) / 12) * maxTime;
 
         let waveX = 0,
           waveY = 0;
 
         for (const r of radii) {
-          const angle = 2 * Math.PI * r.frequency * t + r.phase + z * 0.5;
+          const angle = 2 * Math.PI * r.frequency * t + r.phase + pz * 0.3;
           waveX += r.amplitude * Math.cos(angle);
           waveY += r.amplitude * Math.sin(angle);
         }
 
-        const height =
-          Math.sqrt(waveX * waveX + waveY * waveY) * 0.02 * heightScaleVal;
+        const height = Math.sqrt(waveX * waveX + waveY * waveY) * autoScale * 0.3 * heightScaleVal;
         positions.setZ(i, height);
       }
 
       geometry.computeVertexNormals();
       geometry.rotateX(-Math.PI / 2);
 
-      const material = new THREE.MeshPhongMaterial({
+      const material = new THREE.MeshStandardMaterial({
         color: 0x764ba2,
-        shininess: 80,
+        roughness: 0.4,
+        metalness: 0.5,
         side: THREE.DoubleSide,
-        flatShading: false,
       });
 
       return new THREE.Mesh(geometry, material);
     },
-    [radii]
+    [radii, autoScale]
   );
 
   // Update camera position from angles
@@ -297,17 +318,30 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+    // Lights - enhanced for better visibility
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(5, 10, 7);
+    // Main directional light (sun-like)
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    directionalLight.position.set(10, 15, 10);
+    directionalLight.castShadow = true;
     scene.add(directionalLight);
 
-    const directionalLight2 = new THREE.DirectionalLight(0x667eea, 0.3);
-    directionalLight2.position.set(-5, -5, -5);
+    // Fill light from opposite side
+    const directionalLight2 = new THREE.DirectionalLight(0x667eea, 0.6);
+    directionalLight2.position.set(-10, 5, -10);
     scene.add(directionalLight2);
+
+    // Top light for better definition
+    const topLight = new THREE.DirectionalLight(0xffffff, 0.4);
+    topLight.position.set(0, 20, 0);
+    scene.add(topLight);
+
+    // Point light for highlights
+    const pointLight = new THREE.PointLight(0x764ba2, 0.8, 30);
+    pointLight.position.set(5, 5, 5);
+    scene.add(pointLight);
 
     // Grid helper
     const gridHelper = new THREE.GridHelper(20, 20, 0x333333, 0x222222);
