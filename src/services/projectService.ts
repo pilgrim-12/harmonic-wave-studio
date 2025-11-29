@@ -17,6 +17,7 @@ export interface Radius {
   frequency: number;
   amplitude: number;
   phase: number;
+  color?: string; // hex color, e.g. "#667eea"
 }
 
 export interface Project {

@@ -131,6 +131,7 @@ function HomeContent() {
             frequency: number;
             amplitude: number;
             phase: number;
+            color?: string;
           }) => {
             // Normalize values before adding
             const normalized = normalizeRadius({
@@ -146,6 +147,7 @@ function HomeContent() {
               rotationSpeed: normalized.rotationSpeed,
               direction:
                 fbRadius.frequency >= 0 ? "counterclockwise" : "clockwise",
+              color: fbRadius.color, // Restore saved color
             });
 
             // Update for next radius
@@ -410,6 +412,7 @@ function HomeContent() {
             : -r.rotationSpeed,
         amplitude: r.length,
         phase: r.initialAngle,
+        color: r.color,
       }));
 
       if (currentProjectId) {

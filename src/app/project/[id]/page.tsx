@@ -83,6 +83,7 @@ export default function SharedProjectPage() {
         rotationSpeed: Math.abs(radius.frequency),
         direction: radius.frequency >= 0 ? "counterclockwise" : "clockwise",
         name: `Radius ${index + 1}`,
+        color: radius.color, // Restore saved color
       });
 
       // Следующий радиус будет child текущего

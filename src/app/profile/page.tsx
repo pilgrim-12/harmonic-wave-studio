@@ -70,6 +70,7 @@ export default function ProfilePage() {
         initialAngle: radius.phase,
         rotationSpeed: Math.abs(radius.frequency),
         direction: radius.frequency >= 0 ? "counterclockwise" : "clockwise",
+        color: radius.color, // Restore saved color
       });
 
       previousRadiusId = newRadiusId;
