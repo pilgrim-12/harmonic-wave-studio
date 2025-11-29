@@ -32,6 +32,7 @@ import {
   Sliders,
   FunctionSquare,
   Box,
+  Sparkles,
 } from "lucide-react";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useRadiusStore } from "@/store/radiusStore";
@@ -60,6 +61,8 @@ import { useTierCheck } from "@/hooks/useTierCheck";
 import { normalizeRadius } from "@/lib/validation/normalizeRadius";
 import { FormulaDisplay } from "@/components/studio/FormulaDisplay";
 import { Visualization3DModal } from "@/components/studio/Visualization3DModal";
+import { AIGenerateModal } from "@/components/ai/AIGenerateModal";
+import { GeneratedPattern } from "@/lib/ai/patternGenerator";
 
 function HomeContent() {
   const [openPanel, setOpenPanel] = useState<string>("radii");
@@ -68,6 +71,7 @@ function HomeContent() {
   const [saving, setSaving] = useState(false);
   const [shareId, setShareId] = useState<string | null>(null);
   const [show3DModal, setShow3DModal] = useState(false);
+  const [showAIModal, setShowAIModal] = useState(false);
 
   // ✅ Ref for animation loop
   const animationFrameRef = useRef<number | null>(null);
@@ -468,6 +472,54 @@ function HomeContent() {
     clearFilter();
   };
 
+  const handleAIGenerate = (pattern: GeneratedPattern) => {
+    // Clear existing radii
+    clearRadii();
+    useSignalProcessingStore.getState().resetSignal();
+
+    // Add generated radii
+    let previousRadiusId: string | null = null;
+    let lastRadiusId: string | null = null;
+
+    pattern.radii.forEach((genRadius) => {
+      const normalized = normalizeRadius({
+        length: genRadius.amplitude,
+        initialAngle: genRadius.phase,
+        rotationSpeed: Math.abs(genRadius.frequency),
+      });
+
+      const newRadiusId = addRadius({
+        parentId: previousRadiusId,
+        length: normalized.length,
+        initialAngle: normalized.initialAngle,
+        rotationSpeed: normalized.rotationSpeed,
+        direction: genRadius.frequency >= 0 ? "counterclockwise" : "clockwise",
+        color: genRadius.color,
+      });
+
+      previousRadiusId = newRadiusId;
+      lastRadiusId = newRadiusId;
+    });
+
+    // Select and track last radius
+    if (lastRadiusId) {
+      setTimeout(() => {
+        selectRadius(lastRadiusId!);
+        useSimulationStore.getState().setActiveTrackingRadius(lastRadiusId!);
+        useSimulationStore.getState().toggleTrailTracking(lastRadiusId!);
+      }, 100);
+    }
+
+    // Set project name from pattern
+    setProjectName(pattern.name);
+    clearProject();
+
+    // Start animation
+    setTimeout(() => play(), 200);
+
+    toast.success(`Generated: ${pattern.name}`);
+  };
+
   return (
     <div className="h-screen bg-[#0f0f0f] flex flex-col overflow-hidden">
       <header className="border-b border-[#2a2a2a] flex-shrink-0">
@@ -543,6 +595,17 @@ function HomeContent() {
               >
                 <Box size={14} className="mr-1" />
                 3D
+              </Button>
+
+              {/* AI Generate Button */}
+              <Button
+                onClick={() => setShowAIModal(true)}
+                variant="secondary"
+                className="text-sm bg-purple-500/10 border-purple-500/30 hover:bg-purple-500/20"
+                title="Generate pattern with AI"
+              >
+                <Sparkles size={14} className="mr-1 text-purple-400" />
+                AI
               </Button>
             </div>
           )}
@@ -833,6 +896,13 @@ function HomeContent() {
           onClose={() => setShow3DModal(false)}
         />
       )}
+
+      {/* AI Generate Modal */}
+      <AIGenerateModal
+        isOpen={showAIModal}
+        onClose={() => setShowAIModal(false)}
+        onGenerate={handleAIGenerate}
+      />
     </div>
   );
 }
