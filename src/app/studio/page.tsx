@@ -30,7 +30,6 @@ import {
   Heart,
   Sliders,
   FunctionSquare,
-  Box,
 } from "lucide-react";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useRadiusStore } from "@/store/radiusStore";
@@ -58,7 +57,6 @@ import { FeatureGate } from "@/components/tier/FeatureGate";
 import { useTierCheck } from "@/hooks/useTierCheck";
 import { normalizeRadius } from "@/lib/validation/normalizeRadius";
 import { FormulaDisplay } from "@/components/studio/FormulaDisplay";
-import { Visualization3DModal } from "@/components/studio/Visualization3DModal";
 
 function HomeContent() {
   const [openPanel, setOpenPanel] = useState<string>("radii");
@@ -66,7 +64,6 @@ function HomeContent() {
   const [projectName, setProjectName] = useState("");
   const [saving, setSaving] = useState(false);
   const [shareId, setShareId] = useState<string | null>(null);
-  const [show3DModal, setShow3DModal] = useState(false);
 
   // ✅ Ref for animation loop
   const animationFrameRef = useRef<number | null>(null);
@@ -529,17 +526,6 @@ function HomeContent() {
                 </Button>
               </Link>
 
-              {/* 3D Visualization Button */}
-              <Button
-                onClick={() => setShow3DModal(true)}
-                variant="secondary"
-                className="text-sm"
-                title="View 3D Visualization"
-                disabled={radii.length === 0}
-              >
-                <Box size={14} className="mr-1" />
-                3D
-              </Button>
             </div>
           )}
 
@@ -807,17 +793,6 @@ function HomeContent() {
         />
       )}
 
-      {/* 3D Visualization Modal */}
-      {show3DModal && radii.length > 0 && (
-        <Visualization3DModal
-          radii={radii.map((r) => ({
-            frequency: r.direction === "counterclockwise" ? r.rotationSpeed : -r.rotationSpeed,
-            amplitude: r.length,
-            phase: r.initialAngle,
-          }))}
-          onClose={() => setShow3DModal(false)}
-        />
-      )}
     </div>
   );
 }
