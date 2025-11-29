@@ -179,7 +179,7 @@ export default function LandingPage() {
             <div className="bg-[#1a1a1a] rounded-lg border border-gray-800 hover:border-[#667eea] transition-all overflow-hidden group">
               <div className="h-40 overflow-hidden">
                 <Image
-                  src="/screenshots/signal-graph.jpg"
+                  src="/screenshots/apply-filters.jpg"
                   alt="Digital Filters"
                   width={600}
                   height={300}
@@ -227,14 +227,8 @@ export default function LandingPage() {
 
             {/* Feature 5 */}
             <div className="bg-[#1a1a1a] rounded-lg border border-gray-800 hover:border-[#667eea] transition-all overflow-hidden group">
-              <div className="h-40 overflow-hidden">
-                <Image
-                  src="/screenshots/presets.jpg"
-                  alt="Presets and Export"
-                  width={600}
-                  height={300}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
+              <div className="h-40 overflow-hidden bg-gradient-to-br from-red-500/10 to-orange-500/5 flex items-center justify-center">
+                <Download className="text-red-400/50" size={64} />
               </div>
               <div className="p-6">
                 <div className="w-12 h-12 bg-red-500/10 rounded-lg flex items-center justify-center mb-4">
