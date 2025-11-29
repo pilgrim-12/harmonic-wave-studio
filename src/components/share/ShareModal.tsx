@@ -102,6 +102,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             : -r.rotationSpeed,
         amplitude: r.length,
         phase: r.initialAngle,
+        color: r.color,
       }));
 
       const project = {
