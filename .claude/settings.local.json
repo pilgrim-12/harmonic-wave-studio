@@ -3,7 +3,8 @@
     "allow": [
       "Bash(if exist nul del /F /Q nul 2)",
       "Bash(NUL)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []
