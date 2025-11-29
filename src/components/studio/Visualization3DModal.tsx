@@ -453,134 +453,113 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
     URL.revokeObjectURL(url);
   }, [buildMethod]);
 
-  const buildMethods: { id: BuildMethod; label: string; desc: string; icon: React.ReactNode }[] = [
-    { id: "tube", label: "Труба (Tube)", desc: "Траектория = центр трубы", icon: <Circle size={14} /> },
-    { id: "extrude", label: "Выдавливание", desc: "Контур вытягивается вверх", icon: <Layers size={14} /> },
-    { id: "lathe", label: "Вращение", desc: "Профиль вращается вокруг оси", icon: <Box size={14} /> },
-    { id: "surface", label: "Поверхность", desc: "Радиус → высота", icon: <Mountain size={14} /> },
+  const buildMethods: { id: BuildMethod; label: string; icon: React.ReactNode }[] = [
+    { id: "tube", label: "Tube", icon: <Circle size={14} /> },
+    { id: "extrude", label: "Extrude", icon: <Layers size={14} /> },
+    { id: "lathe", label: "Lathe", icon: <Box size={14} /> },
+    { id: "surface", label: "Surface", icon: <Mountain size={14} /> },
   ];
 
   return (
-    <div className="fixed inset-0 z-50 bg-black flex">
-      {/* Sidebar - like demo */}
-      <div className="w-72 bg-[#12121a] border-r border-[#2a2a3a] p-5 flex flex-col gap-4 overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-black/95 flex">
+      {/* Sidebar */}
+      <div className="w-64 bg-[#1a1a1a] border-r border-[#2a2a2a] p-4 flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <h1 className="text-lg font-semibold text-[#a78bfa]">🌀 Harmonic → 3D</h1>
-          <button onClick={onClose} className="text-gray-400 hover:text-white" title="Close (Esc)">
-            <X size={20} />
+          <h1 className="text-base font-semibold text-white">3D Visualization</h1>
+          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors" title="Close (Esc)">
+            <X size={18} />
           </button>
         </div>
 
         {/* Build Method */}
         <div>
-          <h2 className="text-xs text-gray-500 uppercase tracking-wider mb-2">Метод построения</h2>
-          <div className="space-y-2">
+          <h2 className="text-xs text-gray-400 uppercase tracking-wide mb-2">Build Method</h2>
+          <div className="grid grid-cols-2 gap-1.5">
             {buildMethods.map((method) => (
               <button
                 key={method.id}
                 onClick={() => setBuildMethod(method.id)}
-                className={`w-full text-left px-4 py-3 rounded-lg border transition-all ${
+                className={`flex items-center gap-1.5 px-2.5 py-2 rounded text-xs transition-colors ${
                   buildMethod === method.id
-                    ? "bg-[#3730a3] border-[#6366f1] text-white"
-                    : "bg-[#1a1a2a] border-[#2a2a4a] text-white hover:bg-[#252540] hover:border-[#4a4a6a]"
+                    ? "bg-[#667eea] text-white"
+                    : "bg-[#2a2a2a] text-gray-300 hover:bg-[#333] hover:text-white"
                 }`}
               >
-                <div className="flex items-center gap-2">
-                  {method.icon}
-                  {method.label}
-                </div>
-                <span className="text-xs text-gray-400 block mt-1">{method.desc}</span>
+                {method.icon}
+                {method.label}
               </button>
             ))}
           </div>
         </div>
 
         {/* Parameters */}
-        <div>
-          <h2 className="text-xs text-gray-500 uppercase tracking-wider mb-2">Параметры</h2>
+        <div className="space-y-3">
+          <h2 className="text-xs text-gray-400 uppercase tracking-wide">Parameters</h2>
 
-          <div className="space-y-4">
-            <div>
-              <label className="text-xs text-gray-400 flex justify-between">
-                <span>Толщина / Высота:</span>
-                <span className="text-[#6366f1]">{thickness}</span>
-              </label>
-              <input
-                type="range"
-                min="1"
-                max="50"
-                value={thickness}
-                onChange={(e) => setThickness(parseInt(e.target.value))}
-                className="w-full mt-1"
+          <div>
+            <label className="text-xs text-gray-400 flex justify-between mb-1">
+              <span>Thickness</span>
+              <span className="text-[#667eea]">{thickness}</span>
+            </label>
+            <input
+              type="range"
+              min="1"
+              max="50"
+              value={thickness}
+              onChange={(e) => setThickness(parseInt(e.target.value))}
+              className="w-full accent-[#667eea]"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs text-gray-400 flex justify-between mb-1">
+              <span>Detail</span>
+              <span className="text-[#667eea]">{detail}</span>
+            </label>
+            <input
+              type="range"
+              min="100"
+              max="1000"
+              value={detail}
+              onChange={(e) => setDetail(parseInt(e.target.value))}
+              className="w-full accent-[#667eea]"
               />
             </div>
 
-            <div>
-              <label className="text-xs text-gray-400 flex justify-between">
-                <span>Детализация:</span>
-                <span className="text-[#6366f1]">{detail}</span>
-              </label>
-              <input
-                type="range"
-                min="100"
-                max="1000"
-                value={detail}
-                onChange={(e) => setDetail(parseInt(e.target.value))}
-                className="w-full mt-1"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs text-gray-400 flex justify-between">
-                <span>Время (обороты):</span>
-                <span className="text-[#6366f1]">{timeRotations}</span>
-              </label>
-              <input
-                type="range"
-                min="1"
-                max="30"
-                value={timeRotations}
-                onChange={(e) => setTimeRotations(parseInt(e.target.value))}
-                className="w-full mt-1"
-              />
-            </div>
+          <div>
+            <label className="text-xs text-gray-400 flex justify-between mb-1">
+              <span>Time (rotations)</span>
+              <span className="text-[#667eea]">{timeRotations}</span>
+            </label>
+            <input
+              type="range"
+              min="1"
+              max="30"
+              value={timeRotations}
+              onChange={(e) => setTimeRotations(parseInt(e.target.value))}
+              className="w-full accent-[#667eea]"
+            />
           </div>
         </div>
 
         {/* Export */}
         <div>
-          <h2 className="text-xs text-gray-500 uppercase tracking-wider mb-2">Экспорт 3D модели</h2>
-          <div className="space-y-2">
-            <button
-              onClick={exportSTL}
-              className="w-full py-3 px-4 bg-[#065f46] border border-[#10b981] rounded-lg text-white hover:bg-[#047857] transition-colors"
-            >
-              💾 Скачать STL
-            </button>
-            <button
-              onClick={exportOBJ}
-              className="w-full py-3 px-4 bg-[#065f46] border border-[#10b981] rounded-lg text-white hover:bg-[#047857] transition-colors"
-            >
-              💾 Скачать OBJ
-            </button>
-          </div>
-        </div>
-
-        {/* Harmonics info */}
-        <div>
-          <h2 className="text-xs text-gray-500 uppercase tracking-wider mb-2">Гармоники</h2>
-          <div className="text-xs text-gray-500 font-mono space-y-1">
-            {radii.map((r, i) => (
-              <div key={i}>A={r.amplitude.toFixed(0)}, f={r.frequency.toFixed(1)} Hz</div>
-            ))}
+          <h2 className="text-xs text-gray-400 uppercase tracking-wide mb-2">Export</h2>
+          <div className="flex gap-2">
+            <Button onClick={exportSTL} variant="secondary" size="sm" className="flex-1">
+              <Download size={12} className="mr-1" />
+              STL
+            </Button>
+            <Button onClick={exportOBJ} variant="secondary" size="sm" className="flex-1">
+              <Download size={12} className="mr-1" />
+              OBJ
+            </Button>
           </div>
         </div>
 
         {/* Controls hint */}
-        <div className="mt-auto pt-4 border-t border-[#2a2a3a] text-xs text-gray-500">
-          <p><kbd className="bg-[#333] px-1.5 py-0.5 rounded font-mono">ЛКМ</kbd> вращать</p>
-          <p className="mt-1"><kbd className="bg-[#333] px-1.5 py-0.5 rounded font-mono">Колесо</kbd> зум</p>
-          <p className="mt-1"><kbd className="bg-[#333] px-1.5 py-0.5 rounded font-mono">Esc</kbd> закрыть</p>
+        <div className="mt-auto pt-3 border-t border-[#2a2a2a] text-[10px] text-gray-500 space-y-0.5">
+          <p>Drag to rotate • Scroll to zoom • Esc to close</p>
         </div>
       </div>
 
