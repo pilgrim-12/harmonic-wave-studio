@@ -38,7 +38,11 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
   const isDraggingRef = useRef(false);
   const previousMouseRef = useRef({ x: 0, y: 0 });
   const cameraAngleRef = useRef({ theta: 0, phi: Math.PI / 4 });
-  const cameraDistanceRef = useRef(600);
+
+  // Auto-calculate camera distance based on total amplitude
+  const totalAmplitude = radii.reduce((sum, r) => sum + r.amplitude, 0);
+  const autoDistance = Math.max(100, totalAmplitude * 3);
+  const cameraDistanceRef = useRef(autoDistance);
 
   // Helper: calculate point at time t
   const getPoint = useCallback(
@@ -283,9 +287,11 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
     scene.background = new THREE.Color(0x0a0a0a);
     sceneRef.current = scene;
 
-    // Camera
-    const camera = new THREE.PerspectiveCamera(60, width / height, 1, 5000);
+    // Camera - auto-scale far plane based on scene size
+    const sceneScale = autoDistance * 2;
+    const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, sceneScale * 10);
     cameraRef.current = camera;
+    cameraDistanceRef.current = autoDistance;
     updateCameraPosition();
 
     // Renderer
@@ -295,37 +301,40 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // Lights - enhanced for better visibility (scaled for larger scene)
+    // Lights - scaled based on scene size
+    const lightScale = autoDistance;
+
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
 
     // Main directional light (sun-like)
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    directionalLight.position.set(500, 800, 500);
+    directionalLight.position.set(lightScale, lightScale * 1.5, lightScale);
     directionalLight.castShadow = true;
     scene.add(directionalLight);
 
     // Fill light from opposite side
     const directionalLight2 = new THREE.DirectionalLight(0x667eea, 0.6);
-    directionalLight2.position.set(-500, 300, -500);
+    directionalLight2.position.set(-lightScale, lightScale * 0.5, -lightScale);
     scene.add(directionalLight2);
 
     // Top light for better definition
     const topLight = new THREE.DirectionalLight(0xffffff, 0.4);
-    topLight.position.set(0, 1000, 0);
+    topLight.position.set(0, lightScale * 2, 0);
     scene.add(topLight);
 
     // Point light for highlights
-    const pointLight = new THREE.PointLight(0x764ba2, 0.8, 2000);
-    pointLight.position.set(200, 200, 200);
+    const pointLight = new THREE.PointLight(0x764ba2, 0.8, lightScale * 4);
+    pointLight.position.set(lightScale * 0.5, lightScale * 0.5, lightScale * 0.5);
     scene.add(pointLight);
 
-    // Grid helper (larger scale)
-    const gridHelper = new THREE.GridHelper(1000, 20, 0x333333, 0x222222);
+    // Grid helper - scaled to scene
+    const gridSize = Math.max(500, totalAmplitude * 4);
+    const gridHelper = new THREE.GridHelper(gridSize, 20, 0x333333, 0x222222);
     scene.add(gridHelper);
 
-    // Axes helper (larger)
-    const axesHelper = new THREE.AxesHelper(200);
+    // Axes helper - scaled to scene
+    const axesHelper = new THREE.AxesHelper(gridSize / 5);
     scene.add(axesHelper);
 
     // Animation loop
@@ -358,7 +367,7 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
         container.removeChild(renderer.domElement);
       }
     };
-  }, [updateCameraPosition]);
+  }, [updateCameraPosition, autoDistance, totalAmplitude]);
 
   // Rebuild mesh when parameters change
   useEffect(() => {
@@ -399,9 +408,12 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
+      const minDist = autoDistance * 0.3;
+      const maxDist = autoDistance * 5;
+      const zoomSpeed = autoDistance * 0.01;
       cameraDistanceRef.current = Math.max(
-        100,
-        Math.min(2000, cameraDistanceRef.current + e.deltaY * 0.5)
+        minDist,
+        Math.min(maxDist, cameraDistanceRef.current + e.deltaY * zoomSpeed)
       );
       updateCameraPosition();
     };
@@ -417,7 +429,7 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
       window.removeEventListener("mouseup", handleMouseUp);
       container.removeEventListener("wheel", handleWheel);
     };
-  }, [updateCameraPosition]);
+  }, [updateCameraPosition, autoDistance]);
 
   // Keyboard handler for Escape
   useEffect(() => {
