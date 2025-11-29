@@ -101,18 +101,22 @@ export const VisualizationCanvas: React.FC = () => {
       // Очистка
       clearCanvas(ctx, canvas.width, canvas.height);
 
-      // ✅ Сетка - ВСЕГДА показываем
-      drawGrid(
-        ctx,
-        centerX,
-        centerY,
-        canvas.width,
-        canvas.height,
-        settings.gridSize
-      );
+      // Сетка - если включена
+      if (settings.showGrid) {
+        drawGrid(
+          ctx,
+          centerX,
+          centerY,
+          canvas.width,
+          canvas.height,
+          settings.gridSize
+        );
+      }
 
-      // ✅ Оси - ВСЕГДА показываем
-      drawAxes(ctx, centerX, centerY, canvas.width, canvas.height);
+      // Оси - если включены
+      if (settings.showAxes) {
+        drawAxes(ctx, centerX, centerY, canvas.width, canvas.height);
+      }
 
       // Apply zoom transform ТОЛЬКО для радиусов и следа
       ctx.save();
@@ -175,8 +179,10 @@ export const VisualizationCanvas: React.FC = () => {
         trailsRef.current.clear();
       }
 
-      // Рисуем радиусы с выделением активной ветки
-      drawAllRadii(ctx, positions, radii, activeTrackingRadiusId);
+      // Рисуем радиусы с выделением активной ветки (если включено)
+      if (settings.showRadii) {
+        drawAllRadii(ctx, positions, radii, activeTrackingRadiusId);
+      }
 
       // Restore transform
       ctx.restore();

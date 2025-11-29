@@ -28,6 +28,9 @@ export interface SimulationSettings {
   /** Размер сетки в пикселях */
   gridSize: number;
 
+  /** Показывать ли радиусы/векторы */
+  showRadii: boolean;
+
   /** Zoom level (0.1 - 2.0) */
   zoom: number;
 

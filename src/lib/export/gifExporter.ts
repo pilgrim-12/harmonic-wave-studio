@@ -19,6 +19,13 @@ export interface GifExportProgress {
 }
 
 /**
+ * Wait for next animation frame
+ */
+function waitForFrame(): Promise<number> {
+  return new Promise(resolve => requestAnimationFrame(resolve));
+}
+
+/**
  * Captures animation frames from a canvas and exports as GIF
  *
  * @param getCanvas Function that returns the canvas element
@@ -45,14 +52,15 @@ export async function exportCanvasGIF(
 
   const totalFrames = Math.ceil(duration * fps);
   const frameDelay = 1000 / fps;
+  const frameInterval = Math.max(1, Math.round(60 / fps)); // Frames to skip at 60fps
 
   // Determine output dimensions
   const outputWidth = width || canvas.width;
   const outputHeight = height || canvas.height;
 
-  // Create GIF encoder
+  // Create GIF encoder with more workers for faster processing
   const gif = new GIF({
-    workers: 2,
+    workers: 4,
     quality,
     width: outputWidth,
     height: outputHeight,
@@ -72,54 +80,49 @@ export async function exportCanvasGIF(
   // Reset and start simulation
   resetSimulation();
 
-  // Wait a bit for reset to take effect
-  await new Promise(resolve => setTimeout(resolve, 100));
+  // Wait for reset to take effect
+  await waitForFrame();
+  await waitForFrame();
 
   playSimulation();
 
-  // Capture frames
-  const frames: ImageData[] = [];
+  // Capture frames using requestAnimationFrame for better performance
+  let framesCaptured = 0;
+  let frameCounter = 0;
 
-  for (let i = 0; i < totalFrames; i++) {
-    // Wait for next frame timing
-    await new Promise(resolve => setTimeout(resolve, frameDelay));
+  while (framesCaptured < totalFrames) {
+    await waitForFrame();
+    frameCounter++;
 
-    const currentCanvas = getCanvas();
-    if (!currentCanvas) {
-      throw new Error("Canvas lost during capture");
+    // Only capture at the target FPS rate
+    if (frameCounter >= frameInterval) {
+      frameCounter = 0;
+
+      const currentCanvas = getCanvas();
+      if (!currentCanvas) {
+        throw new Error("Canvas lost during capture");
+      }
+
+      // Draw to temp canvas (handles resizing)
+      tempCtx.fillStyle = "#0d0d0d";
+      tempCtx.fillRect(0, 0, outputWidth, outputHeight);
+      tempCtx.drawImage(currentCanvas, 0, 0, outputWidth, outputHeight);
+
+      // Add frame directly to GIF (more efficient than storing)
+      gif.addFrame(tempCtx, { delay: frameDelay, copy: true });
+
+      framesCaptured++;
+
+      // Report progress
+      onProgress?.({
+        phase: "capturing",
+        progress: Math.round((framesCaptured / totalFrames) * 100),
+      });
     }
-
-    // Draw to temp canvas (handles resizing)
-    tempCtx.fillStyle = "#000000";
-    tempCtx.fillRect(0, 0, outputWidth, outputHeight);
-    tempCtx.drawImage(currentCanvas, 0, 0, outputWidth, outputHeight);
-
-    // Get image data
-    const imageData = tempCtx.getImageData(0, 0, outputWidth, outputHeight);
-    frames.push(imageData);
-
-    // Report progress
-    onProgress?.({
-      phase: "capturing",
-      progress: Math.round(((i + 1) / totalFrames) * 100),
-    });
   }
 
   // Stop simulation after capturing
   stopSimulation();
-
-  // Add frames to GIF
-  for (const frame of frames) {
-    // Create a temporary canvas for this frame
-    const frameCanvas = document.createElement("canvas");
-    frameCanvas.width = outputWidth;
-    frameCanvas.height = outputHeight;
-    const frameCtx = frameCanvas.getContext("2d");
-    if (frameCtx) {
-      frameCtx.putImageData(frame, 0, 0);
-      gif.addFrame(frameCanvas, { delay: frameDelay, copy: true });
-    }
-  }
 
   // Render GIF
   return new Promise((resolve, reject) => {

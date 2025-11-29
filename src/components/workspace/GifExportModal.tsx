@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import { X, Film, Loader2 } from "lucide-react";
+import { X, Film, Loader2, Grid3X3, Move } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import {
   exportCanvasGIF,
@@ -20,20 +20,32 @@ export const GifExportModal: React.FC<GifExportModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const [duration, setDuration] = useState(3);
-  const [fps, setFps] = useState(15);
+  const [duration, setDuration] = useState(5);
+  const [fps, setFps] = useState(20);
   const [quality, setQuality] = useState(10);
+  const [showGrid, setShowGrid] = useState(false);
+  const [showRadii, setShowRadii] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
   const [progress, setProgress] = useState<GifExportProgress | null>(null);
 
-  const { play, stop, reset, activeTrackingRadiusId } = useSimulationStore();
+  const { play, stop, reset, activeTrackingRadiusId, settings, updateSettings } = useSimulationStore();
 
   const handleExport = useCallback(async () => {
     setIsExporting(true);
     setProgress({ phase: "capturing", progress: 0 });
 
+    // Save original settings
+    const originalShowGrid = settings.showGrid;
+    const originalShowRadii = settings.showRadii;
+
     try {
       const trackingId = activeTrackingRadiusId;
+
+      // Apply export settings
+      updateSettings({ showGrid, showRadii });
+
+      // Small delay to let settings apply
+      await new Promise(resolve => setTimeout(resolve, 50));
 
       const blob = await exportCanvasGIF(
         () => document.querySelector("canvas#main-canvas") as HTMLCanvasElement,
@@ -60,16 +72,20 @@ export const GifExportModal: React.FC<GifExportModalProps> = ({
       console.error("GIF export failed:", error);
       alert(`Failed to export GIF: ${error}`);
     } finally {
+      // Restore original settings
+      updateSettings({ showGrid: originalShowGrid, showRadii: originalShowRadii });
       setIsExporting(false);
       setProgress(null);
     }
-  }, [duration, fps, quality, play, stop, reset, activeTrackingRadiusId, onClose]);
+  }, [duration, fps, quality, showGrid, showRadii, play, stop, reset, activeTrackingRadiusId, settings, updateSettings, onClose]);
 
   if (!isOpen) return null;
 
+  const totalFrames = Math.ceil(duration * fps);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-      <div className="bg-[#1a1a1a] rounded-xl border border-[#333] w-[400px] max-w-[95vw] overflow-hidden shadow-2xl">
+      <div className="bg-[#1a1a1a] rounded-xl border border-[#333] w-[420px] max-w-[95vw] overflow-hidden shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-[#333]">
           <div className="flex items-center gap-2">
@@ -95,8 +111,8 @@ export const GifExportModal: React.FC<GifExportModalProps> = ({
             <input
               type="range"
               min={1}
-              max={10}
-              step={0.5}
+              max={30}
+              step={1}
               value={duration}
               onChange={(e) => setDuration(Number(e.target.value))}
               disabled={isExporting}
@@ -105,7 +121,7 @@ export const GifExportModal: React.FC<GifExportModalProps> = ({
             <div className="flex justify-between text-xs text-gray-500 mt-1">
               <span>1s</span>
               <span className="text-purple-400 font-medium">{duration}s</span>
-              <span>10s</span>
+              <span>30s</span>
             </div>
           </div>
 
@@ -153,16 +169,49 @@ export const GifExportModal: React.FC<GifExportModalProps> = ({
             </div>
           </div>
 
+          {/* Display Options */}
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">
+              Display Options
+            </label>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowGrid(!showGrid)}
+                disabled={isExporting}
+                className={`flex-1 py-2 px-3 rounded text-sm transition-colors flex items-center justify-center gap-2 ${
+                  showGrid
+                    ? "bg-purple-600 text-white"
+                    : "bg-[#2a2a2a] text-gray-400 hover:bg-[#333]"
+                } disabled:opacity-50`}
+              >
+                <Grid3X3 size={14} />
+                Grid
+              </button>
+              <button
+                onClick={() => setShowRadii(!showRadii)}
+                disabled={isExporting}
+                className={`flex-1 py-2 px-3 rounded text-sm transition-colors flex items-center justify-center gap-2 ${
+                  showRadii
+                    ? "bg-purple-600 text-white"
+                    : "bg-[#2a2a2a] text-gray-400 hover:bg-[#333]"
+                } disabled:opacity-50`}
+              >
+                <Move size={14} />
+                Vectors
+              </button>
+            </div>
+          </div>
+
           {/* Estimate */}
           <div className="bg-[#252525] rounded-lg p-3 text-sm">
             <div className="flex justify-between text-gray-400">
               <span>Total frames:</span>
-              <span className="text-white">{Math.ceil(duration * fps)}</span>
+              <span className="text-white">{totalFrames}</span>
             </div>
             <div className="flex justify-between text-gray-400 mt-1">
-              <span>Estimated file size:</span>
+              <span>Estimated time:</span>
               <span className="text-white">
-                ~{Math.round((duration * fps * 50) / 1024)} KB - {Math.round((duration * fps * 150) / 1024)} KB
+                ~{Math.round(totalFrames / 10)}s capture + {Math.round(totalFrames / 20)}s render
               </span>
             </div>
           </div>
@@ -173,7 +222,7 @@ export const GifExportModal: React.FC<GifExportModalProps> = ({
               <div className="flex justify-between text-sm">
                 <span className="text-gray-400">
                   {progress.phase === "capturing"
-                    ? "Capturing frames..."
+                    ? `Capturing frames... (${Math.round(progress.progress * totalFrames / 100)}/${totalFrames})`
                     : "Rendering GIF..."}
                 </span>
                 <span className="text-purple-400">{progress.progress}%</span>

@@ -40,6 +40,7 @@ const DEFAULT_SETTINGS: SimulationSettings = {
   showAxes: true,
   showGrid: true,
   gridSize: 50,
+  showRadii: true,
   zoom: 1.0,
   signalSampleRate: 500, // NEW: Default 500 Hz
 };
