@@ -72,11 +72,13 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
   // Create tube geometry - trajectory as tube centerline
   const createTube = useCallback(
     (thicknessVal: number, detailVal: number, maxTime: number): THREE.Mesh => {
+      // Use more points for smoother curve
+      const numPoints = detailVal * 4;
       const points: THREE.Vector3[] = [];
 
       // Generate 3D curve with Z as time progression for tube
-      for (let i = 0; i <= detailVal; i++) {
-        const t = (i / detailVal) * maxTime;
+      for (let i = 0; i <= numPoints; i++) {
+        const t = (i / numPoints) * maxTime;
         let x = 0,
           y = 0;
 
@@ -87,17 +89,18 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
         }
 
         // Z progresses with time for 3D spiral effect
-        const zProgress = (i / detailVal) * 5; // 5 units of Z depth
-        points.push(new THREE.Vector3(x * autoScale, y * autoScale, zProgress));
+        const zProgress = (i / numPoints) * 6; // 6 units of Z depth
+        points.push(new THREE.Vector3(x * autoScale, y * autoScale, zProgress - 3));
       }
 
-      const curve = new THREE.CatmullRomCurve3(points);
+      // Use CatmullRom for smooth interpolation
+      const curve = new THREE.CatmullRomCurve3(points, false, 'catmullrom', 0.5);
 
       const geometry = new THREE.TubeGeometry(
         curve,
-        detailVal * 2,
-        thicknessVal * 0.15,
-        12,
+        numPoints,
+        thicknessVal * 0.12,
+        16,
         false
       );
 
@@ -116,10 +119,12 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
   // Create extrude geometry (contour extruded along z-axis)
   const createExtrude = useCallback(
     (heightVal: number, detailVal: number, maxTime: number): THREE.Mesh => {
+      // Use more points for smoother curve
+      const numPoints = detailVal * 3;
       const points2D: THREE.Vector2[] = [];
 
-      for (let i = 0; i <= detailVal; i++) {
-        const t = (i / detailVal) * maxTime;
+      for (let i = 0; i <= numPoints; i++) {
+        const t = (i / numPoints) * maxTime;
         let x = 0,
           y = 0;
 
@@ -132,14 +137,19 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
         points2D.push(new THREE.Vector2(x * autoScale, y * autoScale));
       }
 
-      const shape = new THREE.Shape(points2D);
+      // Create smooth spline curve from points
+      const curve = new THREE.SplineCurve(points2D);
+      const smoothPoints = curve.getPoints(numPoints);
+
+      const shape = new THREE.Shape(smoothPoints);
 
       const extrudeSettings = {
         depth: heightVal * 3,
         bevelEnabled: true,
-        bevelThickness: 0.08,
-        bevelSize: 0.08,
-        bevelSegments: 2,
+        bevelThickness: 0.12,
+        bevelSize: 0.1,
+        bevelSegments: 4,
+        curveSegments: 24,
       };
 
       const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
