@@ -15,7 +15,7 @@ interface TrajectoryPreviewProps {
  */
 export const TrajectoryPreview: React.FC<TrajectoryPreviewProps> = ({
   radii,
-  width = 300,
+  width = 200,
   height = 200,
   trailLength = 500,
 }) => {
@@ -105,10 +105,16 @@ export const TrajectoryPreview: React.FC<TrajectoryPreviewProps> = ({
   }
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="w-full h-full"
-      style={{ imageRendering: "crisp-edges" }}
-    />
+    <div className="w-full h-full flex items-center justify-center bg-[#0a0a0a]">
+      <canvas
+        ref={canvasRef}
+        style={{
+          imageRendering: "crisp-edges",
+          maxWidth: "100%",
+          maxHeight: "100%",
+          objectFit: "contain"
+        }}
+      />
+    </div>
   );
 };
