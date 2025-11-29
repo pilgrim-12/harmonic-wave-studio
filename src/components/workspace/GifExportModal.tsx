@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
-import { X, Film, Loader2, Grid3X3, Move, Zap } from "lucide-react";
+import React, { useState, useCallback, useMemo } from "react";
+import { X, Film, Loader2, Grid3X3, Move, Zap, Maximize2, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import {
   exportCanvasGIF,
@@ -16,13 +16,21 @@ interface GifExportModalProps {
   onClose: () => void;
 }
 
+type SizePreset = "small" | "medium" | "large";
+
+const SIZE_PRESETS: Record<SizePreset, { width: number; height: number; label: string }> = {
+  small: { width: 400, height: 300, label: "400×300" },
+  medium: { width: 640, height: 480, label: "640×480" },
+  large: { width: 800, height: 600, label: "800×600" },
+};
+
 export const GifExportModal: React.FC<GifExportModalProps> = ({
   isOpen,
   onClose,
 }) => {
   const [duration, setDuration] = useState(5);
-  const [fps, setFps] = useState(20);
-  const [quality, setQuality] = useState(10);
+  const [fps, setFps] = useState(15);
+  const [sizePreset, setSizePreset] = useState<SizePreset>("medium");
   const [showGrid, setShowGrid] = useState(false);
   const [showRadii, setShowRadii] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
@@ -31,15 +39,30 @@ export const GifExportModal: React.FC<GifExportModalProps> = ({
   const { settings, trackedRadiusIds } = useSimulationStore();
   const { radii } = useRadiusStore();
 
+  const totalFrames = useMemo(() => Math.ceil(duration * fps), [duration, fps]);
+  const selectedSize = SIZE_PRESETS[sizePreset];
+
+  // Estimate encoding time based on frame count and size
+  const estimatedTime = useMemo(() => {
+    const pixels = selectedSize.width * selectedSize.height;
+    const baseTime = (totalFrames * pixels) / 10000000; // rough estimate in seconds
+    if (baseTime < 5) return "< 5s";
+    if (baseTime < 15) return "~10s";
+    if (baseTime < 30) return "~20s";
+    if (baseTime < 60) return "~45s";
+    return "> 1min";
+  }, [totalFrames, selectedSize]);
+
   const handleExport = useCallback(async () => {
     setIsExporting(true);
     setProgress({ phase: "rendering", progress: 0 });
 
     try {
-      // Get canvas dimensions from main canvas
-      const mainCanvas = document.querySelector("canvas#main-canvas") as HTMLCanvasElement;
-      const width = mainCanvas?.width || 800;
-      const height = mainCanvas?.height || 600;
+      const { width, height } = selectedSize;
+
+      // Auto-adjust quality based on size for faster encoding
+      // Larger = higher quality number = faster but lower quality
+      const autoQuality = sizePreset === "large" ? 15 : sizePreset === "medium" ? 12 : 10;
 
       const blob = await exportCanvasGIF(
         radii,
@@ -47,7 +70,7 @@ export const GifExportModal: React.FC<GifExportModalProps> = ({
         {
           duration,
           fps,
-          quality,
+          quality: autoQuality,
           width,
           height,
           showGrid,
@@ -68,11 +91,9 @@ export const GifExportModal: React.FC<GifExportModalProps> = ({
       setIsExporting(false);
       setProgress(null);
     }
-  }, [duration, fps, quality, showGrid, showRadii, radii, trackedRadiusIds, settings, onClose]);
+  }, [duration, fps, sizePreset, selectedSize, showGrid, showRadii, radii, trackedRadiusIds, settings, onClose]);
 
   if (!isOpen) return null;
-
-  const totalFrames = Math.ceil(duration * fps);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
@@ -81,7 +102,7 @@ export const GifExportModal: React.FC<GifExportModalProps> = ({
         <div className="flex items-center justify-between px-4 py-3 border-b border-[#333]">
           <div className="flex items-center gap-2">
             <Film size={18} className="text-purple-400" />
-            <h2 className="text-white font-medium">Export GIF Animation</h2>
+            <h2 className="text-white font-medium">Export GIF</h2>
             <span className="px-1.5 py-0.5 text-[10px] bg-green-500/20 text-green-400 rounded flex items-center gap-1">
               <Zap size={10} />
               Fast
@@ -97,36 +118,31 @@ export const GifExportModal: React.FC<GifExportModalProps> = ({
         </div>
 
         {/* Content */}
-        <div className="p-4 space-y-4">
+        <div className="p-4 space-y-3">
           {/* Duration */}
           <div>
-            <label className="block text-sm text-gray-400 mb-1.5">
-              Duration (seconds)
+            <label className="block text-sm text-gray-400 mb-1">
+              Duration: <span className="text-purple-400 font-medium">{duration}s</span>
             </label>
             <input
               type="range"
               min={1}
-              max={60}
+              max={30}
               step={1}
               value={duration}
               onChange={(e) => setDuration(Number(e.target.value))}
               disabled={isExporting}
               className="w-full accent-purple-500"
             />
-            <div className="flex justify-between text-xs text-gray-500 mt-1">
-              <span>1s</span>
-              <span className="text-purple-400 font-medium">{duration}s</span>
-              <span>60s</span>
-            </div>
           </div>
 
           {/* FPS */}
           <div>
             <label className="block text-sm text-gray-400 mb-1.5">
-              Frame Rate (FPS)
+              Frame Rate
             </label>
             <div className="flex gap-2">
-              {[10, 15, 20, 30].map((f) => (
+              {[10, 15, 20].map((f) => (
                 <button
                   key={f}
                   onClick={() => setFps(f)}
@@ -137,37 +153,41 @@ export const GifExportModal: React.FC<GifExportModalProps> = ({
                       : "bg-[#2a2a2a] text-gray-400 hover:bg-[#333]"
                   } disabled:opacity-50`}
                 >
-                  {f}
+                  {f} fps
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Quality */}
+          {/* Size */}
           <div>
             <label className="block text-sm text-gray-400 mb-1.5">
-              Quality (lower = better)
+              Size
             </label>
-            <input
-              type="range"
-              min={1}
-              max={30}
-              value={quality}
-              onChange={(e) => setQuality(Number(e.target.value))}
-              disabled={isExporting}
-              className="w-full accent-purple-500"
-            />
-            <div className="flex justify-between text-xs text-gray-500 mt-1">
-              <span>Best</span>
-              <span className="text-purple-400 font-medium">{quality}</span>
-              <span>Fast</span>
+            <div className="flex gap-2">
+              {(Object.keys(SIZE_PRESETS) as SizePreset[]).map((preset) => (
+                <button
+                  key={preset}
+                  onClick={() => setSizePreset(preset)}
+                  disabled={isExporting}
+                  className={`flex-1 py-1.5 px-2 rounded text-sm transition-colors flex items-center justify-center gap-1 ${
+                    sizePreset === preset
+                      ? "bg-purple-600 text-white"
+                      : "bg-[#2a2a2a] text-gray-400 hover:bg-[#333]"
+                  } disabled:opacity-50`}
+                >
+                  {preset === "small" && <Minimize2 size={12} />}
+                  {preset === "large" && <Maximize2 size={12} />}
+                  {SIZE_PRESETS[preset].label}
+                </button>
+              ))}
             </div>
           </div>
 
           {/* Display Options */}
           <div>
-            <label className="block text-sm text-gray-400 mb-2">
-              Display Options
+            <label className="block text-sm text-gray-400 mb-1.5">
+              Display
             </label>
             <div className="flex gap-2">
               <button
@@ -197,15 +217,19 @@ export const GifExportModal: React.FC<GifExportModalProps> = ({
             </div>
           </div>
 
-          {/* Estimate */}
-          <div className="bg-[#252525] rounded-lg p-3 text-sm">
-            <div className="flex justify-between text-gray-400">
-              <span>Total frames:</span>
-              <span className="text-white">{totalFrames}</span>
+          {/* Stats */}
+          <div className="bg-[#252525] rounded-lg p-3 text-sm grid grid-cols-3 gap-2">
+            <div className="text-center">
+              <div className="text-gray-500 text-xs">Frames</div>
+              <div className="text-white font-medium">{totalFrames}</div>
             </div>
-            <div className="flex justify-between text-gray-400 mt-1">
-              <span>Tracked radii:</span>
-              <span className="text-white">{trackedRadiusIds.length || "none"}</span>
+            <div className="text-center">
+              <div className="text-gray-500 text-xs">Trails</div>
+              <div className="text-white font-medium">{trackedRadiusIds.length || 0}</div>
+            </div>
+            <div className="text-center">
+              <div className="text-gray-500 text-xs">Est. Time</div>
+              <div className="text-white font-medium">{estimatedTime}</div>
             </div>
           </div>
 
@@ -255,7 +279,7 @@ export const GifExportModal: React.FC<GifExportModalProps> = ({
             ) : (
               <>
                 <Film size={14} className="mr-1" />
-                Export GIF
+                Export
               </>
             )}
           </Button>
