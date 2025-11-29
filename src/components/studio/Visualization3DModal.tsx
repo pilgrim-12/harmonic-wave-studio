@@ -30,220 +30,187 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
 
   // Build parameters
   const [buildMethod, setBuildMethod] = useState<BuildMethod>("tube");
-  const [thickness, setThickness] = useState(0.5);
-  const [detail, setDetail] = useState(200);
-  const [timeRotations, setTimeRotations] = useState(5);
+  const [thickness, setThickness] = useState(10);
+  const [detail, setDetail] = useState(500);
+  const [timeRotations, setTimeRotations] = useState(10);
 
   // Camera control state
   const isDraggingRef = useRef(false);
   const previousMouseRef = useRef({ x: 0, y: 0 });
   const cameraAngleRef = useRef({ theta: 0, phi: Math.PI / 4 });
-  const cameraDistanceRef = useRef(15);
+  const cameraDistanceRef = useRef(600);
 
-  // Calculate total amplitude for auto-scaling
-  const totalAmplitude = radii.reduce((sum, r) => sum + r.amplitude, 0);
-  const autoScale = totalAmplitude > 0 ? 5 / totalAmplitude : 1;
+  // Helper: calculate point at time t
+  const getPoint = useCallback(
+    (t: number): { x: number; y: number } => {
+      let x = 0,
+        y = 0;
+      for (const r of radii) {
+        const angle = 2 * Math.PI * r.frequency * t + r.phase;
+        x += r.amplitude * Math.cos(angle);
+        y += r.amplitude * Math.sin(angle);
+      }
+      return { x, y };
+    },
+    [radii]
+  );
 
-  // Generate curve points from harmonics (flat XY trajectory for tube)
+  // Generate 2D curve points (like in demo)
   const generateCurvePoints = useCallback(
     (numPoints: number, maxTime: number): THREE.Vector3[] => {
       const points: THREE.Vector3[] = [];
-
       for (let i = 0; i <= numPoints; i++) {
         const t = (i / numPoints) * maxTime;
-        let x = 0,
-          y = 0;
-
-        for (const r of radii) {
-          const angle = 2 * Math.PI * r.frequency * t + r.phase;
-          x += r.amplitude * Math.cos(angle);
-          y += r.amplitude * Math.sin(angle);
-        }
-
-        // Scale to fit nicely in view, trajectory in XY plane
-        points.push(new THREE.Vector3(x * autoScale, y * autoScale, 0));
+        const p = getPoint(t);
+        points.push(new THREE.Vector3(p.x, p.y, 0));
       }
-
       return points;
     },
-    [radii, autoScale]
+    [getPoint]
   );
 
-  // Create tube geometry - trajectory as tube centerline
+  // 1. TUBE - trajectory as tube center (exactly like demo)
   const createTube = useCallback(
     (thicknessVal: number, detailVal: number, maxTime: number): THREE.Mesh => {
-      // Use more points for smoother curve
-      const numPoints = detailVal * 4;
-      const points: THREE.Vector3[] = [];
-
-      // Generate 3D curve with Z as time progression for tube
-      for (let i = 0; i <= numPoints; i++) {
-        const t = (i / numPoints) * maxTime;
-        let x = 0,
-          y = 0;
-
-        for (const r of radii) {
-          const angle = 2 * Math.PI * r.frequency * t + r.phase;
-          x += r.amplitude * Math.cos(angle);
-          y += r.amplitude * Math.sin(angle);
-        }
-
-        // Z progresses with time for 3D spiral effect
-        const zProgress = (i / numPoints) * 6; // 6 units of Z depth
-        points.push(new THREE.Vector3(x * autoScale, y * autoScale, zProgress - 3));
-      }
-
-      // Use CatmullRom for smooth interpolation
-      const curve = new THREE.CatmullRomCurve3(points, false, 'catmullrom', 0.5);
+      const points = generateCurvePoints(detailVal, maxTime);
+      const curve = new THREE.CatmullRomCurve3(points);
 
       const geometry = new THREE.TubeGeometry(
         curve,
-        numPoints,
-        thicknessVal * 0.12,
+        detailVal,
+        thicknessVal,
         16,
         false
       );
 
       const material = new THREE.MeshStandardMaterial({
-        color: 0x667eea,
-        roughness: 0.3,
-        metalness: 0.6,
+        color: 0x6366f1,
+        metalness: 0.3,
+        roughness: 0.4,
         side: THREE.DoubleSide,
       });
 
       return new THREE.Mesh(geometry, material);
     },
-    [radii, autoScale]
+    [generateCurvePoints]
   );
 
-  // Create extrude geometry (contour extruded along z-axis)
+  // 2. EXTRUDE - contour extruded upward (like demo)
   const createExtrude = useCallback(
     (heightVal: number, detailVal: number, maxTime: number): THREE.Mesh => {
-      // Use more points for smoother curve
-      const numPoints = detailVal * 3;
-      const points2D: THREE.Vector2[] = [];
-
-      for (let i = 0; i <= numPoints; i++) {
-        const t = (i / numPoints) * maxTime;
-        let x = 0,
-          y = 0;
-
-        for (const r of radii) {
-          const angle = 2 * Math.PI * r.frequency * t + r.phase;
-          x += r.amplitude * Math.cos(angle);
-          y += r.amplitude * Math.sin(angle);
-        }
-
-        points2D.push(new THREE.Vector2(x * autoScale, y * autoScale));
-      }
-
-      // Create smooth spline curve from points
-      const curve = new THREE.SplineCurve(points2D);
-      const smoothPoints = curve.getPoints(numPoints);
-
-      const shape = new THREE.Shape(smoothPoints);
-
-      const extrudeSettings = {
-        depth: heightVal * 3,
-        bevelEnabled: true,
-        bevelThickness: 0.12,
-        bevelSize: 0.1,
-        bevelSegments: 4,
-        curveSegments: 24,
-      };
-
-      const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-      geometry.translate(0, 0, -heightVal * 1.5);
-
-      const material = new THREE.MeshStandardMaterial({
-        color: 0x764ba2,
-        roughness: 0.4,
-        metalness: 0.5,
-        side: THREE.DoubleSide,
-      });
-
-      return new THREE.Mesh(geometry, material);
-    },
-    [radii, autoScale]
-  );
-
-  // Create lathe geometry (profile rotated around Y-axis)
-  const createLathe = useCallback(
-    (scaleVal: number, detailVal: number, maxTime: number): THREE.Mesh => {
       const points2D: THREE.Vector2[] = [];
 
       for (let i = 0; i <= detailVal; i++) {
         const t = (i / detailVal) * maxTime;
-        let x = 0,
-          y = 0;
-
-        for (const r of radii) {
-          const angle = 2 * Math.PI * r.frequency * t + r.phase;
-          x += r.amplitude * Math.cos(angle);
-          y += r.amplitude * Math.sin(angle);
-        }
-
-        const radius = Math.sqrt(x * x + y * y) * autoScale * scaleVal;
-        const height = (i / detailVal) * 6; // Height along Y axis
-        points2D.push(new THREE.Vector2(Math.abs(radius) + 0.05, height - 3));
+        const p = getPoint(t);
+        points2D.push(new THREE.Vector2(p.x, p.y));
       }
 
-      const geometry = new THREE.LatheGeometry(points2D, 48);
+      const shape = new THREE.Shape();
+      shape.moveTo(points2D[0].x, points2D[0].y);
+      for (let i = 1; i < points2D.length; i++) {
+        shape.lineTo(points2D[i].x, points2D[i].y);
+      }
+
+      const extrudeSettings = {
+        steps: 1,
+        depth: heightVal * 3,
+        bevelEnabled: true,
+        bevelThickness: 2,
+        bevelSize: 2,
+        bevelSegments: 3,
+      };
+
+      const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+      geometry.rotateX(-Math.PI / 2);
 
       const material = new THREE.MeshStandardMaterial({
-        color: 0x667eea,
-        roughness: 0.3,
-        metalness: 0.6,
+        color: 0x6366f1,
+        metalness: 0.3,
+        roughness: 0.4,
         side: THREE.DoubleSide,
       });
 
       return new THREE.Mesh(geometry, material);
     },
-    [radii, autoScale]
+    [getPoint]
   );
 
-  // Create surface geometry (wave surface)
+  // 3. LATHE - profile rotated around axis (like demo)
+  const createLathe = useCallback(
+    (scaleVal: number, detailVal: number, maxTime: number): THREE.Mesh => {
+      const points: THREE.Vector2[] = [];
+      const segments = Math.floor(detailVal / 2);
+
+      for (let i = 0; i <= segments; i++) {
+        const t = (i / segments) * maxTime * 0.5; // Half trajectory
+        const p = getPoint(t);
+        const r = Math.sqrt(p.x * p.x + p.y * p.y) * 0.5;
+        const y = (i / segments) * scaleVal * 3 - scaleVal * 1.5;
+        points.push(new THREE.Vector2(r, y));
+      }
+
+      const geometry = new THREE.LatheGeometry(points, 64);
+
+      const material = new THREE.MeshStandardMaterial({
+        color: 0x6366f1,
+        metalness: 0.3,
+        roughness: 0.4,
+        side: THREE.DoubleSide,
+      });
+
+      return new THREE.Mesh(geometry, material);
+    },
+    [getPoint]
+  );
+
+  // 4. SURFACE - radius becomes height (like demo)
   const createSurface = useCallback(
     (
       heightScaleVal: number,
       detailVal: number,
       maxTime: number
     ): THREE.Mesh => {
-      const gridSize = Math.floor(Math.sqrt(detailVal)) + 10;
-      const geometry = new THREE.PlaneGeometry(12, 12, gridSize, gridSize);
+      const gridSize = Math.floor(Math.sqrt(detailVal));
+      const geometry = new THREE.PlaneGeometry(400, 400, gridSize, gridSize);
       const positions = geometry.attributes.position;
 
+      // Pre-generate curve points for distance calculation
+      const curvePoints: { x: number; y: number }[] = [];
+      for (let i = 0; i <= 500; i++) {
+        const t = (i / 500) * maxTime;
+        curvePoints.push(getPoint(t));
+      }
+
       for (let i = 0; i < positions.count; i++) {
-        const px = positions.getX(i);
-        const pz = positions.getY(i);
-        const t = ((px + 6) / 12) * maxTime;
+        const x = positions.getX(i);
+        const y = positions.getY(i);
 
-        let waveX = 0,
-          waveY = 0;
+        // Find closest point on curve
+        let minDist = Infinity;
+        curvePoints.forEach((cp) => {
+          const dist = Math.sqrt((x - cp.x) ** 2 + (y - cp.y) ** 2);
+          if (dist < minDist) minDist = dist;
+        });
 
-        for (const r of radii) {
-          const angle = 2 * Math.PI * r.frequency * t + r.phase + pz * 0.3;
-          waveX += r.amplitude * Math.cos(angle);
-          waveY += r.amplitude * Math.sin(angle);
-        }
-
-        const height = Math.sqrt(waveX * waveX + waveY * waveY) * autoScale * 0.3 * heightScaleVal;
-        positions.setZ(i, height);
+        // Height inversely proportional to distance
+        const z = Math.max(0, heightScaleVal * 2 - minDist * 0.5);
+        positions.setZ(i, z);
       }
 
       geometry.computeVertexNormals();
       geometry.rotateX(-Math.PI / 2);
 
       const material = new THREE.MeshStandardMaterial({
-        color: 0x764ba2,
+        color: 0x6366f1,
+        metalness: 0.3,
         roughness: 0.4,
-        metalness: 0.5,
         side: THREE.DoubleSide,
       });
 
       return new THREE.Mesh(geometry, material);
     },
-    [radii, autoScale]
+    [getPoint]
   );
 
   // Update camera position from angles
@@ -317,7 +284,7 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
     sceneRef.current = scene;
 
     // Camera
-    const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(60, width / height, 1, 5000);
     cameraRef.current = camera;
     updateCameraPosition();
 
@@ -328,37 +295,37 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // Lights - enhanced for better visibility
+    // Lights - enhanced for better visibility (scaled for larger scene)
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
 
     // Main directional light (sun-like)
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    directionalLight.position.set(10, 15, 10);
+    directionalLight.position.set(500, 800, 500);
     directionalLight.castShadow = true;
     scene.add(directionalLight);
 
     // Fill light from opposite side
     const directionalLight2 = new THREE.DirectionalLight(0x667eea, 0.6);
-    directionalLight2.position.set(-10, 5, -10);
+    directionalLight2.position.set(-500, 300, -500);
     scene.add(directionalLight2);
 
     // Top light for better definition
     const topLight = new THREE.DirectionalLight(0xffffff, 0.4);
-    topLight.position.set(0, 20, 0);
+    topLight.position.set(0, 1000, 0);
     scene.add(topLight);
 
     // Point light for highlights
-    const pointLight = new THREE.PointLight(0x764ba2, 0.8, 30);
-    pointLight.position.set(5, 5, 5);
+    const pointLight = new THREE.PointLight(0x764ba2, 0.8, 2000);
+    pointLight.position.set(200, 200, 200);
     scene.add(pointLight);
 
-    // Grid helper
-    const gridHelper = new THREE.GridHelper(20, 20, 0x333333, 0x222222);
+    // Grid helper (larger scale)
+    const gridHelper = new THREE.GridHelper(1000, 20, 0x333333, 0x222222);
     scene.add(gridHelper);
 
-    // Axes helper
-    const axesHelper = new THREE.AxesHelper(5);
+    // Axes helper (larger)
+    const axesHelper = new THREE.AxesHelper(200);
     scene.add(axesHelper);
 
     // Animation loop
@@ -433,8 +400,8 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       cameraDistanceRef.current = Math.max(
-        5,
-        Math.min(50, cameraDistanceRef.current + e.deltaY * 0.01)
+        100,
+        Math.min(2000, cameraDistanceRef.current + e.deltaY * 0.5)
       );
       updateCameraPosition();
     };
@@ -634,14 +601,14 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
           </label>
           <input
             type="range"
-            min="0.1"
-            max="2"
-            step="0.1"
+            min="1"
+            max="50"
+            step="1"
             value={thickness}
             onChange={(e) => setThickness(parseFloat(e.target.value))}
             className="w-full accent-[#667eea]"
           />
-          <div className="text-right text-xs text-gray-500">{thickness.toFixed(1)}</div>
+          <div className="text-right text-xs text-gray-500">{thickness}</div>
         </div>
 
         {/* Detail slider */}
@@ -651,9 +618,9 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
           </label>
           <input
             type="range"
-            min="50"
-            max="500"
-            step="10"
+            min="100"
+            max="1000"
+            step="50"
             value={detail}
             onChange={(e) => setDetail(parseInt(e.target.value))}
             className="w-full accent-[#667eea]"
@@ -669,7 +636,7 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
           <input
             type="range"
             min="1"
-            max="20"
+            max="30"
             step="1"
             value={timeRotations}
             onChange={(e) => setTimeRotations(parseInt(e.target.value))}
