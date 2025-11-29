@@ -90,7 +90,7 @@ export const CollapsibleBottomPanel: React.FC<CollapsibleBottomPanelProps> = ({
   return (
     <div
       ref={panelRef}
-      className="flex-shrink-0 relative w-full flex flex-col"
+      className="flex-shrink-0 relative w-full"
       style={{ height: `${height}px` }}
     >
       {/* Resize handle at top */}
@@ -102,26 +102,20 @@ export const CollapsibleBottomPanel: React.FC<CollapsibleBottomPanelProps> = ({
         title="Drag to resize"
       />
 
-      {/* Header with title and collapse button */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#1a1a1a]/80 border-t border-[#2a2a2a] flex-shrink-0">
-        <div className="flex items-center gap-2 min-w-0">
-          {icon || <BarChart2 size={14} className="text-[#667eea]" />}
-          <h3 className="text-sm font-medium text-gray-400">{title}</h3>
-        </div>
-        <button
-          onClick={() => setIsCollapsed(true)}
-          className="p-1 hover:bg-[#2a2a2a] rounded transition-colors group"
-          title="Collapse graphs panel"
-        >
-          <ChevronDown
-            size={14}
-            className="text-gray-400 group-hover:text-white transition-colors"
-          />
-        </button>
-      </div>
+      {/* Collapse button - small, in corner */}
+      <button
+        onClick={() => setIsCollapsed(true)}
+        className="absolute top-2 right-2 z-20 p-1.5 bg-[#2a2a2a]/80 hover:bg-[#333] rounded transition-colors group"
+        title="Collapse graphs panel"
+      >
+        <ChevronDown
+          size={14}
+          className="text-gray-400 group-hover:text-white transition-colors"
+        />
+      </button>
 
-      {/* Content */}
-      <div className="flex-1 min-h-0 overflow-hidden">
+      {/* Content - full height */}
+      <div className="h-full overflow-hidden">
         {children}
       </div>
     </div>
