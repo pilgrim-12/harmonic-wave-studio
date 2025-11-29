@@ -1,4 +1,5 @@
-import { pipeline, TextGenerationPipeline } from "@xenova/transformers";
+// Dynamic import to avoid SSR issues with transformers.js
+// The library will be loaded only when AI generation is requested
 
 // Pattern parameters for a single radius
 export interface GeneratedRadius {
@@ -22,7 +23,8 @@ export type ProgressCallback = (progress: {
 }) => void;
 
 // Singleton generator instance
-let generator: TextGenerationPipeline | null = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let generator: any = null;
 let isLoading = false;
 
 // Color palette for generated patterns
@@ -273,11 +275,17 @@ function generateRandomPattern(): GeneratedPattern {
 
 /**
  * Initialize the text generation model
+ * Uses dynamic import to avoid SSR issues
  */
 export async function initializeGenerator(
   onProgress?: ProgressCallback
 ): Promise<void> {
   if (generator || isLoading) return;
+
+  // Only run on client side
+  if (typeof window === "undefined") {
+    return;
+  }
 
   isLoading = true;
   onProgress?.({
@@ -287,6 +295,9 @@ export async function initializeGenerator(
   });
 
   try {
+    // Dynamic import to avoid SSR issues
+    const { pipeline } = await import("@xenova/transformers");
+
     // Using a small, fast model
     generator = await pipeline(
       "text-generation",
