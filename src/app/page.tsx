@@ -179,11 +179,11 @@ export default function LandingPage() {
             <div className="bg-[#1a1a1a] rounded-lg border border-gray-800 hover:border-[#667eea] transition-all overflow-hidden group">
               <div className="h-40 overflow-hidden">
                 <Image
-                  src="/screenshots/filters-panel.jpg"
+                  src="/screenshots/signal-graph.jpg"
                   alt="Digital Filters"
                   width={600}
                   height={300}
-                  className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
               <div className="p-6">
@@ -229,11 +229,11 @@ export default function LandingPage() {
             <div className="bg-[#1a1a1a] rounded-lg border border-gray-800 hover:border-[#667eea] transition-all overflow-hidden group">
               <div className="h-40 overflow-hidden">
                 <Image
-                  src="/screenshots/formula-panel.jpg"
-                  alt="Mathematical Formulas"
+                  src="/screenshots/presets.jpg"
+                  alt="Presets and Export"
                   width={600}
                   height={300}
-                  className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
               <div className="p-6">
@@ -241,11 +241,11 @@ export default function LandingPage() {
                   <Download className="text-red-400" size={24} />
                 </div>
                 <h3 className="text-xl font-semibold text-white mb-2">
-                  Math Formulas & Export
+                  Presets & Export
                 </h3>
                 <p className="text-gray-400">
-                  Get the mathematical formula of your signal in LaTeX or Mathematica
-                  format. Export as JSON, CSV, or PNG.
+                  Start with classic waveforms like Square, Sawtooth, Triangle.
+                  Export as JSON, CSV, or PNG images.
                 </p>
               </div>
             </div>
@@ -254,11 +254,11 @@ export default function LandingPage() {
             <div className="bg-[#1a1a1a] rounded-lg border border-gray-800 hover:border-[#667eea] transition-all overflow-hidden group">
               <div className="h-40 overflow-hidden">
                 <Image
-                  src="/screenshots/gallery-featured.jpg"
+                  src="/screenshots/gallery-all.jpg"
                   alt="Community Gallery"
                   width={600}
                   height={300}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
               <div className="p-6">
