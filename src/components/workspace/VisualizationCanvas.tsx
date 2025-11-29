@@ -276,6 +276,7 @@ export const VisualizationCanvas: React.FC = () => {
 
   return (
     <canvas
+      id="main-canvas"
       ref={canvasRef}
       className="w-full h-full"
       style={{ imageRendering: "crisp-edges" }}

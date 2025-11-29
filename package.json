@@ -9,11 +9,13 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@types/gif.js": "^0.2.5",
     "@types/three": "^0.181.0",
     "@vercel/analytics": "^1.5.0",
     "clsx": "^2.1.1",
     "fft.js": "^4.0.4",
     "firebase": "^12.5.0",
+    "gif.js": "^0.2.0",
     "lucide-react": "^0.548.0",
     "mathjs": "^15.0.0",
     "next": "16.0.1",
