@@ -72,46 +72,26 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
   const previousMouseRef = useRef({ x: 0, y: 0 });
   const sphericalRef = useRef({ theta: Math.PI / 4, phi: Math.PI / 4, radius: 600 });
 
-  // Calculate point at time t using only active/enabled radii
-  const getPoint = useCallback((t: number): { x: number; y: number } => {
+  // Calculate cumulative point at time t up to and including radius at index
+  // This is how epicycles work - each radius adds to the previous position
+  const getPointUpToIndex = useCallback((t: number, upToIndex: number): { x: number; y: number } => {
     let x = 0, y = 0;
-    activeRadii.forEach(h => {
-      x += h.amplitude * Math.cos(2 * Math.PI * h.frequency * t + h.phase);
-      y += h.amplitude * Math.sin(2 * Math.PI * h.frequency * t + h.phase);
-    });
+    for (let i = 0; i <= upToIndex; i++) {
+      const h = activeRadii[i];
+      if (h) {
+        x += h.amplitude * Math.cos(2 * Math.PI * h.frequency * t + h.phase);
+        y += h.amplitude * Math.sin(2 * Math.PI * h.frequency * t + h.phase);
+      }
+    }
     return { x, y };
   }, [activeRadii]);
 
-  // Get blended color at position based on which radii contribute most
-  const getColorAtTime = useCallback((t: number): string => {
-    if (colorMode === "uniform") return "#6366f1";
-    if (colorMode === "gradient") {
-      // Use time-based gradient
-      const hue = (t * 30) % 360;
-      return `hsl(${hue}, 70%, 60%)`;
-    }
-    // Original mode: blend colors based on contribution
-    if (activeRadii.length === 0) return "#6366f1";
-    if (activeRadii.length === 1) return activeRadii[0].color;
+  // Calculate point at time t using ALL active/enabled radii (for combined mode)
+  const getPoint = useCallback((t: number): { x: number; y: number } => {
+    return getPointUpToIndex(t, activeRadii.length - 1);
+  }, [activeRadii, getPointUpToIndex]);
 
-    // Calculate weighted color based on amplitude contribution
-    let totalAmp = 0;
-    activeRadii.forEach(r => totalAmp += r.amplitude);
-    if (totalAmp === 0) return activeRadii[0].color;
-
-    // Use the color of the radius with largest amplitude at center
-    let maxAmp = 0;
-    let dominantColor = activeRadii[0].color;
-    activeRadii.forEach(r => {
-      if (r.amplitude > maxAmp) {
-        maxAmp = r.amplitude;
-        dominantColor = r.color;
-      }
-    });
-    return dominantColor;
-  }, [activeRadii, colorMode]);
-
-  // Generate 2D curve points - exactly like demo
+  // Generate 2D curve points for all radii combined
   const generateCurvePoints = useCallback((numPoints: number, maxTime: number): THREE.Vector3[] => {
     const points: THREE.Vector3[] = [];
     for (let i = 0; i <= numPoints; i++) {
@@ -122,6 +102,17 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
     return points;
   }, [getPoint]);
 
+  // Generate curve points for trajectory up to specific radius index
+  const generateCurvePointsForRadius = useCallback((numPoints: number, maxTime: number, radiusIndex: number): THREE.Vector3[] => {
+    const points: THREE.Vector3[] = [];
+    for (let i = 0; i <= numPoints; i++) {
+      const t = (i / numPoints) * maxTime;
+      const p = getPointUpToIndex(t, radiusIndex);
+      points.push(new THREE.Vector3(p.x, p.y, 0));
+    }
+    return points;
+  }, [getPointUpToIndex]);
+
   // 1. TUBE - exactly like demo
   const createTube = useCallback((thicknessVal: number, detailVal: number, maxTime: number): THREE.BufferGeometry => {
     const points = generateCurvePoints(detailVal, maxTime);
@@ -129,6 +120,14 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
     const geometry = new THREE.TubeGeometry(curve, detailVal, thicknessVal, 16, false);
     return geometry;
   }, [generateCurvePoints]);
+
+  // Create tube for specific radius trajectory
+  const createTubeForRadius = useCallback((thicknessVal: number, detailVal: number, maxTime: number, radiusIndex: number): THREE.BufferGeometry => {
+    const points = generateCurvePointsForRadius(detailVal, maxTime, radiusIndex);
+    const curve = new THREE.CatmullRomCurve3(points);
+    const geometry = new THREE.TubeGeometry(curve, detailVal, thicknessVal, 16, false);
+    return geometry;
+  }, [generateCurvePointsForRadius]);
 
   // 2. EXTRUDE - exactly like demo
   const createExtrude = useCallback((height: number, detailVal: number, maxTime: number): THREE.BufferGeometry => {
@@ -217,7 +216,7 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
     cameraRef.current.lookAt(0, 0, 0);
   }, []);
 
-  // Rebuild mesh - like demo's updateMesh
+  // Rebuild mesh - creates separate tube for each radius with its own color
   const rebuildMesh = useCallback(() => {
     if (!sceneRef.current) return;
 
@@ -240,72 +239,114 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
     }
 
     const maxTime = timeRotations;
-    let geometry: THREE.BufferGeometry;
+    const group = new THREE.Group();
 
-    switch (buildMethod) {
-      case "tube":
-        geometry = createTube(thickness, detail, maxTime);
-        break;
-      case "extrude":
-        geometry = createExtrude(thickness * 3, detail, maxTime);
-        break;
-      case "lathe":
-        geometry = createLathe(thickness * 2, detail, maxTime);
-        break;
-      case "surface":
-        geometry = createSurface(thickness * 2, detail, maxTime);
-        break;
-      default:
-        geometry = createTube(thickness, detail, maxTime);
-    }
+    // For Tube mode with Original colors: create separate tube for each radius
+    if (buildMethod === "tube" && colorMode === "original") {
+      // Create a tube for each radius showing cumulative trajectory
+      activeRadii.forEach((radius, index) => {
+        const geometry = createTubeForRadius(thickness, detail, maxTime, index);
 
-    // Get color based on mode
-    const mainColor = getColorAtTime(0);
-    const colorHex = new THREE.Color(mainColor);
+        const material = new THREE.MeshStandardMaterial({
+          color: new THREE.Color(radius.color),
+          metalness: 0.3,
+          roughness: 0.4,
+          side: THREE.DoubleSide,
+        });
 
-    const material = new THREE.MeshStandardMaterial({
-      color: colorHex,
-      metalness: 0.3,
-      roughness: 0.4,
-      side: THREE.DoubleSide,
-    });
+        const mesh = new THREE.Mesh(geometry, material);
 
-    // For tube with gradient/original colors, add vertex colors
-    if (buildMethod === "tube" && colorMode !== "uniform") {
-      const positions = geometry.attributes.position;
-      const colors = new Float32Array(positions.count * 3);
+        // Add subtle wireframe overlay
+        const wireframeMaterial = new THREE.MeshBasicMaterial({
+          color: new THREE.Color(radius.color).multiplyScalar(1.3),
+          wireframe: true,
+          transparent: true,
+          opacity: 0.05,
+        });
+        const wireframe = new THREE.Mesh(geometry.clone(), wireframeMaterial);
+        mesh.add(wireframe);
 
-      for (let i = 0; i < positions.count; i++) {
-        // Estimate time based on position along tube
-        const t = (i / positions.count) * maxTime;
-        const color = new THREE.Color(getColorAtTime(t));
-        colors[i * 3] = color.r;
-        colors[i * 3 + 1] = color.g;
-        colors[i * 3 + 2] = color.b;
+        group.add(mesh);
+      });
+    } else {
+      // For other modes: create single combined geometry
+      let geometry: THREE.BufferGeometry;
+
+      switch (buildMethod) {
+        case "tube":
+          geometry = createTube(thickness, detail, maxTime);
+          break;
+        case "extrude":
+          geometry = createExtrude(thickness * 3, detail, maxTime);
+          break;
+        case "lathe":
+          geometry = createLathe(thickness * 2, detail, maxTime);
+          break;
+        case "surface":
+          geometry = createSurface(thickness * 2, detail, maxTime);
+          break;
+        default:
+          geometry = createTube(thickness, detail, maxTime);
       }
 
-      geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-      material.vertexColors = true;
+      // Determine color
+      let mainColor = "#6366f1";
+      if (colorMode === "uniform") {
+        mainColor = "#6366f1";
+      } else if (activeRadii.length > 0) {
+        // Use color of largest amplitude radius
+        let maxAmp = 0;
+        activeRadii.forEach(r => {
+          if (r.amplitude > maxAmp) {
+            maxAmp = r.amplitude;
+            mainColor = r.color;
+          }
+        });
+      }
+
+      const material = new THREE.MeshStandardMaterial({
+        color: new THREE.Color(mainColor),
+        metalness: 0.3,
+        roughness: 0.4,
+        side: THREE.DoubleSide,
+      });
+
+      // For tube with gradient colors, add vertex colors
+      if (buildMethod === "tube" && colorMode === "gradient") {
+        const positions = geometry.attributes.position;
+        const colors = new Float32Array(positions.count * 3);
+
+        for (let i = 0; i < positions.count; i++) {
+          const t = (i / positions.count) * maxTime;
+          const hue = (t * 30) % 360;
+          const color = new THREE.Color(`hsl(${hue}, 70%, 60%)`);
+          colors[i * 3] = color.r;
+          colors[i * 3 + 1] = color.g;
+          colors[i * 3 + 2] = color.b;
+        }
+
+        geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+        material.vertexColors = true;
+      }
+
+      const mesh = new THREE.Mesh(geometry, material);
+
+      // Add wireframe overlay
+      const wireframeMaterial = new THREE.MeshBasicMaterial({
+        color: 0xa78bfa,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.1,
+      });
+      const wireframe = new THREE.Mesh(geometry.clone(), wireframeMaterial);
+      mesh.add(wireframe);
+
+      group.add(mesh);
     }
-
-    const group = new THREE.Group();
-    const mesh = new THREE.Mesh(geometry, material);
-
-    // Add wireframe overlay like demo
-    const wireframeMaterial = new THREE.MeshBasicMaterial({
-      color: 0xa78bfa,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.1,
-    });
-    const wireframe = new THREE.Mesh(geometry.clone(), wireframeMaterial);
-
-    group.add(mesh);
-    group.add(wireframe);
 
     sceneRef.current.add(group);
     meshGroupRef.current = group;
-  }, [buildMethod, thickness, detail, timeRotations, activeRadii, colorMode, createTube, createExtrude, createLathe, createSurface, getColorAtTime]);
+  }, [buildMethod, thickness, detail, timeRotations, activeRadii, colorMode, createTube, createTubeForRadius, createExtrude, createLathe, createSurface]);
 
   // Initialize scene - exactly like demo
   useEffect(() => {
