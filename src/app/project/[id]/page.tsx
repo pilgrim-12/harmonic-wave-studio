@@ -11,12 +11,14 @@ import {
   Eye,
   Play,
   FolderOpen,
+  FunctionSquare,
 } from "lucide-react";
 import { getSharedProject, incrementViewCount } from "@/services/shareService";
 import { SharedProject } from "@/types/share";
 import { Button } from "@/components/ui/Button";
 import { useRadiusStore } from "@/store/radiusStore";
 import { TrajectoryPreview } from "@/components/gallery/TrajectoryPreview";
+import { FormulaDisplay } from "@/components/studio/FormulaDisplay";
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 
@@ -226,6 +228,11 @@ export default function SharedProjectPage() {
           <div className="h-64 bg-[#0a0a0a] rounded-lg overflow-hidden">
             <TrajectoryPreview radii={project.radii} trailLength={800} />
           </div>
+        </div>
+
+        {/* Signal Formula */}
+        <div className="mb-6">
+          <FormulaDisplay radii={project.radii} />
         </div>
 
         {/* Project Data */}

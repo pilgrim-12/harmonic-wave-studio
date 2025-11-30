@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { ArrowLeft, Eye, User, Calendar, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { TrajectoryPreview } from "@/components/gallery/TrajectoryPreview";
+import { FormulaDisplay } from "@/components/studio/FormulaDisplay";
 
 export default function SharedProjectPage() {
   const params = useParams();
@@ -149,6 +150,11 @@ export default function SharedProjectPage() {
         {/* Trajectory Preview */}
         <div className="mb-3 h-44 bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden">
           <TrajectoryPreview radii={project.radii} trailLength={800} />
+        </div>
+
+        {/* Signal Formula */}
+        <div className="mb-3">
+          <FormulaDisplay radii={project.radii} />
         </div>
 
         {/* Ultra Compact Config + Actions */}
