@@ -2,12 +2,13 @@
 
 import React, { useState } from "react";
 import { Trash2, Edit2, Activity, PenLine } from "lucide-react";
-import { Radius, EnvelopeConfig } from "@/types/radius";
+import { Radius, EnvelopeConfig, SweepConfig } from "@/types/radius";
 import { useRadiusStore } from "@/store/radiusStore";
 import { useSimulationStore } from "@/store/simulationStore";
 import { cn } from "@/lib/utils";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { EnvelopeEditor } from "./EnvelopeEditor";
+import { SweepEditor } from "./SweepEditor";
 
 interface RadiusItemProps {
   radius: Radius;
@@ -405,6 +406,14 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
             <EnvelopeEditor
               envelope={radius.envelope}
               onChange={(envelope: EnvelopeConfig) => updateRadius(radius.id, { envelope })}
+            />
+          </div>
+
+          {/* Sweep Editor */}
+          <div className="border-t border-[#333] pt-1.5 mt-1.5">
+            <SweepEditor
+              sweep={radius.sweep}
+              onChange={(sweep: SweepConfig) => updateRadius(radius.id, { sweep })}
             />
           </div>
         </div>

@@ -37,6 +37,9 @@ export interface Radius {
 
   /** ADSR Envelope configuration (optional) */
   envelope?: EnvelopeConfig;
+
+  /** Frequency Sweep configuration (optional) */
+  sweep?: SweepConfig;
 }
 
 /**
@@ -83,6 +86,7 @@ export interface UpdateRadiusParams {
   color?: string;
   isActive?: boolean;
   envelope?: EnvelopeConfig;
+  sweep?: SweepConfig;
 }
 
 // ============================================================================
@@ -146,5 +150,58 @@ export const ENVELOPE_PRESETS: Record<EnvelopePreset, Partial<EnvelopeConfig>> =
   pad: { enabled: true, attack: 0.8, decay: 0.5, sustain: 0.8, release: 1.0, curve: "linear" },
   percussion: { enabled: true, attack: 0.005, decay: 0.15, sustain: 0, release: 0.1, curve: "exponential" },
   swell: { enabled: true, attack: 1.0, decay: 0.1, sustain: 0.9, release: 0.5, curve: "linear" },
+  custom: { enabled: true },
+};
+
+// ============================================================================
+// FREQUENCY SWEEP
+// ============================================================================
+
+/**
+ * Frequency Sweep configuration
+ * Controls linear frequency change from startFreq to endFreq over duration
+ */
+export interface SweepConfig {
+  /** Whether sweep is enabled */
+  enabled: boolean;
+
+  /** Starting frequency in Hz */
+  startFreq: number;
+
+  /** Ending frequency in Hz */
+  endFreq: number;
+
+  /** Duration of sweep in seconds */
+  duration: number;
+
+  /** Whether sweep should loop */
+  loop: boolean;
+}
+
+/**
+ * Default sweep values
+ */
+export const DEFAULT_SWEEP: SweepConfig = {
+  enabled: false,
+  startFreq: 1.0,
+  endFreq: 5.0,
+  duration: 5.0,
+  loop: false,
+};
+
+/**
+ * Sweep preset types
+ */
+export type SweepPreset = "none" | "slow-rise" | "fast-rise" | "slow-fall" | "fast-fall" | "custom";
+
+/**
+ * Sweep preset configurations
+ */
+export const SWEEP_PRESETS: Record<SweepPreset, Partial<SweepConfig>> = {
+  none: { enabled: false },
+  "slow-rise": { enabled: true, startFreq: 0.5, endFreq: 3.0, duration: 10.0, loop: false },
+  "fast-rise": { enabled: true, startFreq: 1.0, endFreq: 8.0, duration: 3.0, loop: false },
+  "slow-fall": { enabled: true, startFreq: 5.0, endFreq: 0.5, duration: 10.0, loop: false },
+  "fast-fall": { enabled: true, startFreq: 8.0, endFreq: 1.0, duration: 3.0, loop: false },
   custom: { enabled: true },
 };

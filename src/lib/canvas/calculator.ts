@@ -1,4 +1,4 @@
-import { Radius, Point2D, RadiusPosition, EnvelopeConfig } from "@/types/radius";
+import { Radius, Point2D, RadiusPosition, EnvelopeConfig, SweepConfig } from "@/types/radius";
 
 /**
  * Calculate envelope value at a given time
@@ -56,6 +56,33 @@ export function calculateEnvelopeValue(
 }
 
 /**
+ * Calculate sweep frequency at a given time
+ * Linear interpolation from startFreq to endFreq over duration
+ * Returns frequency in Hz
+ */
+export function calculateSweepFrequency(
+  sweep: SweepConfig,
+  baseFreq: number,
+  time: number
+): number {
+  if (!sweep.enabled) return baseFreq;
+
+  const { startFreq, endFreq, duration, loop } = sweep;
+
+  // Handle looping
+  let t = time;
+  if (loop && duration > 0) {
+    t = time % duration;
+  }
+
+  // Clamp time to duration
+  const progress = Math.min(t / duration, 1);
+
+  // Linear interpolation
+  return startFreq + (endFreq - startFreq) * progress;
+}
+
+/**
  * Вычисляет позиции всех радиусов в цепочке
  */
 export function calculateRadiusPositions(
@@ -89,15 +116,46 @@ export function calculateRadiusPositions(
       );
     }
 
+    // Get effective frequency (with sweep if enabled)
+    let effectiveFreq = radius.rotationSpeed;
+    if (radius.sweep?.enabled) {
+      effectiveFreq = calculateSweepFrequency(radius.sweep, radius.rotationSpeed, currentTime);
+    }
+
     // Вычисляем текущий угол с учетом времени
     let currentAngle: number;
-    if (radius.rotationSpeed === 0) {
+    if (effectiveFreq === 0) {
       // Если скорость = 0, угол остается фиксированным относительно родителя
       currentAngle = radius.initialAngle;
     } else {
       const direction = radius.direction === "clockwise" ? -1 : 1;
-      const angularVelocity = direction * radius.rotationSpeed * 2 * Math.PI; // rad/s
-      currentAngle = radius.initialAngle + angularVelocity * currentTime;
+
+      // For sweep: need to integrate frequency over time for correct phase
+      if (radius.sweep?.enabled) {
+        // Linear sweep: integral of (f0 + (f1-f0)*t/T) from 0 to t
+        // = f0*t + (f1-f0)*t^2/(2T)
+        const { startFreq, endFreq, duration, loop } = radius.sweep;
+        let t = currentTime;
+        let cycles = 0;
+
+        if (loop && duration > 0) {
+          const fullCycles = Math.floor(currentTime / duration);
+          // Phase accumulated during full cycles
+          const cyclePhase = (startFreq + endFreq) / 2 * duration; // average freq * duration
+          cycles = fullCycles * cyclePhase;
+          t = currentTime % duration;
+        }
+
+        // Phase for current partial cycle
+        const phase = startFreq * t + (endFreq - startFreq) * t * t / (2 * duration);
+        const totalPhase = cycles + phase;
+
+        const angularVelocity = direction * 2 * Math.PI;
+        currentAngle = radius.initialAngle + angularVelocity * totalPhase;
+      } else {
+        const angularVelocity = direction * effectiveFreq * 2 * Math.PI; // rad/s
+        currentAngle = radius.initialAngle + angularVelocity * currentTime;
+      }
     }
 
     // Apply envelope to length (amplitude modulation)
