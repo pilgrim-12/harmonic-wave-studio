@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { X, Copy, Check, Link2, Trash2 } from "lucide-react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { X, Copy, Check, Link2, Trash2, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRadiusStore } from "@/store/radiusStore";
 import {
@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { useTierCheck } from "@/hooks/useTierCheck";
 import { useToast } from "@/contexts/ToastContext";
+import { suggestTags } from "@/lib/ai/autoTags";
 
 interface ShareModalProps {
   projectId: string;
@@ -43,6 +44,39 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   const [copied, setCopied] = useState(false);
   const [currentShareId, setCurrentShareId] = useState(shareId);
   const [justShared, setJustShared] = useState(false);
+
+  // Generate suggested tags based on radii parameters
+  const suggestedTags = useMemo(() => {
+    const projectRadii = radii.map((r) => ({
+      frequency:
+        r.direction === "counterclockwise" ? r.rotationSpeed : -r.rotationSpeed,
+      amplitude: r.length,
+      phase: r.initialAngle,
+    }));
+    const existingTags = tags
+      .split(",")
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0);
+    return suggestTags(projectRadii, existingTags);
+  }, [radii, tags]);
+
+  const handleAddSuggestedTag = (tag: string) => {
+    const currentTags = tags.trim();
+    if (currentTags) {
+      setTags(`${currentTags}, ${tag}`);
+    } else {
+      setTags(tag);
+    }
+  };
+
+  const handleAddAllSuggestedTags = () => {
+    const currentTags = tags.trim();
+    if (currentTags) {
+      setTags(`${currentTags}, ${suggestedTags.join(", ")}`);
+    } else {
+      setTags(suggestedTags.join(", "));
+    }
+  };
 
   // Загрузить существующие данные если уже расшарен
   const loadSharedProjectData = useCallback(async () => {
@@ -252,6 +286,35 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             <div className="text-xs text-gray-500 mt-1">
               Separate tags with commas
             </div>
+
+            {/* Suggested Tags */}
+            {suggestedTags.length > 0 && (
+              <div className="mt-2">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <Sparkles size={12} className="text-purple-400" />
+                  <span className="text-xs text-gray-400">Suggested tags:</span>
+                  <button
+                    type="button"
+                    onClick={handleAddAllSuggestedTags}
+                    className="text-xs text-purple-400 hover:text-purple-300 transition-colors"
+                  >
+                    Add all
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {suggestedTags.map((tag) => (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => handleAddSuggestedTag(tag)}
+                      className="px-2 py-0.5 text-xs bg-purple-500/20 text-purple-300 rounded hover:bg-purple-500/30 transition-colors"
+                    >
+                      + {tag}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Make Discoverable */}
