@@ -10,12 +10,15 @@ import {
   Calendar,
   Eye,
   Play,
+  FolderOpen,
 } from "lucide-react";
 import { getSharedProject, incrementViewCount } from "@/services/shareService";
 import { SharedProject } from "@/types/share";
 import { Button } from "@/components/ui/Button";
 import { useRadiusStore } from "@/store/radiusStore";
 import { TrajectoryPreview } from "@/components/gallery/TrajectoryPreview";
+import { useAuth } from "@/contexts/AuthContext";
+import Link from "next/link";
 
 export default function SharedProjectPage() {
   const params = useParams();
@@ -27,7 +30,8 @@ export default function SharedProjectPage() {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const { clearRadii, addRadius } = useRadiusStore(); // ✅ ДОБАВЛЕНО
+  const { clearRadii, addRadius } = useRadiusStore();
+  const { user } = useAuth();
 
   const loadProject = useCallback(async () => {
     try {
@@ -62,8 +66,8 @@ export default function SharedProjectPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleGoHome = () => {
-    router.push("/");
+  const handleGoToStudio = () => {
+    router.push("/studio");
   };
 
   // ✅ ДОБАВЛЕНО: Open in Studio
@@ -117,9 +121,9 @@ export default function SharedProjectPage() {
           <p className="text-gray-400 mb-6">
             {error || "This project doesn't exist or has been removed."}
           </p>
-          <Button onClick={handleGoHome}>
+          <Button onClick={handleGoToStudio}>
             <ArrowLeft size={16} />
-            Go to Home
+            Go to Studio
           </Button>
         </div>
       </div>
@@ -134,10 +138,20 @@ export default function SharedProjectPage() {
     <div className="min-h-screen bg-[#0f0f0f] p-6">
       {/* Header */}
       <div className="max-w-4xl mx-auto">
-        <Button onClick={handleGoHome} variant="secondary" className="mb-6">
-          <ArrowLeft size={16} />
-          Back to Studio
-        </Button>
+        <div className="flex gap-2 mb-6">
+          <Button onClick={handleGoToStudio} variant="secondary">
+            <ArrowLeft size={16} />
+            Back to Studio
+          </Button>
+          {user && (
+            <Link href="/profile">
+              <Button variant="secondary">
+                <FolderOpen size={16} />
+                My Projects
+              </Button>
+            </Link>
+          )}
+        </div>
 
         {/* Project Info Card */}
         <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] p-6 mb-6">
