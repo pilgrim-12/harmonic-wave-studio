@@ -118,9 +118,8 @@ export async function updateProject(
     try {
       const sharedProjectRef = doc(db, "shared-projects", shareId);
       await updateDoc(sharedProjectRef, {
-        "metadata.projectName": name,
+        projectName: name,
         radii,
-        updatedAt: serverTimestamp(),
       });
       console.log(`Synced shared project: ${shareId}`);
     } catch (error) {
