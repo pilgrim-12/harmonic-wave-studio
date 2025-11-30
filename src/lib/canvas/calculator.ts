@@ -1,4 +1,15 @@
-import { Radius, Point2D, RadiusPosition, EnvelopeConfig, SweepConfig, LFOConfig } from "@/types/radius";
+import {
+  Radius,
+  Point2D,
+  RadiusPosition,
+  EnvelopeConfig,
+  SweepConfig,
+  LFOConfig,
+  TimelineConfig,
+  KeyframeTrack,
+  KeyframeEasing,
+  KeyframeTarget
+} from "@/types/radius";
 
 /**
  * Calculate envelope value at a given time
@@ -121,6 +132,106 @@ export function calculateLFOValue(
 }
 
 /**
+ * Apply easing function to progress (0-1)
+ */
+function applyEasing(progress: number, easing: KeyframeEasing): number {
+  switch (easing) {
+    case "linear":
+      return progress;
+    case "ease-in":
+      return progress * progress;
+    case "ease-out":
+      return 1 - (1 - progress) * (1 - progress);
+    case "ease-in-out":
+      return progress < 0.5
+        ? 2 * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+    case "step":
+      return progress < 1 ? 0 : 1;
+    default:
+      return progress;
+  }
+}
+
+/**
+ * Get interpolated value from a keyframe track at a given time
+ * Returns the interpolated value or null if track is empty/disabled
+ */
+export function getKeyframeValue(
+  track: KeyframeTrack,
+  time: number,
+  timelineDuration: number,
+  loop: boolean
+): number | null {
+  if (!track.enabled || track.keyframes.length === 0) {
+    return null;
+  }
+
+  // Handle looping
+  let t = time;
+  if (loop && timelineDuration > 0) {
+    t = time % timelineDuration;
+  }
+
+  const keyframes = [...track.keyframes].sort((a, b) => a.time - b.time);
+
+  // Before first keyframe
+  if (t <= keyframes[0].time) {
+    return keyframes[0].value;
+  }
+
+  // After last keyframe
+  if (t >= keyframes[keyframes.length - 1].time) {
+    return keyframes[keyframes.length - 1].value;
+  }
+
+  // Find surrounding keyframes
+  for (let i = 0; i < keyframes.length - 1; i++) {
+    const kf1 = keyframes[i];
+    const kf2 = keyframes[i + 1];
+
+    if (t >= kf1.time && t < kf2.time) {
+      // Interpolate between kf1 and kf2
+      const duration = kf2.time - kf1.time;
+      const progress = (t - kf1.time) / duration;
+      const easedProgress = applyEasing(progress, kf1.easing);
+
+      return kf1.value + (kf2.value - kf1.value) * easedProgress;
+    }
+  }
+
+  return keyframes[keyframes.length - 1].value;
+}
+
+/**
+ * Calculate all timeline values for a radius at given time
+ * Returns object with amplitude, frequency, phase multipliers/offsets
+ */
+export function calculateTimelineValues(
+  timeline: TimelineConfig,
+  time: number
+): { amplitude: number | null; frequency: number | null; phase: number | null } {
+  if (!timeline.enabled) {
+    return { amplitude: null, frequency: null, phase: null };
+  }
+
+  const result: { amplitude: number | null; frequency: number | null; phase: number | null } = {
+    amplitude: null,
+    frequency: null,
+    phase: null,
+  };
+
+  for (const track of timeline.tracks) {
+    const value = getKeyframeValue(track, time, timeline.duration, timeline.loop);
+    if (value !== null) {
+      result[track.target] = value;
+    }
+  }
+
+  return result;
+}
+
+/**
  * Вычисляет позиции всех радиусов в цепочке
  */
 export function calculateRadiusPositions(
@@ -160,6 +271,11 @@ export function calculateRadiusPositions(
       lfoValue = calculateLFOValue(radius.lfo, currentTime);
     }
 
+    // Calculate timeline keyframe values if enabled
+    const timelineValues = radius.timeline?.enabled
+      ? calculateTimelineValues(radius.timeline, currentTime)
+      : { amplitude: null, frequency: null, phase: null };
+
     // Get effective frequency (with sweep if enabled)
     let effectiveFreq = radius.rotationSpeed;
     if (radius.sweep?.enabled) {
@@ -170,6 +286,11 @@ export function calculateRadiusPositions(
     if (radius.lfo?.enabled && radius.lfo.target === "frequency") {
       // LFO modulates frequency: freq * (1 + lfoValue)
       effectiveFreq = effectiveFreq * (1 + lfoValue);
+    }
+
+    // Apply timeline keyframe frequency (overrides base frequency)
+    if (timelineValues.frequency !== null) {
+      effectiveFreq = timelineValues.frequency;
     }
 
     // Вычисляем текущий угол с учетом времени
@@ -214,6 +335,11 @@ export function calculateRadiusPositions(
       currentAngle += lfoValue * Math.PI; // Scale by π for meaningful phase modulation
     }
 
+    // Apply timeline keyframe phase (adds to current angle)
+    if (timelineValues.phase !== null) {
+      currentAngle += (timelineValues.phase * Math.PI) / 180; // Convert degrees to radians
+    }
+
     // Apply envelope to length (amplitude modulation)
     let effectiveLength = radius.length;
     if (radius.envelope?.enabled) {
@@ -226,6 +352,11 @@ export function calculateRadiusPositions(
       // LFO modulates amplitude: length * (1 + lfoValue)
       // Since lfoValue is between -depth and +depth, amplitude oscillates
       effectiveLength = effectiveLength * (1 + lfoValue);
+    }
+
+    // Apply timeline keyframe amplitude (overrides base amplitude)
+    if (timelineValues.amplitude !== null) {
+      effectiveLength = timelineValues.amplitude;
     }
 
     // Вычисляем конечную точку

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Trash2, Edit2, Activity, PenLine } from "lucide-react";
-import { Radius, EnvelopeConfig, SweepConfig, LFOConfig } from "@/types/radius";
+import { Radius, EnvelopeConfig, SweepConfig, LFOConfig, TimelineConfig } from "@/types/radius";
 import { useRadiusStore } from "@/store/radiusStore";
 import { useSimulationStore } from "@/store/simulationStore";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ import { Tooltip } from "@/components/ui/Tooltip";
 import { EnvelopeEditor } from "./EnvelopeEditor";
 import { SweepEditor } from "./SweepEditor";
 import { LFOEditor } from "./LFOEditor";
+import { TimelineEditor } from "./TimelineEditor";
 
 interface RadiusItemProps {
   radius: Radius;
@@ -423,6 +424,16 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
             <LFOEditor
               lfo={radius.lfo}
               onChange={(lfo: LFOConfig) => updateRadius(radius.id, { lfo })}
+            />
+          </div>
+
+          {/* Timeline Editor */}
+          <div className="border-t border-[#333] pt-1.5 mt-1.5">
+            <TimelineEditor
+              timeline={radius.timeline}
+              onChange={(timeline: TimelineConfig) => updateRadius(radius.id, { timeline })}
+              baseAmplitude={radius.length}
+              baseFrequency={radius.rotationSpeed}
             />
           </div>
         </div>

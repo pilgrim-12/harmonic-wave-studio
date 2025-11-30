@@ -43,6 +43,9 @@ export interface Radius {
 
   /** LFO configuration (optional) */
   lfo?: LFOConfig;
+
+  /** Timeline with keyframes (optional) */
+  timeline?: TimelineConfig;
 }
 
 /**
@@ -91,6 +94,7 @@ export interface UpdateRadiusParams {
   envelope?: EnvelopeConfig;
   sweep?: SweepConfig;
   lfo?: LFOConfig;
+  timeline?: TimelineConfig;
 }
 
 // ============================================================================
@@ -276,3 +280,98 @@ export const LFO_PRESETS: Record<LFOPreset, Partial<LFOConfig>> = {
   pulse: { enabled: true, rate: 2.0, depth: 0.8, waveform: "square", target: "amplitude" },
   custom: { enabled: true },
 };
+
+// ============================================================================
+// KEYFRAME TIMELINE
+// ============================================================================
+
+/**
+ * Parameters that can be animated with keyframes
+ */
+export type KeyframeTarget = "amplitude" | "frequency" | "phase";
+
+/**
+ * Interpolation type between keyframes
+ */
+export type KeyframeEasing = "linear" | "ease-in" | "ease-out" | "ease-in-out" | "step";
+
+/**
+ * Single keyframe - a parameter value at a specific time
+ */
+export interface Keyframe {
+  /** Unique identifier */
+  id: string;
+
+  /** Time in seconds */
+  time: number;
+
+  /** Value at this keyframe (interpreted based on target) */
+  value: number;
+
+  /** Easing to next keyframe */
+  easing: KeyframeEasing;
+}
+
+/**
+ * Keyframe track for a specific parameter
+ */
+export interface KeyframeTrack {
+  /** Target parameter to animate */
+  target: KeyframeTarget;
+
+  /** Whether this track is enabled */
+  enabled: boolean;
+
+  /** List of keyframes sorted by time */
+  keyframes: Keyframe[];
+}
+
+/**
+ * Timeline configuration for a radius
+ */
+export interface TimelineConfig {
+  /** Whether timeline is enabled */
+  enabled: boolean;
+
+  /** Total duration of timeline in seconds */
+  duration: number;
+
+  /** Whether timeline should loop */
+  loop: boolean;
+
+  /** Keyframe tracks */
+  tracks: KeyframeTrack[];
+}
+
+/**
+ * Default timeline values
+ */
+export const DEFAULT_TIMELINE: TimelineConfig = {
+  enabled: false,
+  duration: 10,
+  loop: true,
+  tracks: [],
+};
+
+/**
+ * Create a new keyframe with unique ID
+ */
+export function createKeyframe(time: number, value: number, easing: KeyframeEasing = "linear"): Keyframe {
+  return {
+    id: `kf-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    time,
+    value,
+    easing,
+  };
+}
+
+/**
+ * Create a new keyframe track
+ */
+export function createKeyframeTrack(target: KeyframeTarget): KeyframeTrack {
+  return {
+    target,
+    enabled: true,
+    keyframes: [],
+  };
+}
