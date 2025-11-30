@@ -57,10 +57,41 @@ export async function getUserProjects(userId: string): Promise<Project[]> {
   );
 
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  })) as Project[];
+  return snapshot.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      userId: data.userId,
+      name: data.name,
+      radii: data.radii,
+      shareId: data.shareId,
+      // Convert Firestore Timestamps to JS Dates
+      createdAt: data.createdAt?.toDate?.() || null,
+      updatedAt: data.updatedAt?.toDate?.() || null,
+    };
+  }) as Project[];
+}
+
+// Проверить, существует ли проект с таким именем у пользователя
+export async function checkProjectNameExists(
+  userId: string,
+  name: string,
+  excludeProjectId?: string
+): Promise<boolean> {
+  const q = query(
+    collection(db, "projects"),
+    where("userId", "==", userId),
+    where("name", "==", name)
+  );
+
+  const snapshot = await getDocs(q);
+
+  // If excluding a project (for updates), filter it out
+  if (excludeProjectId) {
+    return snapshot.docs.some((doc) => doc.id !== excludeProjectId);
+  }
+
+  return !snapshot.empty;
 }
 
 // Обновить проект

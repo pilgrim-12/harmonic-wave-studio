@@ -96,6 +96,14 @@ export default function ProfilePage() {
     try {
       await deleteProject(projectToDelete);
       setProjects(projects.filter((p) => p.id !== projectToDelete));
+
+      // If the deleted project was loaded in studio, clear the studio
+      const { currentProjectId, clearProject } = useProjectStore.getState();
+      if (currentProjectId === projectToDelete) {
+        clearProject();
+        useRadiusStore.getState().clearRadii();
+      }
+
       toast.success("Project deleted successfully!");
     } catch (error) {
       console.error("Error deleting project:", error);

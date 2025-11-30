@@ -48,7 +48,7 @@ import { Radius } from "@/types/radius";
 import { SignInButton } from "@/components/auth/SignInButton";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { useAuth } from "@/contexts/AuthContext";
-import { createProject, updateProject, getUserProjects } from "@/services/projectService";
+import { createProject, updateProject, getUserProjects, checkProjectNameExists } from "@/services/projectService";
 import { ShareButton } from "@/components/share/ShareButton";
 import { useToast } from "@/contexts/ToastContext";
 import {
@@ -405,6 +405,19 @@ function HomeContent() {
 
     setSaving(true);
     try {
+      // Check for duplicate project name
+      const nameExists = await checkProjectNameExists(
+        user.uid,
+        name,
+        currentProjectId || undefined // exclude current project when updating
+      );
+
+      if (nameExists) {
+        toast.error(`A project named "${name}" already exists. Please choose a different name.`, "Duplicate Name");
+        setSaving(false);
+        return;
+      }
+
       const projectRadii = radii.map((r) => ({
         frequency:
           r.direction === "counterclockwise"
