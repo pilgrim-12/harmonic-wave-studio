@@ -766,9 +766,9 @@ function HomeContent() {
           {/* Signal Graphs - Collapsible bottom panel */}
           <CollapsibleBottomPanel
             title="Signal Graphs"
-            defaultHeight={140}
-            minHeight={80}
-            maxHeight={280}
+            defaultHeight={200}
+            minHeight={100}
+            maxHeight={350}
           >
             <div className="grid grid-cols-1 md:grid-cols-5 gap-2 h-full p-2">
               {/* Original Signal */}
