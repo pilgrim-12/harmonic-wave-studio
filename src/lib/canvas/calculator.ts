@@ -1,4 +1,59 @@
-import { Radius, Point2D, RadiusPosition } from "@/types/radius";
+import { Radius, Point2D, RadiusPosition, EnvelopeConfig } from "@/types/radius";
+
+/**
+ * Calculate envelope value at a given time
+ * Returns a multiplier between 0 and 1
+ */
+export function calculateEnvelopeValue(
+  envelope: EnvelopeConfig,
+  time: number
+): number {
+  if (!envelope.enabled) return 1;
+
+  const { attack, decay, sustain, release, curve, loop, loopDuration } = envelope;
+  const totalDuration = attack + decay + release;
+
+  // Handle looping
+  let t = time;
+  if (loop && loopDuration && loopDuration > 0) {
+    t = time % loopDuration;
+  }
+
+  // Calculate which phase we're in
+  let value: number;
+
+  if (t < attack) {
+    // Attack phase: 0 -> 1
+    const progress = t / attack;
+    value = curve === "exponential"
+      ? Math.pow(progress, 2) // Exponential curve
+      : progress; // Linear
+  } else if (t < attack + decay) {
+    // Decay phase: 1 -> sustain
+    const progress = (t - attack) / decay;
+    const decayAmount = 1 - sustain;
+    value = curve === "exponential"
+      ? 1 - decayAmount * Math.pow(progress, 0.5) // Fast initial decay
+      : 1 - decayAmount * progress; // Linear
+  } else if (loop || t < attack + decay + release) {
+    // Sustain phase (infinite if looping, otherwise until release)
+    if (loop) {
+      value = sustain;
+    } else {
+      // Release phase: sustain -> 0
+      const releaseStart = attack + decay;
+      const progress = (t - releaseStart) / release;
+      value = curve === "exponential"
+        ? sustain * Math.pow(1 - Math.min(progress, 1), 2)
+        : sustain * (1 - Math.min(progress, 1));
+    }
+  } else {
+    // After release: 0
+    value = 0;
+  }
+
+  return Math.max(0, Math.min(1, value));
+}
 
 /**
  * Вычисляет позиции всех радиусов в цепочке
@@ -45,10 +100,17 @@ export function calculateRadiusPositions(
       currentAngle = radius.initialAngle + angularVelocity * currentTime;
     }
 
+    // Apply envelope to length (amplitude modulation)
+    let effectiveLength = radius.length;
+    if (radius.envelope?.enabled) {
+      const envelopeValue = calculateEnvelopeValue(radius.envelope, currentTime);
+      effectiveLength = radius.length * envelopeValue;
+    }
+
     // Вычисляем конечную точку
     const endPoint: Point2D = {
-      x: startPoint.x + radius.length * Math.cos(currentAngle),
-      y: startPoint.y + radius.length * Math.sin(currentAngle),
+      x: startPoint.x + effectiveLength * Math.cos(currentAngle),
+      y: startPoint.y + effectiveLength * Math.sin(currentAngle),
     };
 
     // Сохраняем позицию
@@ -57,7 +119,7 @@ export function calculateRadiusPositions(
       startPoint,
       endPoint,
       angle: currentAngle,
-      length: radius.length,
+      length: effectiveLength, // Use effective length for display
     });
 
     // Сохраняем конечную точку для потомков

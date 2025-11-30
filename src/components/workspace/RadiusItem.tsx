@@ -2,11 +2,12 @@
 
 import React, { useState } from "react";
 import { Trash2, Edit2, Activity, PenLine } from "lucide-react";
-import { Radius } from "@/types/radius";
+import { Radius, EnvelopeConfig } from "@/types/radius";
 import { useRadiusStore } from "@/store/radiusStore";
 import { useSimulationStore } from "@/store/simulationStore";
 import { cn } from "@/lib/utils";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { EnvelopeEditor } from "./EnvelopeEditor";
 
 interface RadiusItemProps {
   radius: Radius;
@@ -397,6 +398,14 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
             >
               {radius.direction === "counterclockwise" ? "⟲ CCW" : "⟳ CW"}
             </button>
+          </div>
+
+          {/* Envelope Editor */}
+          <div className="border-t border-[#333] pt-1.5 mt-1.5">
+            <EnvelopeEditor
+              envelope={radius.envelope}
+              onChange={(envelope: EnvelopeConfig) => updateRadius(radius.id, { envelope })}
+            />
           </div>
         </div>
       )}
