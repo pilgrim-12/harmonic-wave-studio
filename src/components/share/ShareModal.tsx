@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/Button";
 import { useTierCheck } from "@/hooks/useTierCheck";
 import { useToast } from "@/contexts/ToastContext";
 import { suggestTags } from "@/lib/ai/autoTags";
+import { Radius as ProjectRadius } from "@/services/projectService";
 
 interface ShareModalProps {
   projectId: string;
@@ -23,6 +24,8 @@ interface ShareModalProps {
   shareId: string | null;
   onClose: () => void;
   onSuccess: (shareId: string) => void;
+  // Optional: pass radii directly (for profile page where radii aren't in store)
+  projectRadii?: ProjectRadius[];
 }
 
 export const ShareModal: React.FC<ShareModalProps> = ({
@@ -32,10 +35,31 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   shareId,
   onClose,
   onSuccess,
+  projectRadii,
 }) => {
   const { user } = useAuth();
-  const { radii } = useRadiusStore();
+  const { radii: storeRadii } = useRadiusStore();
   const { checkLimit } = useTierCheck();
+
+  // Use passed radii or convert from store
+  const radiiForPreview = useMemo(() => {
+    if (projectRadii) {
+      // Already in project format
+      return projectRadii.map(r => ({
+        frequency: r.frequency,
+        amplitude: r.amplitude,
+        phase: r.phase,
+        color: r.color,
+      }));
+    }
+    // Convert from store format
+    return storeRadii.map((r) => ({
+      frequency: r.direction === "counterclockwise" ? r.rotationSpeed : -r.rotationSpeed,
+      amplitude: r.length,
+      phase: r.initialAngle,
+      color: r.color,
+    }));
+  }, [projectRadii, storeRadii]);
   const toast = useToast();
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState("");
@@ -45,19 +69,13 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   const [justShared, setJustShared] = useState(false);
 
   // Generate suggested tags based on radii parameters
-  const suggestedTags = useMemo(() => {
-    const projectRadii = radii.map((r) => ({
-      frequency:
-        r.direction === "counterclockwise" ? r.rotationSpeed : -r.rotationSpeed,
-      amplitude: r.length,
-      phase: r.initialAngle,
-    }));
+  const suggestedTagsList = useMemo(() => {
     const existingTags = tags
       .split(",")
       .map((t) => t.trim())
       .filter((t) => t.length > 0);
-    return suggestTags(projectRadii, existingTags);
-  }, [radii, tags]);
+    return suggestTags(radiiForPreview, existingTags);
+  }, [radiiForPreview, tags]);
 
   const handleAddSuggestedTag = (tag: string) => {
     const currentTags = tags.trim();
@@ -71,9 +89,9 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   const handleAddAllSuggestedTags = () => {
     const currentTags = tags.trim();
     if (currentTags) {
-      setTags(`${currentTags}, ${suggestedTags.join(", ")}`);
+      setTags(`${currentTags}, ${suggestedTagsList.join(", ")}`);
     } else {
-      setTags(suggestedTags.join(", "));
+      setTags(suggestedTagsList.join(", "));
     }
   };
 
@@ -126,22 +144,11 @@ export const ShareModal: React.FC<ShareModalProps> = ({
 
     setLoading(true);
     try {
-      // Конвертируем radii из store в формат Firebase
-      const projectRadii = radii.map((r) => ({
-        frequency:
-          r.direction === "counterclockwise"
-            ? r.rotationSpeed
-            : -r.rotationSpeed,
-        amplitude: r.length,
-        phase: r.initialAngle,
-        color: r.color,
-      }));
-
       const project = {
         id: projectId,
         userId: user.uid,
         name: projectName,
-        radii: projectRadii,
+        radii: radiiForPreview,
         shareId: currentShareId,
         createdAt: null,
         updatedAt: null,
@@ -241,12 +248,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
           <div className="flex gap-4">
             <div className="w-24 h-24 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0">
               <TrajectoryPreview
-                radii={radii.map((r) => ({
-                  frequency: r.direction === "counterclockwise" ? r.rotationSpeed : -r.rotationSpeed,
-                  amplitude: r.length,
-                  phase: r.initialAngle,
-                  color: r.color,
-                }))}
+                radii={radiiForPreview}
                 width={96}
                 height={96}
               />
@@ -254,16 +256,16 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             <div className="flex-1">
               <h3 className="text-white font-medium text-lg">{projectName}</h3>
               <div className="flex flex-wrap gap-1 mt-2">
-                {radii.map((r, i) => (
+                {radiiForPreview.map((r, i) => (
                   <div
                     key={i}
                     className="w-4 h-4 rounded-full border border-gray-600"
                     style={{ backgroundColor: r.color }}
-                    title={`Radius ${i + 1}: ${r.length}px, ${r.rotationSpeed}Hz`}
+                    title={`Radius ${i + 1}: ${r.amplitude}px, ${Math.abs(r.frequency)}Hz`}
                   />
                 ))}
               </div>
-              <p className="text-xs text-gray-500 mt-1">{radii.length} radii</p>
+              <p className="text-xs text-gray-500 mt-1">{radiiForPreview.length} radii</p>
             </div>
           </div>
 
@@ -302,7 +304,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             </div>
 
             {/* Suggested Tags */}
-            {suggestedTags.length > 0 && (
+            {suggestedTagsList.length > 0 && (
               <div className="mt-2">
                 <div className="flex items-center gap-2 mb-1.5">
                   <Sparkles size={12} className="text-purple-400" />
@@ -316,7 +318,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
-                  {suggestedTags.map((tag) => (
+                  {suggestedTagsList.map((tag) => (
                     <button
                       key={tag}
                       type="button"
