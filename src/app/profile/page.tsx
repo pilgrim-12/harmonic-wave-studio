@@ -8,10 +8,11 @@ import {
   deleteProject,
   Project,
 } from "@/services/projectService";
+import { unshareProject } from "@/services/shareService";
 import { useProjectStore } from "@/store/useProjectStore";
 import { useRadiusStore } from "@/store/radiusStore";
 import { useSimulationStore } from "@/store/simulationStore";
-import { Trash2, FolderOpen, ArrowLeft, Share2, ExternalLink } from "lucide-react";
+import { Trash2, FolderOpen, ArrowLeft, Share2, ExternalLink, Link2Off } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/contexts/ToastContext";
@@ -128,7 +129,25 @@ export default function ProfilePage() {
 
   const handleViewSharedProject = (shareId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    router.push(`/shared/share_${shareId}`);
+    // shareId already contains "share_" prefix, use /project/ route
+    router.push(`/project/${shareId}`);
+  };
+
+  const handleUnshareProject = async (project: Project, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!project.shareId || !project.id) return;
+
+    try {
+      await unshareProject(project.id, project.shareId);
+      // Update local state
+      setProjects(projects.map(p =>
+        p.id === project.id ? { ...p, shareId: null } : p
+      ));
+      toast.success("Project unshared successfully!");
+    } catch (error) {
+      console.error("Error unsharing project:", error);
+      toast.error("Failed to unshare project");
+    }
   };
 
   if (loading || !user) {
@@ -213,16 +232,26 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                    {project.shareId && (
-                      <Button
-                        onClick={(e) => handleViewSharedProject(project.shareId!, e)}
-                        variant="secondary"
-                        className="text-sm"
-                        title="View shared project page"
-                      >
-                        <ExternalLink size={14} />
-                      </Button>
-                    )}
+                    {project.shareId ? (
+                      <>
+                        <Button
+                          onClick={(e) => handleViewSharedProject(project.shareId!, e)}
+                          variant="secondary"
+                          className="text-sm"
+                          title="View shared project page"
+                        >
+                          <ExternalLink size={14} />
+                        </Button>
+                        <Button
+                          onClick={(e) => handleUnshareProject(project, e)}
+                          variant="secondary"
+                          className="text-sm text-orange-400 hover:text-orange-300"
+                          title="Unshare project"
+                        >
+                          <Link2Off size={14} />
+                        </Button>
+                      </>
+                    ) : null}
                     <Button
                       onClick={(e) => {
                         e.stopPropagation();
