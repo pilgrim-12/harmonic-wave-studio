@@ -10,6 +10,7 @@ import { SettingsPanel } from "@/components/workspace/SettingsPanel";
 import { FrequencyPanel } from "@/components/analysis/FrequencyPanel";
 import { SpectrumGraphPanel } from "@/components/workspace/SpectrumGraphPanel";
 import { DecompositionGraph } from "@/components/workspace/DecompositionGraph";
+import { SpectrogramView } from "@/components/workspace/SpectrogramView";
 import { NoisePanel } from "@/components/signal/NoisePanel";
 import { MetricsPanel } from "@/components/signal/MetricsPanel";
 import { NoisySignalGraph } from "@/components/signal/NoisySignalGraph";
@@ -95,7 +96,7 @@ function HomeContent() {
     useFilterStore();
   const { checkLimit } = useTierCheck();
   const toast = useToast();
-  const { showOriginalSignal, showNoisySignal, showFilteredSignal, showSpectrum, showDecomposition } =
+  const { showOriginalSignal, showNoisySignal, showFilteredSignal, showSpectrum, showDecomposition, showSpectrogram } =
     useGraphVisibilityStore();
 
   useKeyboardShortcuts();
@@ -812,6 +813,15 @@ function HomeContent() {
                 <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] overflow-hidden">
                   <FullscreenWrapper>
                     <DecompositionGraph />
+                  </FullscreenWrapper>
+                </div>
+              )}
+
+              {/* Spectrogram */}
+              {showSpectrogram && (
+                <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] overflow-hidden">
+                  <FullscreenWrapper>
+                    <SpectrogramView />
                   </FullscreenWrapper>
                 </div>
               )}
