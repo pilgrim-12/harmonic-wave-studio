@@ -37,29 +37,33 @@ export const SpectrogramView: React.FC = () => {
     if (!isPlaying) return;
 
     const addSlice = () => {
-      const frequencies = radii
+      // Get LIVE currentTime from store, not from closure
+      const { currentTime: liveTime } = useSimulationStore.getState();
+      const { radii: liveRadii } = useRadiusStore.getState();
+
+      const frequencies = liveRadii
         .filter((r) => r.isActive)
         .map((r) => {
           // Calculate effective frequency (with sweep)
           let freq = r.rotationSpeed;
           if (r.sweep?.enabled) {
-            freq = calculateSweepFrequency(r.sweep, r.rotationSpeed, currentTime);
+            freq = calculateSweepFrequency(r.sweep, r.rotationSpeed, liveTime);
           }
 
           // Calculate effective amplitude (with envelope)
           let amplitude = r.length;
           if (r.envelope?.enabled) {
-            const envValue = calculateEnvelopeValue(r.envelope, currentTime);
+            const envValue = calculateEnvelopeValue(r.envelope, liveTime);
             amplitude = r.length * envValue;
           }
 
           return { freq, amplitude, color: r.color };
         });
 
-      slicesRef.current.push({ time: currentTime, frequencies });
+      slicesRef.current.push({ time: liveTime, frequencies });
 
       // Keep only last 5 seconds
-      const cutoffTime = currentTime - 5;
+      const cutoffTime = liveTime - 5;
       while (slicesRef.current.length > 0 && slicesRef.current[0].time < cutoffTime) {
         slicesRef.current.shift();
       }
@@ -67,7 +71,7 @@ export const SpectrogramView: React.FC = () => {
 
     const interval = setInterval(addSlice, 50); // 20 slices per second
     return () => clearInterval(interval);
-  }, [isPlaying, currentTime, radii]);
+  }, [isPlaying]);
 
   // Canvas rendering
   useEffect(() => {
