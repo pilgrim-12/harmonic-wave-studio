@@ -32,6 +32,7 @@ export const VisualizationCanvas: React.FC = () => {
     settings,
     activeTrackingRadiusId,
     trackedRadiusIds,
+    trailsClearCounter,
   } = useSimulationStore();
 
   // Инициализация canvas
@@ -253,6 +254,13 @@ export const VisualizationCanvas: React.FC = () => {
       trailsRef.current.clear();
     }
   }, [currentTime, isPlaying]);
+
+  // Сброс следов по запросу (кнопка Reset)
+  useEffect(() => {
+    if (trailsClearCounter > 0) {
+      trailsRef.current.clear();
+    }
+  }, [trailsClearCounter]);
 
   // Обработчик масштабирования колесиком мыши
   useEffect(() => {

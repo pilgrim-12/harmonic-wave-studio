@@ -18,7 +18,7 @@ export const SpectrogramView: React.FC = () => {
   const frameCountRef = useRef<number>(0);
 
   const radii = useRadiusStore((state) => state.radii);
-  const { currentTime, isPlaying } = useSimulationStore();
+  const { currentTime, isPlaying, trailsClearCounter } = useSimulationStore();
 
   // Max frequency to display (based on radii frequencies)
   const maxFreq = useMemo(() => {
@@ -72,6 +72,13 @@ export const SpectrogramView: React.FC = () => {
     const interval = setInterval(addSlice, 50); // 20 slices per second
     return () => clearInterval(interval);
   }, [isPlaying]);
+
+  // Clear spectrogram data on reset
+  useEffect(() => {
+    if (trailsClearCounter > 0) {
+      slicesRef.current = [];
+    }
+  }, [trailsClearCounter]);
 
   // Canvas rendering
   useEffect(() => {

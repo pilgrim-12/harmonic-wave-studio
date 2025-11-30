@@ -14,12 +14,14 @@ interface SimulationStore extends SimulationState {
   signalData: SignalDataPoint[];
   highResSignal: number[]; // NEW: High-resolution signal buffer
   computeLoad: number; // Real-time compute load (0-100%)
+  trailsClearCounter: number; // Incremented to trigger trail clearing
 
   // Actions
   play: () => void;
   pause: () => void;
   stop: () => void;
   reset: () => void;
+  clearTrails: () => void; // Clear trails and graphs without stopping simulation
   setCurrentTime: (time: number) => void;
   updateFps: (fps: number) => void;
   updateComputeLoad: (load: number) => void;
@@ -58,6 +60,7 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
   signalData: [],
   highResSignal: [],
   computeLoad: 0,
+  trailsClearCounter: 0,
 
   play: () => {
     set({
@@ -90,6 +93,15 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
       highResSignal: [],
       trackedRadiusIds: [],
     });
+  },
+
+  clearTrails: () => {
+    // Clear trails and graphs without stopping simulation
+    set((state) => ({
+      signalData: [],
+      highResSignal: [],
+      trailsClearCounter: state.trailsClearCounter + 1,
+    }));
   },
 
   setCurrentTime: (time) => {

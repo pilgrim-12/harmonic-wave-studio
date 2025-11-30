@@ -12,22 +12,14 @@ import { TrailLengthControl } from "@/components/settings/TrailLengthControl";
 import { GraphVisibilityPanel } from "./GraphVisibilityPanel";
 
 export const ControlPanel: React.FC = () => {
-  const { isPlaying, isPaused, play, pause, stop, reset, activeTrackingRadiusId } =
+  const { isPlaying, isPaused, play, pause, stop, clearTrails } =
     useSimulationStore();
 
-  const handleReset = () => {
-    const trackingId = activeTrackingRadiusId;
-    reset();
+  const handleClearTrails = () => {
+    // Clear trails and graphs without stopping simulation
+    clearTrails();
     // Clear signal processing graphs
     useSignalProcessingStore.getState().resetSignal();
-
-    // Restore tracking and trail for selected radius
-    if (trackingId) {
-      requestAnimationFrame(() => {
-        useSimulationStore.getState().setActiveTrackingRadius(trackingId);
-        useSimulationStore.getState().toggleTrailTracking(trackingId);
-      });
-    }
   };
 
   return (
@@ -63,10 +55,10 @@ export const ControlPanel: React.FC = () => {
         </Button>
 
         <Button
-          onClick={handleReset}
+          onClick={handleClearTrails}
           variant="secondary"
           size="sm"
-          title="Reset and clear all"
+          title="Clear trails and graphs"
         >
           <RotateCcw size={16} className="mr-1" />
           Reset
