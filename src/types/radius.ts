@@ -40,6 +40,9 @@ export interface Radius {
 
   /** Frequency Sweep configuration (optional) */
   sweep?: SweepConfig;
+
+  /** LFO configuration (optional) */
+  lfo?: LFOConfig;
 }
 
 /**
@@ -87,6 +90,7 @@ export interface UpdateRadiusParams {
   isActive?: boolean;
   envelope?: EnvelopeConfig;
   sweep?: SweepConfig;
+  lfo?: LFOConfig;
 }
 
 // ============================================================================
@@ -203,5 +207,72 @@ export const SWEEP_PRESETS: Record<SweepPreset, Partial<SweepConfig>> = {
   "fast-rise": { enabled: true, startFreq: 1.0, endFreq: 8.0, duration: 3.0, loop: false },
   "slow-fall": { enabled: true, startFreq: 5.0, endFreq: 0.5, duration: 10.0, loop: false },
   "fast-fall": { enabled: true, startFreq: 8.0, endFreq: 1.0, duration: 3.0, loop: false },
+  custom: { enabled: true },
+};
+
+// ============================================================================
+// LFO (Low Frequency Oscillator)
+// ============================================================================
+
+/**
+ * LFO waveform types
+ */
+export type LFOWaveform = "sine" | "square" | "triangle" | "sawtooth";
+
+/**
+ * LFO target parameter
+ */
+export type LFOTarget = "amplitude" | "frequency" | "phase";
+
+/**
+ * LFO configuration
+ * Modulates a parameter with a low-frequency oscillator
+ */
+export interface LFOConfig {
+  /** Whether LFO is enabled */
+  enabled: boolean;
+
+  /** LFO rate in Hz (how fast the oscillation) */
+  rate: number;
+
+  /** Modulation depth (0-1, how much to modulate) */
+  depth: number;
+
+  /** Waveform shape */
+  waveform: LFOWaveform;
+
+  /** Target parameter to modulate */
+  target: LFOTarget;
+
+  /** Phase offset in radians (0-2π) */
+  phase: number;
+}
+
+/**
+ * Default LFO values
+ */
+export const DEFAULT_LFO: LFOConfig = {
+  enabled: false,
+  rate: 2.0,
+  depth: 0.3,
+  waveform: "sine",
+  target: "amplitude",
+  phase: 0,
+};
+
+/**
+ * LFO preset types
+ */
+export type LFOPreset = "none" | "vibrato" | "tremolo" | "wobble" | "pulse" | "custom";
+
+/**
+ * LFO preset configurations
+ */
+export const LFO_PRESETS: Record<LFOPreset, Partial<LFOConfig>> = {
+  none: { enabled: false },
+  vibrato: { enabled: true, rate: 5.0, depth: 0.1, waveform: "sine", target: "frequency" },
+  tremolo: { enabled: true, rate: 4.0, depth: 0.5, waveform: "sine", target: "amplitude" },
+  wobble: { enabled: true, rate: 1.0, depth: 0.3, waveform: "triangle", target: "frequency" },
+  pulse: { enabled: true, rate: 2.0, depth: 0.8, waveform: "square", target: "amplitude" },
   custom: { enabled: true },
 };

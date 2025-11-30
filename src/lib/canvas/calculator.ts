@@ -1,4 +1,4 @@
-import { Radius, Point2D, RadiusPosition, EnvelopeConfig, SweepConfig } from "@/types/radius";
+import { Radius, Point2D, RadiusPosition, EnvelopeConfig, SweepConfig, LFOConfig } from "@/types/radius";
 
 /**
  * Calculate envelope value at a given time
@@ -83,6 +83,44 @@ export function calculateSweepFrequency(
 }
 
 /**
+ * Calculate LFO value at a given time
+ * Returns a value between -1 and 1 based on waveform
+ */
+export function calculateLFOValue(
+  lfo: LFOConfig,
+  time: number
+): number {
+  if (!lfo.enabled) return 0;
+
+  const { rate, depth, waveform, phase } = lfo;
+  const t = time * rate * 2 * Math.PI + phase;
+
+  let rawValue: number;
+
+  switch (waveform) {
+    case "sine":
+      rawValue = Math.sin(t);
+      break;
+    case "square":
+      rawValue = Math.sin(t) >= 0 ? 1 : -1;
+      break;
+    case "triangle":
+      // Triangle wave: 2 * |2 * (t/2π - floor(t/2π + 0.5))| - 1
+      const normalized = (t / (2 * Math.PI)) % 1;
+      rawValue = 4 * Math.abs(normalized - 0.5) - 1;
+      break;
+    case "sawtooth":
+      // Sawtooth wave: 2 * (t/2π - floor(t/2π + 0.5))
+      rawValue = 2 * ((t / (2 * Math.PI)) % 1) - 1;
+      break;
+    default:
+      rawValue = 0;
+  }
+
+  return rawValue * depth;
+}
+
+/**
  * Вычисляет позиции всех радиусов в цепочке
  */
 export function calculateRadiusPositions(
@@ -116,10 +154,22 @@ export function calculateRadiusPositions(
       );
     }
 
+    // Calculate LFO modulation value if enabled
+    let lfoValue = 0;
+    if (radius.lfo?.enabled) {
+      lfoValue = calculateLFOValue(radius.lfo, currentTime);
+    }
+
     // Get effective frequency (with sweep if enabled)
     let effectiveFreq = radius.rotationSpeed;
     if (radius.sweep?.enabled) {
       effectiveFreq = calculateSweepFrequency(radius.sweep, radius.rotationSpeed, currentTime);
+    }
+
+    // Apply LFO to frequency if target is frequency
+    if (radius.lfo?.enabled && radius.lfo.target === "frequency") {
+      // LFO modulates frequency: freq * (1 + lfoValue)
+      effectiveFreq = effectiveFreq * (1 + lfoValue);
     }
 
     // Вычисляем текущий угол с учетом времени
@@ -158,11 +208,24 @@ export function calculateRadiusPositions(
       }
     }
 
+    // Apply LFO to phase if target is phase
+    if (radius.lfo?.enabled && radius.lfo.target === "phase") {
+      // LFO adds to the angle directly
+      currentAngle += lfoValue * Math.PI; // Scale by π for meaningful phase modulation
+    }
+
     // Apply envelope to length (amplitude modulation)
     let effectiveLength = radius.length;
     if (radius.envelope?.enabled) {
       const envelopeValue = calculateEnvelopeValue(radius.envelope, currentTime);
       effectiveLength = radius.length * envelopeValue;
+    }
+
+    // Apply LFO to amplitude if target is amplitude
+    if (radius.lfo?.enabled && radius.lfo.target === "amplitude") {
+      // LFO modulates amplitude: length * (1 + lfoValue)
+      // Since lfoValue is between -depth and +depth, amplitude oscillates
+      effectiveLength = effectiveLength * (1 + lfoValue);
     }
 
     // Вычисляем конечную точку
