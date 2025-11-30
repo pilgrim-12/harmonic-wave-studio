@@ -101,11 +101,33 @@ export async function updateProject(
   radii: Radius[]
 ): Promise<void> {
   const projectRef = doc(db, "projects", projectId);
+
+  // First get the project to check if it's shared
+  const projectDoc = await getDoc(projectRef);
+  const shareId = projectDoc.exists() ? projectDoc.data()?.shareId : null;
+
+  // Update the project
   await updateDoc(projectRef, {
     name,
     radii,
     updatedAt: serverTimestamp(),
   });
+
+  // If project is shared, sync name and radii to shared-projects
+  if (shareId) {
+    try {
+      const sharedProjectRef = doc(db, "shared-projects", shareId);
+      await updateDoc(sharedProjectRef, {
+        "metadata.projectName": name,
+        radii,
+        updatedAt: serverTimestamp(),
+      });
+      console.log(`Synced shared project: ${shareId}`);
+    } catch (error) {
+      console.error("Failed to sync shared project:", error);
+      // Don't fail the main update if shared sync fails
+    }
+  }
 }
 
 // Удалить проект
