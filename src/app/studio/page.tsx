@@ -167,10 +167,9 @@ function HomeContent() {
           }, 100);
         }
 
-        // Set project in store (this triggers useEffect that updates projectName)
+        // Set project name in store (no project ID since it's loaded from gallery)
         if (projectData.metadata?.projectName) {
-          const projectNameFromGallery = `${projectData.metadata.projectName} (from gallery)`;
-          setCurrentProject(null, projectNameFromGallery);
+          setCurrentProject(null, projectData.metadata.projectName);
         }
 
         // Start animation after short delay

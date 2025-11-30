@@ -93,13 +93,21 @@ export default function ProfilePage() {
   const handleDeleteProject = async () => {
     if (!projectToDelete) return;
 
+    // Find the project being deleted to get its name
+    const deletedProject = projects.find((p) => p.id === projectToDelete);
+
     try {
       await deleteProject(projectToDelete);
       setProjects(projects.filter((p) => p.id !== projectToDelete));
 
       // If the deleted project was loaded in studio, clear the studio
-      const { currentProjectId, clearProject } = useProjectStore.getState();
-      if (currentProjectId === projectToDelete) {
+      // Check by ID or by name (for projects loaded from gallery which have null ID)
+      const { currentProjectId, currentProjectName, clearProject } = useProjectStore.getState();
+      const shouldClear =
+        currentProjectId === projectToDelete ||
+        (deletedProject && currentProjectName === deletedProject.name);
+
+      if (shouldClear) {
         clearProject();
         useRadiusStore.getState().clearRadii();
       }
