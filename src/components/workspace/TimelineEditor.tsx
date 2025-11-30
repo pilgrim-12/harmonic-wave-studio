@@ -305,8 +305,8 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({
           }
           className="!whitespace-normal !w-48"
         >
-          <label className="text-[10px] text-gray-500 cursor-help border-b border-dotted border-gray-600 flex items-center gap-1">
-            <Clock size={10} />
+          <label className="text-[10px] text-gray-400 cursor-help border-b border-dotted border-gray-500 flex items-center gap-1">
+            <Clock size={12} className="text-orange-400" />
             Timeline
           </label>
         </Tooltip>
@@ -328,8 +328,8 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({
           <div className="flex gap-2 items-center">
             <div className="flex-1">
               <div className="flex justify-between items-center">
-                <span className="text-[9px] text-gray-500">Duration</span>
-                <span className="text-[9px] text-[#667eea]">{currentTimeline.duration}s</span>
+                <span className="text-[10px] text-gray-400">Duration</span>
+                <span className="text-[10px] text-[#667eea] font-medium">{currentTimeline.duration}s</span>
               </div>
               <input
                 type="range"
@@ -345,10 +345,10 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({
             </div>
             <button
               onClick={handleToggleLoop}
-              className={`px-1.5 py-0.5 rounded text-[9px] transition-colors ${
+              className={`px-2 py-1 rounded text-[10px] font-medium transition-colors ${
                 currentTimeline.loop
-                  ? "bg-purple-500/20 text-purple-400"
-                  : "bg-[#1a1a1a] text-gray-400 hover:bg-[#333]"
+                  ? "bg-purple-500/20 text-purple-400 border border-purple-500/50"
+                  : "bg-[#252525] text-gray-300 hover:bg-[#333] border border-[#333]"
               }`}
             >
               {currentTimeline.loop ? "↻ Loop" : "→ Once"}
@@ -357,14 +357,14 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({
 
           {/* Add track buttons */}
           {missingTargets.length > 0 && (
-            <div className="flex gap-1 flex-wrap">
+            <div className="flex gap-1.5 flex-wrap">
               {missingTargets.map((target) => (
                 <button
                   key={target}
                   onClick={() => addTrack(target)}
-                  className="px-1.5 py-0.5 bg-[#1a1a1a] hover:bg-[#333] rounded text-[9px] text-gray-400 hover:text-white transition-colors flex items-center gap-0.5"
+                  className="px-2 py-1 bg-[#252525] hover:bg-[#333] rounded text-[10px] text-gray-300 hover:text-white transition-colors flex items-center gap-1 border border-[#333]"
                 >
-                  <Plus size={8} />
+                  <Plus size={12} className="text-green-400" />
                   {target}
                 </button>
               ))}
@@ -373,28 +373,28 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({
 
           {/* Track selector */}
           {currentTimeline.tracks.length > 0 && (
-            <div className="flex gap-1">
+            <div className="flex gap-1.5">
               {currentTimeline.tracks.map((track) => (
                 <div key={track.target} className="flex items-center">
                   <button
                     onClick={() => setSelectedTrack(selectedTrack === track.target ? null : track.target)}
-                    className={`px-1.5 py-0.5 rounded-l text-[9px] transition-colors ${
+                    className={`px-2 py-1 rounded-l text-[10px] font-medium transition-colors ${
                       selectedTrack === track.target
                         ? track.target === "amplitude"
-                          ? "bg-[#667eea]/20 text-[#667eea]"
+                          ? "bg-[#667eea]/30 text-[#667eea] border border-[#667eea]/50"
                           : track.target === "frequency"
-                          ? "bg-[#f093fb]/20 text-[#f093fb]"
-                          : "bg-[#43e97b]/20 text-[#43e97b]"
-                        : "bg-[#1a1a1a] text-gray-400 hover:bg-[#333]"
+                          ? "bg-[#f093fb]/30 text-[#f093fb] border border-[#f093fb]/50"
+                          : "bg-[#43e97b]/30 text-[#43e97b] border border-[#43e97b]/50"
+                        : "bg-[#252525] text-gray-300 hover:bg-[#333] border border-[#333]"
                     }`}
                   >
                     {track.target}
                   </button>
                   <button
                     onClick={() => removeTrack(track.target)}
-                    className="px-1 py-0.5 bg-[#1a1a1a] hover:bg-red-500/20 rounded-r text-gray-400 hover:text-red-400 transition-colors"
+                    className="px-1.5 py-1 bg-[#252525] hover:bg-red-500/30 rounded-r text-gray-400 hover:text-red-400 transition-colors border border-l-0 border-[#333]"
                   >
-                    <X size={8} />
+                    <X size={12} />
                   </button>
                 </div>
               ))}
@@ -414,22 +414,22 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({
 
           {/* Keyframe editor */}
           {selectedKeyframe && selectedTrack && (
-            <div className="bg-[#1a1a1a] rounded p-2 space-y-2">
+            <div className="bg-[#252525] rounded p-2.5 space-y-2 border border-[#333]">
               <div className="flex justify-between items-center">
-                <span className="text-[9px] text-gray-400">Keyframe</span>
+                <span className="text-[10px] text-gray-300 font-medium">Keyframe</span>
                 <button
                   onClick={() => removeKeyframe(selectedTrack, selectedKeyframe.id)}
-                  className="p-0.5 hover:bg-red-500/20 rounded text-gray-400 hover:text-red-400"
+                  className="p-1 hover:bg-red-500/30 rounded text-gray-400 hover:text-red-400 transition-colors"
                 >
-                  <Trash2 size={10} />
+                  <Trash2 size={14} />
                 </button>
               </div>
 
               {/* Time */}
               <div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[9px] text-gray-500">Time</span>
-                  <span className="text-[9px] text-[#667eea]">{selectedKeyframe.time.toFixed(2)}s</span>
+                  <span className="text-[10px] text-gray-400">Time</span>
+                  <span className="text-[10px] text-[#667eea] font-medium">{selectedKeyframe.time.toFixed(2)}s</span>
                 </div>
                 <input
                   type="range"
@@ -449,8 +449,8 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({
               {/* Value */}
               <div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[9px] text-gray-500">Value</span>
-                  <span className="text-[9px] text-[#667eea]">
+                  <span className="text-[10px] text-gray-400">Value</span>
+                  <span className="text-[10px] text-[#667eea] font-medium">
                     {selectedKeyframe.value.toFixed(1)}
                     {selectedTrack === "phase" ? "°" : selectedTrack === "frequency" ? " Hz" : ""}
                   </span>
@@ -471,20 +471,23 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({
               </div>
 
               {/* Easing */}
-              <div className="flex gap-1 flex-wrap">
-                {(["linear", "ease-in", "ease-out", "ease-in-out", "step"] as KeyframeEasing[]).map((easing) => (
-                  <button
-                    key={easing}
-                    onClick={() => updateKeyframe(selectedTrack, selectedKeyframe.id, { easing })}
-                    className={`px-1 py-0.5 rounded text-[8px] transition-colors ${
-                      selectedKeyframe.easing === easing
-                        ? "bg-[#667eea]/20 text-[#667eea]"
-                        : "bg-[#0a0a0a] text-gray-400 hover:bg-[#333]"
-                    }`}
-                  >
-                    {easing}
-                  </button>
-                ))}
+              <div>
+                <span className="text-[10px] text-gray-400 mb-1 block">Easing</span>
+                <div className="flex gap-1 flex-wrap">
+                  {(["linear", "ease-in", "ease-out", "ease-in-out", "step"] as KeyframeEasing[]).map((easing) => (
+                    <button
+                      key={easing}
+                      onClick={() => updateKeyframe(selectedTrack, selectedKeyframe.id, { easing })}
+                      className={`px-1.5 py-1 rounded text-[9px] transition-colors ${
+                        selectedKeyframe.easing === easing
+                          ? "bg-[#667eea]/30 text-[#667eea] border border-[#667eea]/50"
+                          : "bg-[#0a0a0a] text-gray-300 hover:bg-[#333] border border-[#333]"
+                      }`}
+                    >
+                      {easing}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           )}
