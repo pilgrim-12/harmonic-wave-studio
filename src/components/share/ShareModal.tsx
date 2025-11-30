@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { X, Copy, Check, Link2, Trash2, Sparkles } from "lucide-react";
+import { X, Copy, Check, Link2, Trash2, Sparkles, Link2Off } from "lucide-react";
+import { TrajectoryPreview } from "@/components/gallery/TrajectoryPreview";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRadiusStore } from "@/store/radiusStore";
 import {
@@ -36,10 +37,8 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   const { radii } = useRadiusStore();
   const { checkLimit } = useTierCheck();
   const toast = useToast();
-  const [name, setName] = useState(projectName);
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState("");
-  const [makeDiscoverable, setMakeDiscoverable] = useState(false);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [currentShareId, setCurrentShareId] = useState(shareId);
@@ -87,7 +86,6 @@ export const ShareModal: React.FC<ShareModalProps> = ({
       if (sharedProject) {
         setDescription(sharedProject.description);
         setTags(sharedProject.tags.join(", "));
-        setMakeDiscoverable(sharedProject.isDiscoverable);
       }
     } catch (error) {
       console.error("Failed to load shared project:", error);
@@ -142,7 +140,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
       const project = {
         id: projectId,
         userId: user.uid,
-        name: name,
+        name: projectName,
         radii: projectRadii,
         shareId: currentShareId,
         createdAt: null,
@@ -153,13 +151,13 @@ export const ShareModal: React.FC<ShareModalProps> = ({
         project,
         user.displayName || "Anonymous",
         {
-          projectName: name,
+          projectName: projectName,
           description: description.trim() || undefined,
           tags: tags
             .split(",")
             .map((t) => t.trim())
             .filter((t) => t.length > 0),
-          makeDiscoverable,
+          makeDiscoverable: true, // Always discoverable in gallery
         }
       );
 
@@ -239,18 +237,34 @@ export const ShareModal: React.FC<ShareModalProps> = ({
 
         {/* Body */}
         <div className="p-4 space-y-4">
-          {/* Project Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
-              Project Name
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="My Project"
-            />
+          {/* Preview with radii colors */}
+          <div className="flex gap-4">
+            <div className="w-24 h-24 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0">
+              <TrajectoryPreview
+                radii={radii.map((r) => ({
+                  frequency: r.direction === "counterclockwise" ? r.rotationSpeed : -r.rotationSpeed,
+                  amplitude: r.length,
+                  phase: r.initialAngle,
+                  color: r.color,
+                }))}
+                width={96}
+                height={96}
+              />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-white font-medium text-lg">{projectName}</h3>
+              <div className="flex flex-wrap gap-1 mt-2">
+                {radii.map((r, i) => (
+                  <div
+                    key={i}
+                    className="w-4 h-4 rounded-full border border-gray-600"
+                    style={{ backgroundColor: r.color }}
+                    title={`Radius ${i + 1}: ${r.length}px, ${r.rotationSpeed}Hz`}
+                  />
+                ))}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">{radii.length} radii</p>
+            </div>
           </div>
 
           {/* Description */}
@@ -315,20 +329,6 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                 </div>
               </div>
             )}
-          </div>
-
-          {/* Make Discoverable */}
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="discoverable"
-              checked={makeDiscoverable}
-              onChange={(e) => setMakeDiscoverable(e.target.checked)}
-              className="w-4 h-4 text-blue-600 bg-gray-800 border-gray-700 rounded focus:ring-blue-500"
-            />
-            <label htmlFor="discoverable" className="text-sm text-gray-300">
-              Make discoverable in Gallery (coming soon)
-            </label>
           </div>
 
           {/* Share Link */}
