@@ -24,14 +24,14 @@ export const AccordionItem: React.FC<AccordionItemProps> = ({
       {/* Header */}
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between p-3 hover:bg-[#252525] transition-colors flex-shrink-0"
+        className="w-full flex items-center justify-between p-2 hover:bg-[#252525] transition-colors flex-shrink-0"
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {icon}
-          <h2 className="text-base font-bold text-[#667eea]">{title}</h2>
+          <h2 className="text-sm font-bold text-[#667eea]">{title}</h2>
         </div>
         <ChevronDown
-          size={18}
+          size={14}
           className={cn(
             "text-gray-400 transition-transform",
             isOpen ? "rotate-180" : ""

@@ -1,6 +1,6 @@
 /**
  * Waveform Presets with Mathematical Explanations
- * NOW WITH 11 PRESETS! (6 original + 5 new)
+ * NOW WITH 19 PRESETS! (6 original + 5 sound + 8 fun shapes)
  *
  * This file contains preset configurations for common waveforms.
  * Each preset is based on Fourier series decomposition or musical theory.
@@ -433,6 +433,307 @@ export const WAVEFORM_PRESETS: WaveformPreset[] = [
         rotationSpeed: 4.0,
         direction: "counterclockwise",
         color: "#4facfe",
+      },
+    ],
+  },
+
+  // =========================================
+  // ✨ FUN SHAPES - Animals, Nature, etc.
+  // =========================================
+
+  {
+    id: "butterfly",
+    name: "🦋 Butterfly",
+    description: "Beautiful butterfly wing pattern - symmetric with delicate curves",
+    category: "advanced",
+    mathExplanation: "Superposition of frequencies creating wing-like symmetric pattern",
+    radii: [
+      {
+        length: 60,
+        initialAngle: 0,
+        rotationSpeed: 1.0,
+        direction: "counterclockwise",
+        color: "#f093fb",
+      },
+      {
+        length: 30,
+        initialAngle: 0,
+        rotationSpeed: 2.0,
+        direction: "clockwise",
+        color: "#667eea",
+      },
+      {
+        length: 20,
+        initialAngle: 90,
+        rotationSpeed: 3.0,
+        direction: "counterclockwise",
+        color: "#4facfe",
+      },
+      {
+        length: 15,
+        initialAngle: 45,
+        rotationSpeed: 4.0,
+        direction: "clockwise",
+        color: "#00f2fe",
+      },
+      {
+        length: 10,
+        initialAngle: 0,
+        rotationSpeed: 5.0,
+        direction: "counterclockwise",
+        color: "#764ba2",
+      },
+    ],
+  },
+
+  {
+    id: "fish",
+    name: "🐟 Fish",
+    description: "Swimming fish pattern - smooth flowing curves like a fish in water",
+    category: "advanced",
+    mathExplanation: "Oscillating pattern mimicking fish movement through water",
+    radii: [
+      {
+        length: 50,
+        initialAngle: 0,
+        rotationSpeed: 1.0,
+        direction: "counterclockwise",
+        color: "#4facfe",
+      },
+      {
+        length: 25,
+        initialAngle: 180,
+        rotationSpeed: 2.0,
+        direction: "counterclockwise",
+        color: "#00f2fe",
+      },
+      {
+        length: 15,
+        initialAngle: 90,
+        rotationSpeed: 3.0,
+        direction: "clockwise",
+        color: "#667eea",
+      },
+      {
+        length: 8,
+        initialAngle: 0,
+        rotationSpeed: 5.0,
+        direction: "counterclockwise",
+        color: "#764ba2",
+      },
+    ],
+  },
+
+  {
+    id: "flower",
+    name: "🌸 Flower",
+    description: "Beautiful flower with petals - nature-inspired pattern",
+    category: "advanced",
+    mathExplanation: "Rose curve: r = cos(kθ) creating petal patterns",
+    radii: [
+      {
+        length: 50,
+        initialAngle: 0,
+        rotationSpeed: 1.0,
+        direction: "counterclockwise",
+        color: "#f093fb",
+      },
+      {
+        length: 40,
+        initialAngle: 72,
+        rotationSpeed: 5.0,
+        direction: "clockwise",
+        color: "#ff69b4",
+      },
+      {
+        length: 20,
+        initialAngle: 144,
+        rotationSpeed: 3.0,
+        direction: "counterclockwise",
+        color: "#ffc0cb",
+      },
+    ],
+  },
+
+  {
+    id: "star",
+    name: "⭐ Star",
+    description: "Five-pointed star pattern - classic celestial shape",
+    category: "advanced",
+    mathExplanation: "Pentagram pattern using 5:2 frequency ratio",
+    radii: [
+      {
+        length: 60,
+        initialAngle: 0,
+        rotationSpeed: 1.0,
+        direction: "counterclockwise",
+        color: "#ffd700",
+      },
+      {
+        length: 30,
+        initialAngle: 0,
+        rotationSpeed: 5.0,
+        direction: "clockwise",
+        color: "#ffec8b",
+      },
+      {
+        length: 15,
+        initialAngle: 180,
+        rotationSpeed: 2.0,
+        direction: "counterclockwise",
+        color: "#fff8dc",
+      },
+    ],
+  },
+
+  {
+    id: "heart",
+    name: "❤️ Heart",
+    description: "Heart shape - romantic parametric curve",
+    category: "advanced",
+    mathExplanation: "Cardioid-like pattern: heart curve approximation",
+    radii: [
+      {
+        length: 40,
+        initialAngle: 90,
+        rotationSpeed: 1.0,
+        direction: "counterclockwise",
+        color: "#ff6b6b",
+      },
+      {
+        length: 30,
+        initialAngle: 0,
+        rotationSpeed: 2.0,
+        direction: "counterclockwise",
+        color: "#ee5a5a",
+      },
+      {
+        length: 15,
+        initialAngle: 180,
+        rotationSpeed: 3.0,
+        direction: "clockwise",
+        color: "#ff8787",
+      },
+      {
+        length: 8,
+        initialAngle: 90,
+        rotationSpeed: 4.0,
+        direction: "counterclockwise",
+        color: "#ffa8a8",
+      },
+    ],
+  },
+
+  {
+    id: "spiral-galaxy",
+    name: "🌌 Spiral Galaxy",
+    description: "Cosmic spiral pattern - like arms of a galaxy",
+    category: "advanced",
+    mathExplanation: "Logarithmic spiral: r = a·e^(bθ) approximation",
+    radii: [
+      {
+        length: 60,
+        initialAngle: 0,
+        rotationSpeed: 1.0,
+        direction: "counterclockwise",
+        color: "#667eea",
+      },
+      {
+        length: 40,
+        initialAngle: 60,
+        rotationSpeed: 1.618,
+        direction: "counterclockwise",
+        color: "#764ba2",
+      },
+      {
+        length: 25,
+        initialAngle: 120,
+        rotationSpeed: 2.618,
+        direction: "counterclockwise",
+        color: "#f093fb",
+      },
+      {
+        length: 15,
+        initialAngle: 180,
+        rotationSpeed: 4.236,
+        direction: "counterclockwise",
+        color: "#4facfe",
+      },
+    ],
+  },
+
+  {
+    id: "ocean-wave",
+    name: "🌊 Ocean Wave",
+    description: "Rolling ocean wave - calming rhythmic motion",
+    category: "educational",
+    mathExplanation: "Superposition of low frequency waves like tidal motion",
+    radii: [
+      {
+        length: 50,
+        initialAngle: 0,
+        rotationSpeed: 0.5,
+        direction: "counterclockwise",
+        color: "#4facfe",
+      },
+      {
+        length: 30,
+        initialAngle: 45,
+        rotationSpeed: 1.0,
+        direction: "counterclockwise",
+        color: "#00f2fe",
+      },
+      {
+        length: 15,
+        initialAngle: 90,
+        rotationSpeed: 1.5,
+        direction: "clockwise",
+        color: "#667eea",
+      },
+      {
+        length: 8,
+        initialAngle: 0,
+        rotationSpeed: 2.5,
+        direction: "counterclockwise",
+        color: "#87ceeb",
+      },
+    ],
+  },
+
+  {
+    id: "dna-helix",
+    name: "🧬 DNA Helix",
+    description: "Double helix pattern - the blueprint of life",
+    category: "educational",
+    mathExplanation: "Twisted ladder pattern like DNA double helix",
+    radii: [
+      {
+        length: 50,
+        initialAngle: 0,
+        rotationSpeed: 1.0,
+        direction: "counterclockwise",
+        color: "#667eea",
+      },
+      {
+        length: 50,
+        initialAngle: 180,
+        rotationSpeed: 1.0,
+        direction: "counterclockwise",
+        color: "#f093fb",
+      },
+      {
+        length: 20,
+        initialAngle: 90,
+        rotationSpeed: 3.0,
+        direction: "clockwise",
+        color: "#4facfe",
+      },
+      {
+        length: 10,
+        initialAngle: 270,
+        rotationSpeed: 5.0,
+        direction: "counterclockwise",
+        color: "#00f2fe",
       },
     ],
   },

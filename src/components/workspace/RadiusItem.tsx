@@ -118,8 +118,8 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
       )}
     >
       {/* Header */}
-      <div className="p-2.5 pb-2">
-        <div className="flex items-center justify-between mb-1.5">
+      <div className="p-1.5 pb-1">
+        <div className="flex items-center justify-between mb-0.5">
           <div className="flex items-center gap-2">
             {/* Color dot with picker */}
             <div className="relative">
@@ -255,7 +255,7 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
       {/* Expanded sliders */}
       {isExpanded && (
         <div
-          className="px-2.5 pb-2.5 space-y-2 border-t border-[#333] pt-2"
+          className="px-2 pb-2 space-y-1.5 border-t border-[#333] pt-1.5"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Amplitude slider */}
@@ -372,7 +372,7 @@ export const RadiusItem: React.FC<RadiusItemProps> = ({ radius, onEdit }) => {
           </div>
 
           {/* Direction toggle */}
-          <div className="flex items-center justify-between pt-1">
+          <div className="flex items-center justify-between pt-0.5">
             <Tooltip
               content={
                 <div className="max-w-xs">

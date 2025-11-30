@@ -483,11 +483,11 @@ function HomeContent() {
   return (
     <div className="h-screen bg-[#0f0f0f] flex flex-col overflow-hidden">
       <header className="border-b border-[#2a2a2a] flex-shrink-0">
-        <div className="flex items-center justify-between h-14 px-3 gap-3">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2">
-              <span className="text-2xl">🌊</span>
-              <span className="font-bold text-white text-lg">
+        <div className="flex items-center justify-between h-11 px-3 gap-2">
+          <div className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-1.5">
+              <span className="text-xl">🌊</span>
+              <span className="font-bold text-white text-sm">
                 Harmonic Wave Studio
               </span>
             </Link>
@@ -499,7 +499,7 @@ function HomeContent() {
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
               placeholder="Project name..."
-              className="px-3 py-1.5 text-sm bg-[#1a1a1a] border border-[#2a2a2a] rounded-md text-gray-300 placeholder-gray-500 focus:outline-none focus:border-[#667eea] w-48"
+              className="px-2 py-1 text-xs bg-[#1a1a1a] border border-[#2a2a2a] rounded-md text-gray-300 placeholder-gray-500 focus:outline-none focus:border-[#667eea] w-40"
             />
           </div>
 
@@ -766,9 +766,9 @@ function HomeContent() {
           {/* Signal Graphs - Collapsible bottom panel */}
           <CollapsibleBottomPanel
             title="Signal Graphs"
-            defaultHeight={180}
-            minHeight={100}
-            maxHeight={350}
+            defaultHeight={140}
+            minHeight={80}
+            maxHeight={280}
           >
             <div className="grid grid-cols-1 md:grid-cols-5 gap-2 h-full p-2">
               {/* Original Signal */}

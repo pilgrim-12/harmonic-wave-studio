@@ -21,11 +21,11 @@ export const StatusBar: React.FC = () => {
   const bufferSize = original.length;
 
   return (
-    <div className="h-6 bg-[#0f0f0f] border-t border-[#2a2a2a] flex items-center justify-between px-3 text-[10px] text-gray-500 flex-shrink-0">
+    <div className="h-5 bg-[#0f0f0f] border-t border-[#2a2a2a] flex items-center justify-between px-2 text-[9px] text-gray-500 flex-shrink-0">
       {/* Left section - Playback status */}
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-1.5">
-          <Activity size={12} className={isPlaying ? "text-green-500" : "text-gray-600"} />
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1">
+          <Activity size={10} className={isPlaying ? "text-green-500" : "text-gray-600"} />
           <span className={isPlaying ? "text-green-400" : "text-gray-600"}>
             {isPlaying ? "Playing" : "Paused"}
           </span>
@@ -37,15 +37,15 @@ export const StatusBar: React.FC = () => {
 
         <div className="h-3 w-px bg-[#2a2a2a]" />
 
-        <div className="flex items-center gap-1.5">
-          <Zap size={12} className="text-blue-500" />
+        <div className="flex items-center gap-1">
+          <Zap size={10} className="text-blue-500" />
           <span>FPS: {fps}</span>
         </div>
 
         <div className="h-3 w-px bg-[#2a2a2a]" />
 
-        <div className="flex items-center gap-1.5">
-          <Cpu size={12} className={computeLoad > 80 ? "text-red-500" : computeLoad > 50 ? "text-yellow-500" : "text-green-500"} />
+        <div className="flex items-center gap-1">
+          <Cpu size={10} className={computeLoad > 80 ? "text-red-500" : computeLoad > 50 ? "text-yellow-500" : "text-green-500"} />
           <span className={computeLoad > 80 ? "text-red-400" : computeLoad > 50 ? "text-yellow-400" : "text-green-400"}>
             Load: {computeLoad}%
           </span>
@@ -53,9 +53,9 @@ export const StatusBar: React.FC = () => {
       </div>
 
       {/* Center section - Signal info */}
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-1.5">
-          <Layers size={12} className="text-purple-500" />
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1">
+          <Layers size={10} className="text-purple-500" />
           <span>Radii: {radii.length}</span>
         </div>
 
@@ -69,11 +69,11 @@ export const StatusBar: React.FC = () => {
       </div>
 
       {/* Right section - Filter status */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         {isFilterApplied && filterSettings && (
           <>
-            <div className="flex items-center gap-1.5">
-              <Filter size={12} className="text-orange-500" />
+            <div className="flex items-center gap-1">
+              <Filter size={10} className="text-orange-500" />
               <span className="text-orange-400">
                 Filter: {filterSettings.type} ({filterSettings.mode})
               </span>
