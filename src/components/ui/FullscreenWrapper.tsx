@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Maximize2 } from "lucide-react";
+import { X } from "lucide-react";
 
 interface FullscreenWrapperProps {
   children: React.ReactNode;
@@ -44,18 +44,9 @@ export const FullscreenWrapper: React.FC<FullscreenWrapperProps> = ({
 
   return (
     <div
-      className="relative h-full w-full group"
+      className="relative h-full w-full"
       onDoubleClick={handleDoubleClick}
-      title="Double-click for fullscreen"
     >
-      {/* Fullscreen hint - shows on hover */}
-      <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-        <div className="px-2 py-1 bg-[#1a1a1a]/90 rounded text-xs text-gray-400 flex items-center gap-1">
-          <Maximize2 size={12} />
-          <span>Double-click for fullscreen</span>
-        </div>
-      </div>
-
       {children}
     </div>
   );
