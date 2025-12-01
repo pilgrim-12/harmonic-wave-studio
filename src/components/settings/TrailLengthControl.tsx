@@ -12,7 +12,7 @@ export const TrailLengthControl: React.FC = () => {
     const saved = localStorage.getItem("trailLength");
     if (saved) {
       const trailLength = parseInt(saved, 10);
-      if (!isNaN(trailLength) && trailLength >= 50 && trailLength <= 2000) {
+      if (!isNaN(trailLength) && trailLength >= 50 && trailLength <= 4000) {
         updateSettings({ trailLength });
       }
     }
@@ -41,16 +41,16 @@ export const TrailLengthControl: React.FC = () => {
         <input
           type="range"
           min={50}
-          max={2000}
+          max={4000}
           step={50}
           value={settings.trailLength}
           onChange={handleChange}
           className="flex-1 h-1.5 bg-[#252525] rounded-lg appearance-none cursor-pointer accent-[#667eea]"
           style={{
             background: `linear-gradient(to right, #667eea 0%, #667eea ${
-              ((settings.trailLength - 50) / (2000 - 50)) * 100
+              ((settings.trailLength - 50) / (4000 - 50)) * 100
             }%, #252525 ${
-              ((settings.trailLength - 50) / (2000 - 50)) * 100
+              ((settings.trailLength - 50) / (4000 - 50)) * 100
             }%, #252525 100%)`,
           }}
         />
@@ -58,7 +58,7 @@ export const TrailLengthControl: React.FC = () => {
         <input
           type="number"
           min={50}
-          max={2000}
+          max={4000}
           step={50}
           value={settings.trailLength}
           onChange={handleChange}

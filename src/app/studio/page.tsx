@@ -763,6 +763,11 @@ function HomeContent() {
                     frequency: r.direction === "counterclockwise" ? r.rotationSpeed : -r.rotationSpeed,
                     amplitude: r.length,
                     phase: r.initialAngle,
+                    color: r.color,
+                    envelope: r.envelope,
+                    sweep: r.sweep,
+                    lfo: r.lfo,
+                    timeline: r.timeline,
                   }))} />
                 </div>
               )}
@@ -787,9 +792,9 @@ function HomeContent() {
           {/* Signal Graphs - Collapsible bottom panel */}
           <CollapsibleBottomPanel
             title="Signal Graphs"
-            defaultHeight={200}
+            defaultHeight={250}
             minHeight={100}
-            maxHeight={350}
+            maxHeight={400}
           >
             <div className="grid grid-cols-1 md:grid-cols-5 gap-2 h-full p-2">
               {/* Original Signal */}

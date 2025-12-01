@@ -80,28 +80,20 @@ export const ResizableSidebar: React.FC<ResizableSidebarProps> = ({
       className="flex-shrink-0 relative h-full flex flex-col"
       style={{ width: `${width}px` }}
     >
-      {/* Header with title and collapse button */}
-      {title && (
-        <div className="flex items-center justify-between p-3 bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl flex-shrink-0">
-          <div className="flex items-center gap-2 min-w-0">
-            {icon && <span className="flex-shrink-0">{icon}</span>}
-            <h2 className="text-base font-bold text-[#667eea] truncate">{title}</h2>
-          </div>
-          <button
-            onClick={() => setIsCollapsed(true)}
-            className="p-1.5 hover:bg-[#2a2a2a] rounded-lg transition-colors group"
-            title="Collapse sidebar"
-          >
-            <ChevronLeft
-              size={16}
-              className="text-gray-400 group-hover:text-white transition-colors"
-            />
-          </button>
-        </div>
-      )}
+      {/* Collapse button - small, in corner */}
+      <button
+        onClick={() => setIsCollapsed(true)}
+        className="absolute top-2 right-3 z-20 p-1.5 bg-[#2a2a2a]/80 hover:bg-[#333] rounded transition-colors group"
+        title="Collapse sidebar"
+      >
+        <ChevronLeft
+          size={14}
+          className="text-gray-400 group-hover:text-white transition-colors"
+        />
+      </button>
 
       {/* Content */}
-      <div className="flex flex-col gap-3 overflow-hidden pr-1 flex-1 mt-3">
+      <div className="flex flex-col gap-3 overflow-hidden pr-1 flex-1">
         {children}
       </div>
 

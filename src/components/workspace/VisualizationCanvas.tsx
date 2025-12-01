@@ -22,6 +22,10 @@ export const VisualizationCanvas: React.FC = () => {
   const trailsRef = useRef<Map<string, Point2D[]>>(new Map());
   const animationFrameRef = useRef<number | null>(null);
 
+  // FPS/Load measurement refs (persist across re-renders)
+  const fpsCounterRef = useRef({ frameCount: 0, fpsTime: 0, lastTime: performance.now() });
+  const frameTimesRef = useRef<number[]>([]);
+
   const { radii } = useRadiusStore();
   const {
     isPlaying,
@@ -63,20 +67,15 @@ export const VisualizationCanvas: React.FC = () => {
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
 
-    let lastTime = performance.now();
-    let frameCount = 0;
-    let fpsTime = 0;
-
     // For compute load measurement
     let frameStartTime = 0;
-    const frameTimes: number[] = [];
     const maxFrameSamples = 60;
 
     const animate = (time: number) => {
       frameStartTime = performance.now(); // Start measuring frame computation
 
-      const deltaTime = (time - lastTime) / 1000;
-      lastTime = time;
+      const deltaTime = (time - fpsCounterRef.current.lastTime) / 1000;
+      fpsCounterRef.current.lastTime = time;
 
       // Обновляем время симуляции ТОЛЬКО если играет
       let newTime = currentTime; // ✅ Определяем снаружи
@@ -85,13 +84,13 @@ export const VisualizationCanvas: React.FC = () => {
         newTime = currentTime + deltaTime * settings.animationSpeed;
         setCurrentTime(newTime);
 
-        // Расчет FPS
-        frameCount++;
-        fpsTime += deltaTime;
-        if (fpsTime >= 1) {
-          updateFps(frameCount / fpsTime);
-          frameCount = 0;
-          fpsTime = 0;
+        // Расчет FPS (using refs to persist across re-renders)
+        fpsCounterRef.current.frameCount++;
+        fpsCounterRef.current.fpsTime += deltaTime;
+        if (fpsCounterRef.current.fpsTime >= 1) {
+          updateFps(Math.round(fpsCounterRef.current.frameCount / fpsCounterRef.current.fpsTime));
+          fpsCounterRef.current.frameCount = 0;
+          fpsCounterRef.current.fpsTime = 0;
         }
       }
 
@@ -193,17 +192,17 @@ export const VisualizationCanvas: React.FC = () => {
       const frameComputeTime = frameEndTime - frameStartTime;
 
       if (isPlaying) {
-        frameTimes.push(frameComputeTime);
+        frameTimesRef.current.push(frameComputeTime);
 
         // Keep only last N samples
-        if (frameTimes.length > maxFrameSamples) {
-          frameTimes.shift();
+        if (frameTimesRef.current.length > maxFrameSamples) {
+          frameTimesRef.current.shift();
         }
 
         // Calculate and update compute load
-        if (frameTimes.length >= 10) {
+        if (frameTimesRef.current.length >= 10) {
           const avgFrameTime =
-            frameTimes.reduce((sum, t) => sum + t, 0) / frameTimes.length;
+            frameTimesRef.current.reduce((sum, t) => sum + t, 0) / frameTimesRef.current.length;
 
           // Convert to load percentage based on actual frame time
           // 0ms = 0%, 16.67ms (target 60fps) = 100%
@@ -216,7 +215,7 @@ export const VisualizationCanvas: React.FC = () => {
         }
       } else {
         // Reset when not playing
-        frameTimes.length = 0;
+        frameTimesRef.current.length = 0;
         updateComputeLoad(0);
       }
 

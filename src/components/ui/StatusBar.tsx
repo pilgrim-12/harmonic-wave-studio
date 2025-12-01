@@ -38,16 +38,18 @@ export const StatusBar: React.FC = () => {
         <div className="h-3 w-px bg-[#2a2a2a]" />
 
         <div className="flex items-center gap-1">
-          <Zap size={10} className="text-blue-500" />
-          <span>FPS: {fps}</span>
+          <Zap size={10} className={isPlaying ? "text-blue-500" : "text-gray-600"} />
+          <span className={isPlaying ? "" : "text-gray-600"}>
+            FPS: {isPlaying ? Math.round(fps) : "-"}
+          </span>
         </div>
 
         <div className="h-3 w-px bg-[#2a2a2a]" />
 
         <div className="flex items-center gap-1">
-          <Cpu size={10} className={computeLoad > 80 ? "text-red-500" : computeLoad > 50 ? "text-yellow-500" : "text-green-500"} />
-          <span className={computeLoad > 80 ? "text-red-400" : computeLoad > 50 ? "text-yellow-400" : "text-green-400"}>
-            Load: {computeLoad}%
+          <Cpu size={10} className={!isPlaying ? "text-gray-600" : computeLoad > 80 ? "text-red-500" : computeLoad > 50 ? "text-yellow-500" : "text-green-500"} />
+          <span className={!isPlaying ? "text-gray-600" : computeLoad > 80 ? "text-red-400" : computeLoad > 50 ? "text-yellow-400" : "text-green-400"}>
+            Load: {isPlaying ? `${computeLoad}%` : "-"}
           </span>
         </div>
       </div>
