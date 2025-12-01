@@ -258,6 +258,18 @@ function drawSignals(
       }
     }
     ctx.stroke();
+
+    // Current point dot for noisy signal
+    const lastIdx = Math.min(signalBuffer.length, noisy.length) - 1;
+    if (lastIdx >= 0) {
+      const lastPoint = signalBuffer[lastIdx];
+      const dotX = timeToX(lastPoint.time);
+      const dotY = yToCanvas(noisy[lastIdx]);
+      ctx.fillStyle = "#ff6b6b";
+      ctx.beginPath();
+      ctx.arc(dotX, dotY, 4, 0, 2 * Math.PI);
+      ctx.fill();
+    }
   }
 
   ctx.restore();

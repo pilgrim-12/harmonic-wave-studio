@@ -205,6 +205,18 @@ export const DecompositionGraph: React.FC = () => {
       }
 
       ctx.stroke();
+
+      // Current point dot for sum signal
+      if (signalBuffer.length > 0) {
+        const lastPoint = signalBuffer[signalBuffer.length - 1];
+        const dotX = timeToX(lastPoint.time);
+        const dotY = yToCanvas(lastPoint.y);
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(dotX, dotY, 4, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+
       ctx.globalAlpha = 1.0;
       ctx.restore();
     }
