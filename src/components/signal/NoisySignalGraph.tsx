@@ -210,6 +210,12 @@ function drawSignals(
     return padding.top + graphHeight / 2 - (centered / yRange) * (graphHeight / 2);
   };
 
+  // Set up clipping region for the graph area
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(padding.left, padding.top, graphWidth, graphHeight);
+  ctx.clip();
+
   // Draw original (faded if noisy exists)
   ctx.strokeStyle = hasNoisy ? "rgba(102, 126, 234, 0.4)" : "#667eea";
   ctx.lineWidth = hasNoisy ? 1.5 : 2;
@@ -221,8 +227,6 @@ function drawSignals(
   for (let i = 0; i < signalBuffer.length && i < original.length; i++) {
     const point = signalBuffer[i];
     const x = timeToX(point.time);
-    if (x < padding.left) continue;
-
     const y = yToCanvas(original[i]);
 
     if (firstPoint) {
@@ -244,8 +248,6 @@ function drawSignals(
     for (let i = 0; i < signalBuffer.length && i < noisy.length; i++) {
       const point = signalBuffer[i];
       const x = timeToX(point.time);
-      if (x < padding.left) continue;
-
       const y = yToCanvas(noisy[i]);
 
       if (firstPoint) {
@@ -257,4 +259,6 @@ function drawSignals(
     }
     ctx.stroke();
   }
+
+  ctx.restore();
 }

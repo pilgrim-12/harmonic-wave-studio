@@ -291,6 +291,12 @@ function drawSpectrogram(
     }
   }
 
+  // Set up clipping region for the graph area
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(padding.left, padding.top, graphWidth, graphHeight);
+  ctx.clip();
+
   // Draw each trace
   for (const [color, points] of traces) {
     if (points.length < 2) continue;
@@ -305,8 +311,6 @@ function drawSpectrogram(
     let firstPoint = true;
     for (const point of points) {
       const x = timeToX(point.time);
-      if (x < padding.left) continue;
-
       const y = freqToY(point.freq);
 
       if (firstPoint) {
@@ -326,6 +330,8 @@ function drawSpectrogram(
     ctx.shadowBlur = 0;
     ctx.globalAlpha = 1;
   }
+
+  ctx.restore();
 }
 
 function drawCurrentFrequencies(

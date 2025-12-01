@@ -217,6 +217,12 @@ function drawSignal(
     return padding.top + graphHeight / 2 - (centered / yRange) * (graphHeight / 2);
   };
 
+  // Set up clipping region for the graph area
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(padding.left, padding.top, graphWidth, graphHeight);
+  ctx.clip();
+
   ctx.strokeStyle = "#667eea";
   ctx.lineWidth = 2;
   ctx.lineCap = "round";
@@ -226,8 +232,6 @@ function drawSignal(
   let firstPoint = true;
   for (const point of data) {
     const x = timeToX(point.time);
-    if (x < padding.left) continue;
-
     const y = yToCanvas(point.y);
 
     if (firstPoint) {
@@ -249,4 +253,6 @@ function drawSignal(
     ctx.arc(x, y, 4, 0, 2 * Math.PI);
     ctx.fill();
   }
+
+  ctx.restore();
 }

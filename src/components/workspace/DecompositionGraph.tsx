@@ -178,6 +178,12 @@ export const DecompositionGraph: React.FC = () => {
     const { signalBuffer } = useSignalProcessingStore.getState();
 
     if (signalBuffer.length > 1) {
+      // Set up clipping region for the graph area
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(padding.left, padding.top, graphWidth, graphHeight);
+      ctx.clip();
+
       ctx.strokeStyle = "#ffffff";
       ctx.lineWidth = 2;
       ctx.globalAlpha = 0.9;
@@ -188,8 +194,6 @@ export const DecompositionGraph: React.FC = () => {
       for (let i = 0; i < signalBuffer.length; i++) {
         const point = signalBuffer[i];
         const x = timeToX(point.time);
-        if (x < padding.left) continue;
-
         const canvasY = yToCanvas(point.y);
 
         if (firstPoint) {
@@ -202,6 +206,7 @@ export const DecompositionGraph: React.FC = () => {
 
       ctx.stroke();
       ctx.globalAlpha = 1.0;
+      ctx.restore();
     }
 
     // Legend
