@@ -1,25 +1,32 @@
 /**
  * Waveform Presets with Mathematical Explanations
- * NOW WITH 19 PRESETS! (6 original + 5 sound + 8 fun shapes)
+ * NOW WITH 27+ PRESETS! Including modulation examples (Envelope, Sweep, LFO, Timeline)
  *
  * This file contains preset configurations for common waveforms.
  * Each preset is based on Fourier series decomposition or musical theory.
  */
 
-// Simplified type for preset data - only essential fields
+import { EnvelopeConfig, SweepConfig, LFOConfig, TimelineConfig } from "@/types/radius";
+
+// Preset radius data with optional modulation parameters
 export interface PresetRadiusData {
   length: number; // Amplitude (radius length in pixels)
   initialAngle: number; // Phase offset (in degrees, 0-360)
   rotationSpeed: number; // Frequency multiplier (rev/s)
   direction: "clockwise" | "counterclockwise";
   color: string;
+  // Modulation parameters (optional)
+  envelope?: EnvelopeConfig;
+  sweep?: SweepConfig;
+  lfo?: LFOConfig;
+  timeline?: TimelineConfig;
 }
 
 export interface WaveformPreset {
   id: string;
   name: string;
   description: string;
-  category: "basic" | "advanced" | "educational";
+  category: "basic" | "advanced" | "educational" | "modulation";
   radii: PresetRadiusData[];
   mathExplanation?: string;
 }
@@ -737,6 +744,300 @@ export const WAVEFORM_PRESETS: WaveformPreset[] = [
       },
     ],
   },
+
+  // =========================================
+  // ✨ MODULATION PRESETS - Using Envelope, Sweep, LFO, Timeline
+  // =========================================
+
+  {
+    id: "fm-modulation",
+    name: "📻 FM Synthesis",
+    description: "Frequency Modulation - LFO modulates frequency for rich timbres",
+    category: "modulation",
+    mathExplanation: "f(t) = sin(ωct + β·sin(ωmt)) - frequency modulation synthesis",
+    radii: [
+      {
+        length: 60,
+        initialAngle: 0,
+        rotationSpeed: 2.0,
+        direction: "counterclockwise",
+        color: "#667eea",
+        lfo: {
+          enabled: true,
+          rate: 0.5,
+          depth: 0.8,
+          waveform: "sine",
+          target: "frequency",
+          phase: 0,
+        },
+      },
+      {
+        length: 30,
+        initialAngle: 0,
+        rotationSpeed: 4.0,
+        direction: "counterclockwise",
+        color: "#f093fb",
+      },
+    ],
+  },
+
+  {
+    id: "siren",
+    name: "🚨 Siren",
+    description: "Emergency siren - frequency sweep up and down",
+    category: "modulation",
+    mathExplanation: "Frequency sweep from low to high, looping continuously",
+    radii: [
+      {
+        length: 60,
+        initialAngle: 0,
+        rotationSpeed: 1.0,
+        direction: "counterclockwise",
+        color: "#ff6b6b",
+        sweep: {
+          enabled: true,
+          startFreq: 0.5,
+          endFreq: 3.0,
+          duration: 2.0,
+          loop: true,
+        },
+      },
+      {
+        length: 20,
+        initialAngle: 0,
+        rotationSpeed: 2.0,
+        direction: "counterclockwise",
+        color: "#ee5a5a",
+      },
+    ],
+  },
+
+  {
+    id: "pluck-string",
+    name: "🎸 Plucked String",
+    description: "Guitar pluck - sharp attack with exponential decay",
+    category: "modulation",
+    mathExplanation: "ADSR envelope: instant attack, natural decay like a string",
+    radii: [
+      {
+        length: 70,
+        initialAngle: 0,
+        rotationSpeed: 1.0,
+        direction: "counterclockwise",
+        color: "#d4a574",
+        envelope: {
+          enabled: true,
+          attack: 0.01,
+          decay: 0.3,
+          sustain: 0.2,
+          release: 0.8,
+          curve: "exponential",
+          loop: true,
+          loopDuration: 2.0,
+        },
+      },
+      {
+        length: 25,
+        initialAngle: 0,
+        rotationSpeed: 2.0,
+        direction: "counterclockwise",
+        color: "#c49a6c",
+      },
+      {
+        length: 15,
+        initialAngle: 0,
+        rotationSpeed: 3.0,
+        direction: "counterclockwise",
+        color: "#b08050",
+      },
+    ],
+  },
+
+  {
+    id: "pad-swell",
+    name: "🎹 Synth Pad",
+    description: "Ambient pad sound - slow attack, sustained, soft release",
+    category: "modulation",
+    mathExplanation: "Slow envelope creates dreamy, atmospheric sound",
+    radii: [
+      {
+        length: 50,
+        initialAngle: 0,
+        rotationSpeed: 0.5,
+        direction: "counterclockwise",
+        color: "#667eea",
+        envelope: {
+          enabled: true,
+          attack: 1.5,
+          decay: 0.5,
+          sustain: 0.8,
+          release: 2.0,
+          curve: "linear",
+          loop: true,
+          loopDuration: 8.0,
+        },
+      },
+      {
+        length: 30,
+        initialAngle: 90,
+        rotationSpeed: 1.0,
+        direction: "counterclockwise",
+        color: "#764ba2",
+      },
+      {
+        length: 20,
+        initialAngle: 180,
+        rotationSpeed: 1.5,
+        direction: "counterclockwise",
+        color: "#f093fb",
+      },
+    ],
+  },
+
+  {
+    id: "tremolo",
+    name: "🎚️ Tremolo",
+    description: "Classic tremolo effect - LFO on amplitude",
+    category: "modulation",
+    mathExplanation: "Amplitude modulated by sine LFO for pulsating effect",
+    radii: [
+      {
+        length: 60,
+        initialAngle: 0,
+        rotationSpeed: 1.5,
+        direction: "counterclockwise",
+        color: "#43e97b",
+        lfo: {
+          enabled: true,
+          rate: 4.0,
+          depth: 0.5,
+          waveform: "sine",
+          target: "amplitude",
+          phase: 0,
+        },
+      },
+      {
+        length: 30,
+        initialAngle: 0,
+        rotationSpeed: 3.0,
+        direction: "counterclockwise",
+        color: "#38d9a9",
+      },
+    ],
+  },
+
+  {
+    id: "vibrato",
+    name: "🎻 Vibrato",
+    description: "Musical vibrato - subtle pitch modulation",
+    category: "modulation",
+    mathExplanation: "Slight frequency modulation adds expressiveness",
+    radii: [
+      {
+        length: 60,
+        initialAngle: 0,
+        rotationSpeed: 1.0,
+        direction: "counterclockwise",
+        color: "#9775fa",
+        lfo: {
+          enabled: true,
+          rate: 5.0,
+          depth: 0.15,
+          waveform: "sine",
+          target: "frequency",
+          phase: 0,
+        },
+      },
+      {
+        length: 20,
+        initialAngle: 0,
+        rotationSpeed: 2.0,
+        direction: "counterclockwise",
+        color: "#845ef7",
+      },
+    ],
+  },
+
+  {
+    id: "laser-zap",
+    name: "⚡ Laser Zap",
+    description: "Sci-fi laser sound - fast frequency drop",
+    category: "modulation",
+    mathExplanation: "Rapid frequency sweep from high to low",
+    radii: [
+      {
+        length: 50,
+        initialAngle: 0,
+        rotationSpeed: 8.0,
+        direction: "counterclockwise",
+        color: "#00ff88",
+        sweep: {
+          enabled: true,
+          startFreq: 10.0,
+          endFreq: 0.5,
+          duration: 0.5,
+          loop: true,
+        },
+        envelope: {
+          enabled: true,
+          attack: 0.01,
+          decay: 0.2,
+          sustain: 0.1,
+          release: 0.2,
+          curve: "exponential",
+          loop: true,
+          loopDuration: 1.0,
+        },
+      },
+    ],
+  },
+
+  {
+    id: "phase-wobble",
+    name: "🌀 Phase Wobble",
+    description: "Psychedelic phase modulation effect",
+    category: "modulation",
+    mathExplanation: "LFO modulates phase creating swirling motion",
+    radii: [
+      {
+        length: 50,
+        initialAngle: 0,
+        rotationSpeed: 1.0,
+        direction: "counterclockwise",
+        color: "#ff6b6b",
+        lfo: {
+          enabled: true,
+          rate: 0.3,
+          depth: 0.8,
+          waveform: "triangle",
+          target: "phase",
+          phase: 0,
+        },
+      },
+      {
+        length: 40,
+        initialAngle: 120,
+        rotationSpeed: 2.0,
+        direction: "counterclockwise",
+        color: "#feca57",
+        lfo: {
+          enabled: true,
+          rate: 0.4,
+          depth: 0.6,
+          waveform: "triangle",
+          target: "phase",
+          phase: 0,
+        },
+      },
+      {
+        length: 30,
+        initialAngle: 240,
+        rotationSpeed: 3.0,
+        direction: "counterclockwise",
+        color: "#48dbfb",
+      },
+    ],
+  },
 ];
 
 /**
@@ -750,7 +1051,7 @@ export function getPresetById(id: string): WaveformPreset | undefined {
  * Helper: Get presets by category
  */
 export function getPresetsByCategory(
-  category: "basic" | "advanced" | "educational"
+  category: "basic" | "advanced" | "educational" | "modulation"
 ): WaveformPreset[] {
   return WAVEFORM_PRESETS.filter((preset) => preset.category === category);
 }
@@ -801,6 +1102,7 @@ export function countPresetsByCategory(): Record<string, number> {
     basic: getPresetsByCategory("basic").length,
     advanced: getPresetsByCategory("advanced").length,
     educational: getPresetsByCategory("educational").length,
+    modulation: getPresetsByCategory("modulation").length,
     total: WAVEFORM_PRESETS.length,
   };
 }

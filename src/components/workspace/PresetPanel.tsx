@@ -46,6 +46,17 @@ export const PresetPanel: React.FC = () => {
         color: radiusData.color,
       });
 
+      // Apply modulation parameters if present
+      if (radiusData.envelope || radiusData.sweep || radiusData.lfo || radiusData.timeline) {
+        const { updateRadius } = useRadiusStore.getState();
+        updateRadius(newRadiusId, {
+          ...(radiusData.envelope && { envelope: radiusData.envelope }),
+          ...(radiusData.sweep && { sweep: radiusData.sweep }),
+          ...(radiusData.lfo && { lfo: radiusData.lfo }),
+          ...(radiusData.timeline && { timeline: radiusData.timeline }),
+        });
+      }
+
       // Track last radius
       lastRadiusId = newRadiusId;
 
@@ -140,6 +151,8 @@ export const PresetPanel: React.FC = () => {
                                     ? "bg-blue-500/20 text-blue-400"
                                     : preset.category === "advanced"
                                     ? "bg-purple-500/20 text-purple-400"
+                                    : preset.category === "modulation"
+                                    ? "bg-orange-500/20 text-orange-400"
                                     : "bg-green-500/20 text-green-400"
                                 }`}
                               >
