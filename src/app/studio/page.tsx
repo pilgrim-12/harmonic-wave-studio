@@ -16,10 +16,6 @@ import { MetricsPanel } from "@/components/signal/MetricsPanel";
 import { NoisySignalGraph } from "@/components/signal/NoisySignalGraph";
 import { DigitalFilterPanel } from "@/components/signal/DigitalFilterPanel";
 import { FilteredSignalGraph } from "@/components/signal/FilteredSignalGraph";
-import { FrequencyResponsePanel } from "@/components/signal/FrequencyResponsePanel";
-import { PWMPanel } from "@/components/signal/PWMPanel";
-import { ModulationPanel } from "@/components/signal/ModulationPanel";
-import { ZPlanePanel } from "@/components/signal/ZPlanePanel";
 import { UndoRedoIndicator } from "@/components/ui/UndoRedoIndicator";
 import { AccordionItem } from "@/components/ui/Accordion";
 import { FullscreenWrapper } from "@/components/ui/FullscreenWrapper";
@@ -65,6 +61,7 @@ import { useTierCheck } from "@/hooks/useTierCheck";
 import { normalizeRadius } from "@/lib/validation/normalizeRadius";
 import { FormulaDisplay } from "@/components/studio/FormulaDisplay";
 import { Visualization3DModal } from "@/components/studio/Visualization3DModal";
+import { SignalAnalysisModal } from "@/components/studio/SignalAnalysisModal";
 
 function HomeContent() {
   const [openPanel, setOpenPanel] = useState<string>("radii");
@@ -73,6 +70,7 @@ function HomeContent() {
   const [saving, setSaving] = useState(false);
   const [shareId, setShareId] = useState<string | null>(null);
   const [show3DModal, setShow3DModal] = useState(false);
+  const [showAnalysisModal, setShowAnalysisModal] = useState(false);
 
   // ✅ Ref for animation loop
   const animationFrameRef = useRef<number | null>(null);
@@ -581,6 +579,17 @@ function HomeContent() {
                 <Box size={14} className="mr-1" />
                 3D
               </Button>
+
+              {/* Signal Analysis Button */}
+              <Button
+                onClick={() => setShowAnalysisModal(true)}
+                variant="secondary"
+                className="text-sm"
+                title="Signal Analysis Tools"
+              >
+                <Activity size={14} className="mr-1" />
+                Analysis
+              </Button>
             </div>
           )}
 
@@ -691,10 +700,6 @@ function HomeContent() {
                         sampleRate={settings.signalSampleRate || 30}
                       />
                     </FeatureGate>
-                    <FrequencyResponsePanel />
-                    <ZPlanePanel />
-                    <PWMPanel />
-                    <ModulationPanel />
                     <MetricsPanel />
                   </div>
                 </div>
@@ -888,6 +893,11 @@ function HomeContent() {
           }))}
           onClose={() => setShow3DModal(false)}
         />
+      )}
+
+      {/* Signal Analysis Modal */}
+      {showAnalysisModal && (
+        <SignalAnalysisModal onClose={() => setShowAnalysisModal(false)} />
       )}
     </div>
   );
