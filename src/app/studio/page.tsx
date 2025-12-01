@@ -45,7 +45,7 @@ import { RadiusItem } from "@/components/workspace/RadiusItem";
 import { RadiusEditor } from "@/components/workspace/RadiusEditor";
 import { Button } from "@/components/ui/Button";
 import { StatusBar } from "@/components/ui/StatusBar";
-import { Radius } from "@/types/radius";
+import { Radius, EnvelopeConfig, SweepConfig, LFOConfig, TimelineConfig } from "@/types/radius";
 import { SignInButton } from "@/components/auth/SignInButton";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { useAuth } from "@/contexts/AuthContext";
@@ -133,6 +133,10 @@ function HomeContent() {
             amplitude: number;
             phase: number;
             color?: string;
+            envelope?: EnvelopeConfig;
+            sweep?: SweepConfig;
+            lfo?: LFOConfig;
+            timeline?: TimelineConfig;
           }) => {
             // Normalize values before adding
             const normalized = normalizeRadius({
@@ -150,6 +154,17 @@ function HomeContent() {
                 fbRadius.frequency >= 0 ? "counterclockwise" : "clockwise",
               color: fbRadius.color, // Restore saved color
             });
+
+            // Restore modulation parameters if they exist
+            if (fbRadius.envelope || fbRadius.sweep || fbRadius.lfo || fbRadius.timeline) {
+              const { updateRadius } = useRadiusStore.getState();
+              updateRadius(newRadiusId, {
+                ...(fbRadius.envelope && { envelope: fbRadius.envelope }),
+                ...(fbRadius.sweep && { sweep: fbRadius.sweep }),
+                ...(fbRadius.lfo && { lfo: fbRadius.lfo }),
+                ...(fbRadius.timeline && { timeline: fbRadius.timeline }),
+              });
+            }
 
             // Update for next radius
             previousRadiusId = newRadiusId;
@@ -426,6 +441,11 @@ function HomeContent() {
         amplitude: r.length,
         phase: r.initialAngle,
         color: r.color,
+        // Include modulation parameters if they exist
+        ...(r.envelope && { envelope: r.envelope }),
+        ...(r.sweep && { sweep: r.sweep }),
+        ...(r.lfo && { lfo: r.lfo }),
+        ...(r.timeline && { timeline: r.timeline }),
       }));
 
       if (currentProjectId) {

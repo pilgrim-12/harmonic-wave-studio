@@ -12,12 +12,18 @@ import {
   orderBy,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase/firebase";
+import { EnvelopeConfig, SweepConfig, LFOConfig, TimelineConfig } from "@/types/radius";
 
 export interface Radius {
   frequency: number;
   amplitude: number;
   phase: number;
   color?: string; // hex color, e.g. "#667eea"
+  // Modulation parameters (optional)
+  envelope?: EnvelopeConfig;
+  sweep?: SweepConfig;
+  lfo?: LFOConfig;
+  timeline?: TimelineConfig;
 }
 
 export interface Project {

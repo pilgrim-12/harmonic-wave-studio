@@ -78,6 +78,17 @@ export default function ProfilePage() {
         color: radius.color, // Restore saved color
       });
 
+      // Restore modulation parameters if they exist
+      if (radius.envelope || radius.sweep || radius.lfo || radius.timeline) {
+        const { updateRadius } = useRadiusStore.getState();
+        updateRadius(newRadiusId, {
+          ...(radius.envelope && { envelope: radius.envelope }),
+          ...(radius.sweep && { sweep: radius.sweep }),
+          ...(radius.lfo && { lfo: radius.lfo }),
+          ...(radius.timeline && { timeline: radius.timeline }),
+        });
+      }
+
       previousRadiusId = newRadiusId;
       lastRadiusId = newRadiusId;
     });
