@@ -170,33 +170,114 @@ export const PresetPanel: React.FC = () => {
                       </button>
 
                       {/* ✨ Info button - OUTSIDE main button */}
-                      {preset.mathExplanation && (
-                        <button
-                          onClick={(e) => togglePresetExpansion(preset.id, e)}
-                          className="flex-shrink-0 p-3 hover:bg-[#2a2a2a] transition-colors"
-                          title="Show formula"
-                        >
-                          <Info size={16} className="text-[#667eea]" />
-                        </button>
-                      )}
+                      <button
+                        onClick={(e) => togglePresetExpansion(preset.id, e)}
+                        className="flex-shrink-0 p-3 hover:bg-[#2a2a2a] transition-colors"
+                        title="Show preset details"
+                      >
+                        <Info size={16} className="text-[#667eea]" />
+                      </button>
                     </div>
 
-                    {/* ✨ Expanded math formula section */}
-                    {isExpanded && preset.mathExplanation && (
+                    {/* ✨ Expanded preset details section */}
+                    {isExpanded && (
                       <div className="px-3 pb-3 bg-[#252525]">
-                        <div className="flex items-start gap-2 mb-2">
-                          <Sparkles
-                            size={14}
-                            className="text-[#667eea] mt-0.5 flex-shrink-0"
-                          />
-                          <span className="text-xs font-semibold text-[#667eea]">
-                            Mathematical Formula:
-                          </span>
+                        {/* Mathematical formula */}
+                        {preset.mathExplanation && (
+                          <>
+                            <div className="flex items-start gap-2 mb-2">
+                              <Sparkles
+                                size={14}
+                                className="text-[#667eea] mt-0.5 flex-shrink-0"
+                              />
+                              <span className="text-xs font-semibold text-[#667eea]">
+                                Mathematical Formula:
+                              </span>
+                            </div>
+                            <div className="bg-[#0a0a0a] rounded p-3 border border-[#2a2a2a] mb-3">
+                              <code className="text-xs text-gray-300 font-mono whitespace-pre-wrap break-all">
+                                {preset.mathExplanation}
+                              </code>
+                            </div>
+                          </>
+                        )}
+
+                        {/* Radii details */}
+                        <div className="text-xs font-semibold text-gray-400 mb-2">
+                          Radii Parameters:
                         </div>
-                        <div className="bg-[#0a0a0a] rounded p-3 border border-[#2a2a2a]">
-                          <code className="text-xs text-gray-300 font-mono whitespace-pre-wrap break-all">
-                            {preset.mathExplanation}
-                          </code>
+                        <div className="space-y-2 max-h-[200px] overflow-y-auto custom-scrollbar">
+                          {preset.radii.map((r, idx) => {
+                            const hasModulation = r.envelope || r.sweep || r.lfo || r.timeline;
+                            return (
+                              <div
+                                key={idx}
+                                className="bg-[#1a1a1a] rounded p-2 border border-[#333]"
+                              >
+                                <div className="flex items-center gap-2 mb-1">
+                                  <div
+                                    className="w-2.5 h-2.5 rounded-full ring-1 ring-white/20"
+                                    style={{ backgroundColor: r.color }}
+                                  />
+                                  <span className="text-xs font-medium text-gray-300">
+                                    Radius {idx + 1}
+                                  </span>
+                                  {hasModulation && (
+                                    <span className="text-[10px] px-1.5 py-0.5 bg-orange-500/20 text-orange-400 rounded">
+                                      MOD
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="grid grid-cols-4 gap-1 text-[10px] text-gray-500">
+                                  <div>
+                                    <span className="text-gray-600">Amp:</span>{" "}
+                                    <span className="text-gray-400">{r.length}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-600">Freq:</span>{" "}
+                                    <span className="text-gray-400">{r.rotationSpeed}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-600">Phase:</span>{" "}
+                                    <span className="text-gray-400">{r.initialAngle}°</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-600">Dir:</span>{" "}
+                                    <span className="text-gray-400">
+                                      {r.direction === "counterclockwise" ? "CCW" : "CW"}
+                                    </span>
+                                  </div>
+                                </div>
+                                {/* Modulation details */}
+                                {hasModulation && (
+                                  <div className="mt-1.5 pt-1.5 border-t border-[#333] text-[10px]">
+                                    <div className="flex flex-wrap gap-1.5">
+                                      {r.envelope?.enabled && (
+                                        <span className="px-1.5 py-0.5 bg-green-500/10 text-green-400 rounded">
+                                          ENV: A{r.envelope.attack}s D{r.envelope.decay}s S{r.envelope.sustain} R{r.envelope.release}s
+                                        </span>
+                                      )}
+                                      {r.sweep?.enabled && (
+                                        <span className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 rounded">
+                                          SWEEP: {r.sweep.startFreq}→{r.sweep.endFreq}Hz/{r.sweep.duration}s
+                                        </span>
+                                      )}
+                                      {r.lfo?.enabled && (
+                                        <span className="px-1.5 py-0.5 bg-purple-500/10 text-purple-400 rounded">
+                                          LFO: {r.lfo.waveform} {r.lfo.rate}Hz {Math.round(r.lfo.depth * 100)}% → {r.lfo.target}
+                                        </span>
+                                      )}
+                                      {r.timeline?.enabled && (
+                                        <span className="px-1.5 py-0.5 bg-yellow-500/10 text-yellow-400 rounded">
+                                          TIMELINE: {r.timeline.tracks.length} tracks
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
 
                         {/* Additional info */}
