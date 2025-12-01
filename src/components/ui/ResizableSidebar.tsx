@@ -80,17 +80,19 @@ export const ResizableSidebar: React.FC<ResizableSidebarProps> = ({
       className="flex-shrink-0 relative h-full flex flex-col"
       style={{ width: `${width}px` }}
     >
-      {/* Collapse button - small, in corner */}
-      <button
-        onClick={() => setIsCollapsed(true)}
-        className="absolute top-2 right-3 z-20 p-1.5 bg-[#2a2a2a]/80 hover:bg-[#333] rounded transition-colors group"
-        title="Collapse sidebar"
-      >
-        <ChevronLeft
-          size={14}
-          className="text-gray-400 group-hover:text-white transition-colors"
-        />
-      </button>
+      {/* Collapse button row - separate from content */}
+      <div className="flex justify-end pr-1 mb-1 flex-shrink-0">
+        <button
+          onClick={() => setIsCollapsed(true)}
+          className="p-1 hover:bg-[#2a2a2a] rounded transition-colors group"
+          title="Collapse sidebar"
+        >
+          <ChevronLeft
+            size={14}
+            className="text-gray-500 group-hover:text-white transition-colors"
+          />
+        </button>
+      </div>
 
       {/* Content */}
       <div className="flex flex-col gap-3 overflow-hidden pr-1 flex-1">
