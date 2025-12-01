@@ -47,8 +47,8 @@ export const FrequencyResponsePanel: React.FC<FrequencyResponsePanelProps> = ({
 
   // View mode buttons
   const viewModes: { mode: ResponseViewMode; label: string; icon: React.ReactNode }[] = [
-    { mode: "magnitude", label: "АЧХ", icon: <BarChart2 size={12} /> },
-    { mode: "phase", label: "ФЧХ", icon: <TrendingUp size={12} /> },
+    { mode: "magnitude", label: "Mag", icon: <BarChart2 size={12} /> },
+    { mode: "phase", label: "Phase", icon: <TrendingUp size={12} /> },
     { mode: "both", label: "Both", icon: <Activity size={12} /> },
     { mode: "groupDelay", label: "GD", icon: <Clock size={12} /> },
   ];
@@ -64,13 +64,12 @@ export const FrequencyResponsePanel: React.FC<FrequencyResponsePanelProps> = ({
       <div className={`bg-[#0f0f0f] rounded-lg border border-[#2a2a2a] p-4 ${className}`}>
         <div className="flex items-center gap-2 mb-3">
           <Activity size={16} className="text-[#667eea]" />
-          <h3 className="text-sm font-semibold text-white">Frequency Response (АЧХ/ФЧХ)</h3>
+          <h3 className="text-sm font-semibold text-white">Frequency Response</h3>
         </div>
         <div className="text-center text-gray-500 py-8">
           <Activity size={32} className="mx-auto mb-2 opacity-50" />
           <p className="text-sm">Apply a filter to see its frequency response</p>
-          <p className="text-xs mt-1">АЧХ — Amplitude-Frequency Response</p>
-          <p className="text-xs">ФЧХ — Phase-Frequency Response</p>
+          <p className="text-xs mt-1">Magnitude and Phase response curves</p>
         </div>
       </div>
     );
@@ -117,9 +116,9 @@ export const FrequencyResponsePanel: React.FC<FrequencyResponsePanelProps> = ({
                     ? "bg-[#667eea] text-white"
                     : "bg-[#1a1a1a] text-gray-400 hover:bg-[#252525]"
                 }`}
-                title={mode === "magnitude" ? "Amplitude-Frequency Response (АЧХ)" :
-                       mode === "phase" ? "Phase-Frequency Response (ФЧХ)" :
-                       mode === "groupDelay" ? "Group Delay" : "Both АЧХ and ФЧХ"}
+                title={mode === "magnitude" ? "Amplitude-Frequency Response" :
+                       mode === "phase" ? "Phase-Frequency Response" :
+                       mode === "groupDelay" ? "Group Delay" : "Both Magnitude and Phase"}
               >
                 {icon}
                 {label}
@@ -186,7 +185,7 @@ export const FrequencyResponsePanel: React.FC<FrequencyResponsePanelProps> = ({
       <div className="p-3">
         {viewMode === "both" ? (
           <div className="grid grid-cols-2 gap-3 h-[180px]">
-            {/* Magnitude (АЧХ) */}
+            {/* Magnitude */}
             <FullscreenWrapper>
               <FrequencyResponseCanvas
                 responseData={responseData}
@@ -196,13 +195,13 @@ export const FrequencyResponsePanel: React.FC<FrequencyResponsePanelProps> = ({
                 showGrid={showGrid}
                 showMarkers={showMarkers}
                 showCutoffLine={showCutoffLine}
-                title="АЧХ (Magnitude)"
+                title="Magnitude"
                 yAxisLabel="Magnitude (dB)"
                 color="#667eea"
               />
             </FullscreenWrapper>
 
-            {/* Phase (ФЧХ) */}
+            {/* Phase */}
             <FullscreenWrapper>
               <FrequencyResponseCanvas
                 responseData={responseData}
@@ -212,7 +211,7 @@ export const FrequencyResponsePanel: React.FC<FrequencyResponsePanelProps> = ({
                 showGrid={showGrid}
                 showMarkers={false}
                 showCutoffLine={false}
-                title="ФЧХ (Phase)"
+                title="Phase"
                 yAxisLabel="Phase (°)"
                 color="#f093fb"
               />
@@ -229,8 +228,8 @@ export const FrequencyResponsePanel: React.FC<FrequencyResponsePanelProps> = ({
                 showGrid={showGrid}
                 showMarkers={showMarkers}
                 showCutoffLine={showCutoffLine}
-                title={viewMode === "magnitude" ? "АЧХ (Amplitude-Frequency Response)" :
-                       viewMode === "phase" ? "ФЧХ (Phase-Frequency Response)" :
+                title={viewMode === "magnitude" ? "Magnitude Response" :
+                       viewMode === "phase" ? "Phase Response" :
                        "Group Delay"}
                 color={viewMode === "magnitude" ? "#667eea" :
                        viewMode === "phase" ? "#f093fb" : "#54a0ff"}

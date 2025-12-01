@@ -100,7 +100,7 @@ function HomeContent() {
     useFilterStore();
   const { checkLimit } = useTierCheck();
   const toast = useToast();
-  const { showOriginalSignal, showNoisySignal, showFilteredSignal, showSpectrum, showDecomposition, showSpectrogram, showFrequencyResponse } =
+  const { showOriginalSignal, showNoisySignal, showFilteredSignal, showSpectrum, showDecomposition, showSpectrogram } =
     useGraphVisibilityStore();
 
   useKeyboardShortcuts();
@@ -691,9 +691,10 @@ function HomeContent() {
                         sampleRate={settings.signalSampleRate || 30}
                       />
                     </FeatureGate>
+                    <FrequencyResponsePanel />
+                    <ZPlanePanel />
                     <PWMPanel />
                     <ModulationPanel />
-                    <ZPlanePanel />
                     <MetricsPanel />
                   </div>
                 </div>
@@ -858,12 +859,6 @@ function HomeContent() {
                 </div>
               )}
 
-              {/* Frequency Response (АЧХ/ФЧХ) */}
-              {showFrequencyResponse && (
-                <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] overflow-hidden col-span-2">
-                  <FrequencyResponsePanel />
-                </div>
-              )}
             </div>
           </CollapsibleBottomPanel>
         </div>
