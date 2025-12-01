@@ -46,19 +46,28 @@ export const PWMPanel: React.FC<PWMPanelProps> = ({ className = "" }) => {
   useEffect(() => {
     if (enabled) {
       if (config.mode === "custom" && original.length > 0) {
+        // Use epicycle signal as modulating input
         generateFromInputSignal(original, sampleRate);
       } else {
+        // Generate standalone PWM demo
         generateSignal(0.1, sampleRate * 10); // 100ms at higher sample rate for PWM
       }
     }
   }, [enabled, config, original, sampleRate, generateSignal, generateFromInputSignal]);
+
+  // Re-generate when epicycle signal updates (for custom mode)
+  useEffect(() => {
+    if (enabled && config.mode === "custom" && original.length > 0) {
+      generateFromInputSignal(original, sampleRate);
+    }
+  }, [original, enabled, config.mode, sampleRate, generateFromInputSignal]);
 
   const modeOptions = [
     { value: "fixed", label: "Fixed Duty Cycle" },
     { value: "sine", label: "Sine Modulation" },
     { value: "triangle", label: "Triangle Modulation" },
     { value: "sawtooth", label: "Sawtooth Modulation" },
-    { value: "custom", label: "From Signal" },
+    { value: "custom", label: "From Epicycle Signal" },
   ];
 
   return (
@@ -67,7 +76,7 @@ export const PWMPanel: React.FC<PWMPanelProps> = ({ className = "" }) => {
       <div className="flex items-center justify-between p-3 border-b border-[#2a2a2a]">
         <div className="flex items-center gap-2">
           <Zap size={16} className="text-[#00ff88]" />
-          <h3 className="text-sm font-semibold text-white">PWM (ШИМ)</h3>
+          <h3 className="text-sm font-semibold text-white">PWM</h3>
           <span className="text-xs text-gray-500">Pulse Width Modulation</span>
         </div>
 
@@ -285,7 +294,7 @@ export const PWMPanel: React.FC<PWMPanelProps> = ({ className = "" }) => {
               Click &quot;Start&quot; to generate PWM signal
             </p>
             <p className="text-[10px] text-gray-600 text-center mt-1">
-              ШИМ используется для управления мощностью, яркостью LED, скоростью моторов
+              PWM encodes analog values as pulse widths. Use &quot;From Signal&quot; mode to convert the epicycle output to PWM.
             </p>
           </div>
         )}
