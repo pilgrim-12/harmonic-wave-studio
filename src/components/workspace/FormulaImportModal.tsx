@@ -52,10 +52,13 @@ export const FormulaImportModal: React.FC<FormulaImportModalProps> = ({
     let lastRadiusId: string | null = null;
 
     radiiPreview.forEach((radiusData) => {
+      // Convert degrees to radians (formula parser returns degrees, store uses radians)
+      const initialAngleRadians = (radiusData.initialAngle * Math.PI) / 180;
+
       const newRadiusId = addRadius({
         parentId,
         length: radiusData.length,
-        initialAngle: radiusData.initialAngle,
+        initialAngle: initialAngleRadians,
         rotationSpeed: radiusData.rotationSpeed,
         direction: radiusData.direction,
         color: radiusData.color,

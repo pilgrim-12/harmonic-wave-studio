@@ -37,10 +37,13 @@ export const PresetPanel: React.FC = () => {
     let lastRadiusId: string | null = null;
 
     preset.radii.forEach((radiusData) => {
+      // Convert degrees to radians (presets use degrees, store uses radians)
+      const initialAngleRadians = (radiusData.initialAngle * Math.PI) / 180;
+
       const newRadiusId = addRadius({
         parentId,
         length: radiusData.length,
-        initialAngle: radiusData.initialAngle,
+        initialAngle: initialAngleRadians,
         rotationSpeed: radiusData.rotationSpeed,
         direction: radiusData.direction,
         color: radiusData.color,
