@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Sparkles, Info, Lock } from "lucide-react";
+import { Sparkles, Info, Lock, Calculator } from "lucide-react";
 import { useRadiusStore } from "@/store/radiusStore";
 import { useSimulationStore } from "@/store/simulationStore";
 import { useProjectStore } from "@/store/useProjectStore";
@@ -9,10 +9,12 @@ import { WAVEFORM_PRESETS, WaveformPreset } from "@/lib/presets/waveforms";
 import { Button } from "@/components/ui/Button";
 import { useTierCheck } from "@/hooks/useTierCheck";
 import { useUpgradeModal } from "@/components/tier/UpgradeModalProvider";
+import { FormulaImportModal } from "./FormulaImportModal";
 
 export const PresetPanel: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [expandedPreset, setExpandedPreset] = useState<string | null>(null); // ✨ NEW
+  const [expandedPreset, setExpandedPreset] = useState<string | null>(null);
+  const [isFormulaModalOpen, setIsFormulaModalOpen] = useState(false);
   const { clearRadii, addRadius, selectRadius } = useRadiusStore();
   const { setActiveTrackingRadius } = useSimulationStore();
   const { setCurrentProject } = useProjectStore();
@@ -192,7 +194,24 @@ export const PresetPanel: React.FC = () => {
               })}
             </div>
 
-            {/* ✨ Footer hint */}
+            {/* Formula Import button */}
+            <div className="p-2 border-t border-[#2a2a2a]">
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  setIsFormulaModalOpen(true);
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 bg-[#667eea]/10 hover:bg-[#667eea]/20 rounded-lg transition-colors"
+              >
+                <Calculator size={16} className="text-[#667eea]" />
+                <div className="text-left">
+                  <div className="text-sm font-medium text-[#667eea]">Import from Formula</div>
+                  <div className="text-xs text-gray-500">Enter a Fourier series equation</div>
+                </div>
+              </button>
+            </div>
+
+            {/* Footer hint */}
             <div className="p-2 border-t border-[#2a2a2a] bg-[#0f0f0f]">
               <p className="text-xs text-gray-500 flex items-center gap-1">
                 <Info size={12} />
@@ -203,6 +222,12 @@ export const PresetPanel: React.FC = () => {
           </div>
         </>
       )}
+
+      {/* Formula Import Modal */}
+      <FormulaImportModal
+        isOpen={isFormulaModalOpen}
+        onClose={() => setIsFormulaModalOpen(false)}
+      />
     </div>
   );
 };
