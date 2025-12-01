@@ -20,6 +20,7 @@ import { useRadiusStore } from "@/store/radiusStore";
 import { TrajectoryPreview } from "@/components/gallery/TrajectoryPreview";
 import { FormulaDisplay } from "@/components/studio/FormulaDisplay";
 import { useAuth } from "@/contexts/AuthContext";
+import { RadiiDetailsViewer, projectRadiiToUnified } from "@/components/ui/RadiiDetailsViewer";
 import Link from "next/link";
 
 export default function SharedProjectPage() {
@@ -246,27 +247,11 @@ export default function SharedProjectPage() {
             <h3 className="text-lg font-medium text-gray-300 mb-2">
               Radii ({project.radii.length})
             </h3>
-            <div className="space-y-2">
-              {project.radii.map((radius, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 bg-[#0f0f0f] rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-4 h-4 rounded-full border border-gray-600 flex-shrink-0"
-                      style={{ backgroundColor: radius.color || '#667eea' }}
-                    />
-                    <span className="text-white">Radius {index + 1}</span>
-                  </div>
-                  <div className="flex gap-4 text-sm text-gray-500">
-                    <span>Freq: {radius.frequency.toFixed(2)}</span>
-                    <span>Amp: {radius.amplitude.toFixed(2)}</span>
-                    <span>Phase: {radius.phase.toFixed(2)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <RadiiDetailsViewer
+              radii={projectRadiiToUnified(project.radii)}
+              maxHeight="250px"
+              showModulation={true}
+            />
           </div>
 
           {/* Settings */}

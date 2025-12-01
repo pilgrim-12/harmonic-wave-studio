@@ -10,6 +10,7 @@ import { ArrowLeft, Eye, User, Calendar, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { TrajectoryPreview } from "@/components/gallery/TrajectoryPreview";
 import { FormulaDisplay } from "@/components/studio/FormulaDisplay";
+import { RadiiDetailsViewer, projectRadiiToUnified } from "@/components/ui/RadiiDetailsViewer";
 
 export default function SharedProjectPage() {
   const params = useParams();
@@ -226,53 +227,13 @@ export default function SharedProjectPage() {
           </div>
         </div>
 
-        {/* Minimal Radii Table */}
+        {/* Radii Details */}
         <div className="p-2 bg-[#1a1a1a] rounded border border-[#2a2a2a]">
-          <div className="overflow-x-auto">
-            <table className="w-full text-[10px]">
-              <thead>
-                <tr className="border-b border-[#2a2a2a]">
-                  <th className="text-left py-1 text-gray-500">#</th>
-                  <th className="text-left py-1 text-gray-500">Color</th>
-                  <th className="text-right py-1 text-gray-500">Freq</th>
-                  <th className="text-right py-1 text-gray-500">Amp</th>
-                  <th className="text-right py-1 text-gray-500">Phase</th>
-                </tr>
-              </thead>
-              <tbody>
-                {project.radii.map(
-                  (
-                    radius: {
-                      frequency: number;
-                      amplitude: number;
-                      phase: number;
-                      color?: string;
-                    },
-                    index: number
-                  ) => (
-                    <tr key={index} className="border-b border-[#2a2a2a]/50">
-                      <td className="py-1 text-gray-400">{index + 1}</td>
-                      <td className="py-1">
-                        <div
-                          className="w-3 h-3 rounded-full border border-gray-600"
-                          style={{ backgroundColor: radius.color || '#667eea' }}
-                        />
-                      </td>
-                      <td className="text-right py-1 text-white">
-                        {radius.frequency?.toFixed(2)}
-                      </td>
-                      <td className="text-right py-1 text-white">
-                        {radius.amplitude?.toFixed(2)}
-                      </td>
-                      <td className="text-right py-1 text-white">
-                        {radius.phase?.toFixed(2)}
-                      </td>
-                    </tr>
-                  )
-                )}
-              </tbody>
-            </table>
-          </div>
+          <RadiiDetailsViewer
+            radii={projectRadiiToUnified(project.radii)}
+            maxHeight="200px"
+            showModulation={true}
+          />
         </div>
       </div>
     </div>

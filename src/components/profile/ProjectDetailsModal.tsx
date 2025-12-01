@@ -81,7 +81,7 @@ export const ProjectDetailsModal: React.FC<ProjectDetailsModalProps> = ({
             <RadiiDetailsViewer
               radii={projectRadiiToUnified(project.radii)}
               maxHeight="250px"
-              showModulation={false}
+              showModulation={true}
             />
           </div>
 
