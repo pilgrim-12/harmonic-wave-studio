@@ -16,6 +16,8 @@ import { MetricsPanel } from "@/components/signal/MetricsPanel";
 import { NoisySignalGraph } from "@/components/signal/NoisySignalGraph";
 import { DigitalFilterPanel } from "@/components/signal/DigitalFilterPanel";
 import { FilteredSignalGraph } from "@/components/signal/FilteredSignalGraph";
+import { FrequencyResponsePanel } from "@/components/signal/FrequencyResponsePanel";
+import { PWMPanel } from "@/components/signal/PWMPanel";
 import { UndoRedoIndicator } from "@/components/ui/UndoRedoIndicator";
 import { AccordionItem } from "@/components/ui/Accordion";
 import { FullscreenWrapper } from "@/components/ui/FullscreenWrapper";
@@ -96,7 +98,7 @@ function HomeContent() {
     useFilterStore();
   const { checkLimit } = useTierCheck();
   const toast = useToast();
-  const { showOriginalSignal, showNoisySignal, showFilteredSignal, showSpectrum, showDecomposition, showSpectrogram } =
+  const { showOriginalSignal, showNoisySignal, showFilteredSignal, showSpectrum, showDecomposition, showSpectrogram, showFrequencyResponse } =
     useGraphVisibilityStore();
 
   useKeyboardShortcuts();
@@ -687,6 +689,7 @@ function HomeContent() {
                         sampleRate={settings.signalSampleRate || 30}
                       />
                     </FeatureGate>
+                    <PWMPanel />
                     <MetricsPanel />
                   </div>
                 </div>
@@ -848,6 +851,13 @@ function HomeContent() {
                   <FullscreenWrapper>
                     <SpectrogramView />
                   </FullscreenWrapper>
+                </div>
+              )}
+
+              {/* Frequency Response (АЧХ/ФЧХ) */}
+              {showFrequencyResponse && (
+                <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] overflow-hidden col-span-2">
+                  <FrequencyResponsePanel />
                 </div>
               )}
             </div>

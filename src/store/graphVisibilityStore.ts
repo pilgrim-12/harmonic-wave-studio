@@ -8,6 +8,7 @@ export interface GraphVisibilityState {
   showSpectrum: boolean;
   showDecomposition: boolean;
   showSpectrogram: boolean;
+  showFrequencyResponse: boolean;
 
   // Actions
   toggleOriginalSignal: () => void;
@@ -16,13 +17,15 @@ export interface GraphVisibilityState {
   toggleSpectrum: () => void;
   toggleDecomposition: () => void;
   toggleSpectrogram: () => void;
+  toggleFrequencyResponse: () => void;
   setGraphVisibility: (
     original: boolean,
     noisy: boolean,
     filtered: boolean,
     spectrum: boolean,
     decomposition: boolean,
-    spectrogram?: boolean
+    spectrogram?: boolean,
+    frequencyResponse?: boolean
   ) => void;
 }
 
@@ -36,6 +39,7 @@ export const useGraphVisibilityStore = create<GraphVisibilityState>()(
       showSpectrum: false,
       showDecomposition: false,
       showSpectrogram: false,
+      showFrequencyResponse: false,
 
       // Actions
       toggleOriginalSignal: () =>
@@ -56,7 +60,10 @@ export const useGraphVisibilityStore = create<GraphVisibilityState>()(
       toggleSpectrogram: () =>
         set((state) => ({ showSpectrogram: !state.showSpectrogram })),
 
-      setGraphVisibility: (original, noisy, filtered, spectrum, decomposition, spectrogram = false) =>
+      toggleFrequencyResponse: () =>
+        set((state) => ({ showFrequencyResponse: !state.showFrequencyResponse })),
+
+      setGraphVisibility: (original, noisy, filtered, spectrum, decomposition, spectrogram = false, frequencyResponse = false) =>
         set({
           showOriginalSignal: original,
           showNoisySignal: noisy,
@@ -64,6 +71,7 @@ export const useGraphVisibilityStore = create<GraphVisibilityState>()(
           showSpectrum: spectrum,
           showDecomposition: decomposition,
           showSpectrogram: spectrogram,
+          showFrequencyResponse: frequencyResponse,
         }),
     }),
     {
