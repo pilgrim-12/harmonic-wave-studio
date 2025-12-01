@@ -91,8 +91,19 @@ export default function SharedProjectPage() {
         rotationSpeed: Math.abs(radius.frequency),
         direction: radius.frequency >= 0 ? "counterclockwise" : "clockwise",
         name: `Radius ${index + 1}`,
-        color: radius.color, // Restore saved color
+        color: radius.color,
       });
+
+      // Restore modulation parameters if they exist
+      if (radius.envelope || radius.sweep || radius.lfo || radius.timeline) {
+        const { updateRadius } = useRadiusStore.getState();
+        updateRadius(newRadiusId, {
+          ...(radius.envelope && { envelope: radius.envelope }),
+          ...(radius.sweep && { sweep: radius.sweep }),
+          ...(radius.lfo && { lfo: radius.lfo }),
+          ...(radius.timeline && { timeline: radius.timeline }),
+        });
+      }
 
       // Следующий радиус будет child текущего
       parentId = newRadiusId;
