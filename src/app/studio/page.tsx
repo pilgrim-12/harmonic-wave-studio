@@ -19,6 +19,7 @@ import { FilteredSignalGraph } from "@/components/signal/FilteredSignalGraph";
 import { FrequencyResponsePanel } from "@/components/signal/FrequencyResponsePanel";
 import { PWMPanel } from "@/components/signal/PWMPanel";
 import { ModulationPanel } from "@/components/signal/ModulationPanel";
+import { ZPlanePanel } from "@/components/signal/ZPlanePanel";
 import { UndoRedoIndicator } from "@/components/ui/UndoRedoIndicator";
 import { AccordionItem } from "@/components/ui/Accordion";
 import { FullscreenWrapper } from "@/components/ui/FullscreenWrapper";
@@ -692,6 +693,7 @@ function HomeContent() {
                     </FeatureGate>
                     <PWMPanel />
                     <ModulationPanel />
+                    <ZPlanePanel />
                     <MetricsPanel />
                   </div>
                 </div>
