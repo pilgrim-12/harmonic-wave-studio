@@ -2,6 +2,12 @@
 
 import React, { useRef, useEffect } from "react";
 import { Radius } from "@/services/projectService";
+import {
+  calculateEnvelopeValue,
+  calculateSweepFrequency,
+  calculateLFOValue,
+  calculateTimelineValues,
+} from "@/lib/canvas/calculator";
 
 interface TrajectoryPreviewProps {
   radii: Radius[];
@@ -12,6 +18,7 @@ interface TrajectoryPreviewProps {
 
 /**
  * Renders a small preview of the trajectory/trail for gallery cards
+ * Supports modulation effects (LFO, Envelope, Sweep, Timeline)
  */
 export const TrajectoryPreview: React.FC<TrajectoryPreviewProps> = ({
   radii,
@@ -40,9 +47,16 @@ export const TrajectoryPreview: React.FC<TrajectoryPreviewProps> = ({
     const centerY = height / 2;
 
     // Calculate scale to fit trajectory in canvas
-    // Note: Using amplitude as length (radius size)
-    const maxRadius = radii.reduce((sum, r) => sum + r.amplitude, 0);
-    const scale = Math.min(width, height) / (maxRadius * 2.5);
+    // Account for potential amplitude modulation (LFO can increase amplitude)
+    const maxAmplitude = radii.reduce((sum, r) => {
+      let amp = r.amplitude;
+      // If LFO targets amplitude with depth, max amplitude can be higher
+      if (r.lfo?.enabled && r.lfo.target === "amplitude") {
+        amp = amp * (1 + r.lfo.depth);
+      }
+      return sum + amp;
+    }, 0);
+    const scale = Math.min(width, height) / (maxAmplitude * 2.5);
 
     // Generate trail points
     const trailPoints: { x: number; y: number }[] = [];
@@ -54,16 +68,67 @@ export const TrajectoryPreview: React.FC<TrajectoryPreviewProps> = ({
       let x = centerX;
       let y = centerY;
 
-      // Calculate position at time t
-      // Note: frequency = rotationSpeed (in Hz), phase = initialAngle, amplitude = length
-      // Each radius rotates independently from its starting point
+      // Calculate position at time t with modulation
       for (const radius of radii) {
+        // Get base values
+        let effectiveAmplitude = radius.amplitude;
+        let effectiveFrequency = radius.frequency;
+        let effectivePhase = radius.phase;
+
+        // Apply Envelope (affects amplitude)
+        if (radius.envelope?.enabled) {
+          const envValue = calculateEnvelopeValue(radius.envelope, t);
+          effectiveAmplitude *= envValue;
+        }
+
+        // Apply Sweep (affects frequency over time)
+        if (radius.sweep?.enabled) {
+          effectiveFrequency = calculateSweepFrequency(
+            radius.sweep,
+            Math.abs(radius.frequency),
+            t
+          );
+          // Preserve direction sign
+          if (radius.frequency < 0) effectiveFrequency = -effectiveFrequency;
+        }
+
+        // Apply LFO
+        if (radius.lfo?.enabled) {
+          const lfoValue = calculateLFOValue(radius.lfo, t);
+
+          switch (radius.lfo.target) {
+            case "amplitude":
+              effectiveAmplitude *= (1 + lfoValue);
+              break;
+            case "frequency":
+              effectiveFrequency *= (1 + lfoValue);
+              break;
+            case "phase":
+              effectivePhase += lfoValue * Math.PI;
+              break;
+          }
+        }
+
+        // Apply Timeline keyframes
+        if (radius.timeline?.enabled) {
+          const timelineValues = calculateTimelineValues(radius.timeline, t);
+          if (timelineValues.amplitude !== null) {
+            effectiveAmplitude = timelineValues.amplitude;
+          }
+          if (timelineValues.frequency !== null) {
+            effectiveFrequency = timelineValues.frequency;
+          }
+          if (timelineValues.phase !== null) {
+            effectivePhase += (timelineValues.phase * Math.PI) / 180;
+          }
+        }
+
         // Calculate angle for this radius at time t
-        const angle = radius.phase + radius.frequency * t * 2 * Math.PI;
+        const angle = effectivePhase + effectiveFrequency * t * 2 * Math.PI;
 
         // Update position - each radius extends from current position
-        x += radius.amplitude * Math.cos(angle) * scale;
-        y += radius.amplitude * Math.sin(angle) * scale;
+        x += effectiveAmplitude * Math.cos(angle) * scale;
+        y += effectiveAmplitude * Math.sin(angle) * scale;
       }
 
       trailPoints.push({ x, y });
