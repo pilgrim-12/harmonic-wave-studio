@@ -1,10 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { SharedProject } from "@/types/share";
-import { X, Eye, Calendar, User, ExternalLink, Play } from "lucide-react";
+import { X, Eye, Calendar, User, ExternalLink, Play, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
+import { RadiiDetailsViewer, projectRadiiToUnified } from "@/components/ui/RadiiDetailsViewer";
 
 interface ProjectPreviewModalProps {
   project: SharedProject;
@@ -16,6 +17,7 @@ export const ProjectPreviewModal: React.FC<ProjectPreviewModalProps> = ({
   onClose,
 }) => {
   const router = useRouter();
+  const [showRadiiDetails, setShowRadiiDetails] = useState(false);
 
   const handleOpenFull = () => {
     router.push(`/project/${project.id}`);
@@ -142,6 +144,25 @@ export const ProjectPreviewModal: React.FC<ProjectPreviewModalProps> = ({
                 </span>
               </div>
             </div>
+
+            {/* Radii Details Toggle */}
+            <button
+              onClick={() => setShowRadiiDetails(!showRadiiDetails)}
+              className="flex items-center gap-2 mt-3 text-sm text-[#667eea] hover:text-[#7b8fed] transition-colors"
+            >
+              {showRadiiDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              {showRadiiDetails ? "Hide" : "Show"} Radii Details
+            </button>
+
+            {showRadiiDetails && (
+              <div className="mt-3">
+                <RadiiDetailsViewer
+                  radii={projectRadiiToUnified(project.radii)}
+                  maxHeight="200px"
+                  showModulation={false}
+                />
+              </div>
+            )}
           </div>
 
           {/* Actions */}

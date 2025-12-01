@@ -12,10 +12,11 @@ import { unshareProject } from "@/services/shareService";
 import { useProjectStore } from "@/store/useProjectStore";
 import { useRadiusStore } from "@/store/radiusStore";
 import { useSimulationStore } from "@/store/simulationStore";
-import { Trash2, FolderOpen, ArrowLeft, Share2, ExternalLink, Link2Off, Link2 } from "lucide-react";
+import { Trash2, FolderOpen, ArrowLeft, Share2, ExternalLink, Link2Off, Link2, Info } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ShareModal } from "@/components/share/ShareModal";
+import { ProjectDetailsModal } from "@/components/profile/ProjectDetailsModal";
 import { useToast } from "@/contexts/ToastContext";
 import Link from "next/link";
 import Image from "next/image";
@@ -29,6 +30,7 @@ export default function ProfilePage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
   const [shareModalProject, setShareModalProject] = useState<Project | null>(null);
+  const [detailsModalProject, setDetailsModalProject] = useState<Project | null>(null);
   const { setCurrentProject } = useProjectStore();
   const { clearRadii, addRadius, selectRadius } = useRadiusStore();
   const { setActiveTrackingRadius } = useSimulationStore();
@@ -157,6 +159,11 @@ export default function ProfilePage() {
     setShareModalProject(project);
   };
 
+  const handleShowDetails = (project: Project, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDetailsModalProject(project);
+  };
+
   const handleShareSuccess = (newShareId: string) => {
     if (shareModalProject) {
       setProjects(projects.map(p =>
@@ -247,6 +254,15 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                    {/* Info button - always visible */}
+                    <Button
+                      onClick={(e) => handleShowDetails(project, e)}
+                      variant="secondary"
+                      className="text-sm text-[#667eea] hover:text-[#7b8fed]"
+                      title="View details"
+                    >
+                      <Info size={14} />
+                    </Button>
                     {project.shareId ? (
                       <>
                         <Button
@@ -327,6 +343,18 @@ export default function ProfilePage() {
             projectRadii={shareModalProject.radii}
             onClose={() => setShareModalProject(null)}
             onSuccess={handleShareSuccess}
+          />
+        )}
+
+        {/* Project Details Modal */}
+        {detailsModalProject && (
+          <ProjectDetailsModal
+            project={detailsModalProject}
+            onClose={() => setDetailsModalProject(null)}
+            onLoad={() => {
+              handleLoadProject(detailsModalProject);
+              setDetailsModalProject(null);
+            }}
           />
         )}
       </div>

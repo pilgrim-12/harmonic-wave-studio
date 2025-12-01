@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { useTierCheck } from "@/hooks/useTierCheck";
 import { useUpgradeModal } from "@/components/tier/UpgradeModalProvider";
 import { FormulaImportModal } from "./FormulaImportModal";
+import { RadiiDetailsViewer, presetRadiiToUnified } from "@/components/ui/RadiiDetailsViewer";
 
 export const PresetPanel: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -202,83 +203,15 @@ export const PresetPanel: React.FC = () => {
                           </>
                         )}
 
-                        {/* Radii details */}
+                        {/* Radii details - using unified component */}
                         <div className="text-xs font-semibold text-gray-400 mb-2">
                           Radii Parameters:
                         </div>
-                        <div className="space-y-2 max-h-[200px] overflow-y-auto custom-scrollbar">
-                          {preset.radii.map((r, idx) => {
-                            const hasModulation = r.envelope || r.sweep || r.lfo || r.timeline;
-                            return (
-                              <div
-                                key={idx}
-                                className="bg-[#1a1a1a] rounded p-2 border border-[#333]"
-                              >
-                                <div className="flex items-center gap-2 mb-1">
-                                  <div
-                                    className="w-2.5 h-2.5 rounded-full ring-1 ring-white/20"
-                                    style={{ backgroundColor: r.color }}
-                                  />
-                                  <span className="text-xs font-medium text-gray-300">
-                                    Radius {idx + 1}
-                                  </span>
-                                  {hasModulation && (
-                                    <span className="text-[10px] px-1.5 py-0.5 bg-orange-500/20 text-orange-400 rounded">
-                                      MOD
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="grid grid-cols-4 gap-1 text-[10px] text-gray-500">
-                                  <div>
-                                    <span className="text-gray-600">Amp:</span>{" "}
-                                    <span className="text-gray-400">{r.length}</span>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-600">Freq:</span>{" "}
-                                    <span className="text-gray-400">{r.rotationSpeed}</span>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-600">Phase:</span>{" "}
-                                    <span className="text-gray-400">{r.initialAngle}°</span>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-600">Dir:</span>{" "}
-                                    <span className="text-gray-400">
-                                      {r.direction === "counterclockwise" ? "CCW" : "CW"}
-                                    </span>
-                                  </div>
-                                </div>
-                                {/* Modulation details */}
-                                {hasModulation && (
-                                  <div className="mt-1.5 pt-1.5 border-t border-[#333] text-[10px]">
-                                    <div className="flex flex-wrap gap-1.5">
-                                      {r.envelope?.enabled && (
-                                        <span className="px-1.5 py-0.5 bg-green-500/10 text-green-400 rounded">
-                                          ENV: A{r.envelope.attack}s D{r.envelope.decay}s S{r.envelope.sustain} R{r.envelope.release}s
-                                        </span>
-                                      )}
-                                      {r.sweep?.enabled && (
-                                        <span className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 rounded">
-                                          SWEEP: {r.sweep.startFreq}→{r.sweep.endFreq}Hz/{r.sweep.duration}s
-                                        </span>
-                                      )}
-                                      {r.lfo?.enabled && (
-                                        <span className="px-1.5 py-0.5 bg-purple-500/10 text-purple-400 rounded">
-                                          LFO: {r.lfo.waveform} {r.lfo.rate}Hz {Math.round(r.lfo.depth * 100)}% → {r.lfo.target}
-                                        </span>
-                                      )}
-                                      {r.timeline?.enabled && (
-                                        <span className="px-1.5 py-0.5 bg-yellow-500/10 text-yellow-400 rounded">
-                                          TIMELINE: {r.timeline.tracks.length} tracks
-                                        </span>
-                                      )}
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
+                        <RadiiDetailsViewer
+                          radii={presetRadiiToUnified(preset.radii)}
+                          maxHeight="200px"
+                          showModulation={true}
+                        />
 
                         {/* Additional info */}
                         <div className="mt-2 text-xs text-gray-500">
