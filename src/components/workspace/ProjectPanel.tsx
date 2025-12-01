@@ -9,6 +9,7 @@ import { useProjectStore } from "@/store/useProjectStore";
 import { SaveProjectDialog } from "./SaveProjectDialog";
 import { useToast } from "@/contexts/ToastContext";
 import { normalizeRadius } from "@/lib/validation/normalizeRadius";
+import { EnvelopeConfig, SweepConfig, LFOConfig, TimelineConfig } from "@/types/radius";
 
 interface ProjectRadiusData {
   id: string;
@@ -20,6 +21,11 @@ interface ProjectRadiusData {
   direction: "clockwise" | "counterclockwise";
   color: string;
   order: number;
+  // Modulation parameters
+  envelope?: EnvelopeConfig;
+  sweep?: SweepConfig;
+  lfo?: LFOConfig;
+  timeline?: TimelineConfig;
 }
 
 interface ProjectData {
@@ -41,9 +47,9 @@ export const ProjectPanel: React.FC = () => {
    * Save current project to JSON file
    */
   const handleSaveProject = (projectName: string) => {
-    // Create project data
+    // Create project data with all modulation parameters
     const project: ProjectData = {
-      version: "1.0",
+      version: "1.1", // Updated version to indicate modulation support
       name: projectName,
       created: new Date().toISOString(),
       radii: radii.map((r) => ({
@@ -56,6 +62,11 @@ export const ProjectPanel: React.FC = () => {
         direction: r.direction,
         color: r.color,
         order: r.order,
+        // Include modulation parameters if they exist
+        ...(r.envelope && { envelope: r.envelope }),
+        ...(r.sweep && { sweep: r.sweep }),
+        ...(r.lfo && { lfo: r.lfo }),
+        ...(r.timeline && { timeline: r.timeline }),
       })),
     };
 
@@ -168,6 +179,17 @@ export const ProjectPanel: React.FC = () => {
 
           // Store mapping: old ID → new ID
           idMap.set(radiusData.id, newId);
+
+          // Restore modulation parameters if they exist
+          const { updateRadius } = useRadiusStore.getState();
+          if (radiusData.envelope || radiusData.sweep || radiusData.lfo || radiusData.timeline) {
+            updateRadius(newId, {
+              ...(radiusData.envelope && { envelope: radiusData.envelope }),
+              ...(radiusData.sweep && { sweep: radiusData.sweep }),
+              ...(radiusData.lfo && { lfo: radiusData.lfo }),
+              ...(radiusData.timeline && { timeline: radiusData.timeline }),
+            });
+          }
 
           // Track last radius
           lastRadiusId = newId;
