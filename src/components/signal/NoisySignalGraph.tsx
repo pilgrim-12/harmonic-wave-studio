@@ -238,6 +238,18 @@ function drawSignals(
   }
   ctx.stroke();
 
+  // Current point dot for original signal (when no noise applied)
+  if (!hasNoisy && signalBuffer.length > 0 && original.length > 0) {
+    const lastIdx = Math.min(signalBuffer.length, original.length) - 1;
+    const lastPoint = signalBuffer[lastIdx];
+    const dotX = timeToX(lastPoint.time);
+    const dotY = yToCanvas(original[lastIdx]);
+    ctx.fillStyle = "#667eea";
+    ctx.beginPath();
+    ctx.arc(dotX, dotY, 4, 0, 2 * Math.PI);
+    ctx.fill();
+  }
+
   // Draw noisy
   if (hasNoisy) {
     ctx.strokeStyle = "#ff6b6b";
