@@ -162,6 +162,11 @@ export function projectRadiiToUnified(radii: ProjectRadius[]): UnifiedRadiusData
     frequency: r.frequency,
     phase: (r.phase * 180) / Math.PI, // Convert radians to degrees
     color: r.color || "#667eea",
+    // Include modulation parameters if they exist
+    envelope: r.envelope,
+    sweep: r.sweep,
+    lfo: r.lfo,
+    timeline: r.timeline,
   }));
 }
 
