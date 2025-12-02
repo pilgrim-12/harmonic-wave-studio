@@ -4,19 +4,16 @@ import React, { useRef, useEffect, useState, useCallback, useMemo } from "react"
 import { X, Download, Circle, Layers, Box, Mountain, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import * as THREE from "three";
-
-interface RadiusData {
-  id: string;
-  name: string;
-  frequency: number;
-  amplitude: number;
-  phase: number;
-  color: string;
-  isActive: boolean;
-}
+import { Radius } from "@/types/radius";
+import {
+  calculateEnvelopeValue,
+  calculateSweepFrequency,
+  calculateLFOValue,
+  calculateTimelineValues,
+} from "@/lib/canvas/calculator";
 
 interface Visualization3DModalProps {
-  radii: RadiusData[];
+  radii: Radius[];
   onClose: () => void;
 }
 
@@ -74,13 +71,94 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
 
   // Calculate cumulative point at time t up to and including radius at index
   // This is how epicycles work - each radius adds to the previous position
+  // Now includes LFO, Sweep, Envelope, and Timeline modulation!
   const getPointUpToIndex = useCallback((t: number, upToIndex: number): { x: number; y: number } => {
     let x = 0, y = 0;
     for (let i = 0; i <= upToIndex; i++) {
-      const h = activeRadii[i];
-      if (h) {
-        x += h.amplitude * Math.cos(2 * Math.PI * h.frequency * t + h.phase);
-        y += h.amplitude * Math.sin(2 * Math.PI * h.frequency * t + h.phase);
+      const radius = activeRadii[i];
+      if (radius) {
+        // Get base values
+        let effectiveFreq = radius.rotationSpeed;
+        let effectiveLength = radius.length;
+        let phaseOffset = 0;
+
+        // Calculate LFO modulation value if enabled
+        let lfoValue = 0;
+        if (radius.lfo?.enabled) {
+          lfoValue = calculateLFOValue(radius.lfo, t);
+        }
+
+        // Calculate timeline keyframe values if enabled
+        const timelineValues = radius.timeline?.enabled
+          ? calculateTimelineValues(radius.timeline, t)
+          : { amplitude: null, frequency: null, phase: null };
+
+        // Apply Sweep to frequency
+        if (radius.sweep?.enabled) {
+          effectiveFreq = calculateSweepFrequency(radius.sweep, radius.rotationSpeed, t);
+        }
+
+        // Apply LFO to frequency if target is frequency
+        if (radius.lfo?.enabled && radius.lfo.target === "frequency") {
+          effectiveFreq = effectiveFreq * (1 + lfoValue);
+        }
+
+        // Apply timeline keyframe frequency
+        if (timelineValues.frequency !== null) {
+          effectiveFreq = timelineValues.frequency;
+        }
+
+        // Apply Envelope to amplitude
+        if (radius.envelope?.enabled) {
+          const envelopeValue = calculateEnvelopeValue(radius.envelope, t);
+          effectiveLength = radius.length * envelopeValue;
+        }
+
+        // Apply LFO to amplitude if target is amplitude
+        if (radius.lfo?.enabled && radius.lfo.target === "amplitude") {
+          effectiveLength = effectiveLength * (1 + lfoValue);
+        }
+
+        // Apply timeline keyframe amplitude
+        if (timelineValues.amplitude !== null) {
+          effectiveLength = timelineValues.amplitude;
+        }
+
+        // Apply LFO to phase if target is phase
+        if (radius.lfo?.enabled && radius.lfo.target === "phase") {
+          phaseOffset = lfoValue * Math.PI;
+        }
+
+        // Apply timeline keyframe phase
+        if (timelineValues.phase !== null) {
+          phaseOffset += (timelineValues.phase * Math.PI) / 180;
+        }
+
+        // Calculate angle with sweep integration for correct phase
+        let angle: number;
+        const direction = radius.direction === "clockwise" ? -1 : 1;
+
+        if (radius.sweep?.enabled) {
+          const { startFreq, endFreq, duration, loop } = radius.sweep;
+          let time = t;
+          let cycles = 0;
+
+          if (loop && duration > 0) {
+            const fullCycles = Math.floor(t / duration);
+            const cyclePhase = (startFreq + endFreq) / 2 * duration;
+            cycles = fullCycles * cyclePhase;
+            time = t % duration;
+          }
+
+          const phase = startFreq * time + (endFreq - startFreq) * time * time / (2 * duration);
+          const totalPhase = cycles + phase;
+          angle = radius.initialAngle + direction * 2 * Math.PI * totalPhase + phaseOffset;
+        } else {
+          angle = radius.initialAngle + direction * 2 * Math.PI * effectiveFreq * t + phaseOffset;
+        }
+
+        x += effectiveLength * Math.cos(angle);
+        y += effectiveLength * Math.sin(angle);
       }
     }
     return { x, y };
@@ -294,11 +372,11 @@ export const Visualization3DModal: React.FC<Visualization3DModalProps> = ({
       if (colorMode === "uniform") {
         mainColor = "#6366f1";
       } else if (activeRadii.length > 0) {
-        // Use color of largest amplitude radius
+        // Use color of largest amplitude (length) radius
         let maxAmp = 0;
         activeRadii.forEach(r => {
-          if (r.amplitude > maxAmp) {
-            maxAmp = r.amplitude;
+          if (r.length > maxAmp) {
+            maxAmp = r.length;
             mainColor = r.color;
           }
         });
