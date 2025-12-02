@@ -7,14 +7,12 @@ import { ControlPanel } from "@/components/workspace/ControlPanel";
 import { VisualizationCanvas } from "@/components/workspace/VisualizationCanvas";
 import { SignalGraph } from "@/components/workspace/SignalGraph";
 import { SettingsPanel } from "@/components/workspace/SettingsPanel";
-import { FrequencyPanel } from "@/components/analysis/FrequencyPanel";
 import { SpectrumGraphPanel } from "@/components/workspace/SpectrumGraphPanel";
 import { DecompositionGraph } from "@/components/workspace/DecompositionGraph";
 import { SpectrogramView } from "@/components/workspace/SpectrogramView";
 import { NoisePanel } from "@/components/signal/NoisePanel";
 import { MetricsPanel } from "@/components/signal/MetricsPanel";
 import { NoisySignalGraph } from "@/components/signal/NoisySignalGraph";
-import { DigitalFilterPanel } from "@/components/signal/DigitalFilterPanel";
 import { FilteredSignalGraph } from "@/components/signal/FilteredSignalGraph";
 import { UndoRedoIndicator } from "@/components/ui/UndoRedoIndicator";
 import { AccordionItem } from "@/components/ui/Accordion";
@@ -24,14 +22,12 @@ import { CollapsibleBottomPanel } from "@/components/ui/CollapsibleBottomPanel";
 import {
   Settings,
   Plus,
-  BarChart3,
   Save,
   FilePlus,
   Activity,
   LayoutGrid,
   Heart,
   Sliders,
-  FunctionSquare,
   Box,
 } from "lucide-react";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
@@ -56,10 +52,8 @@ import {
   calculateRadiusPositions,
   getFinalPoint,
 } from "@/lib/canvas/calculator";
-import { FeatureGate } from "@/components/tier/FeatureGate";
 import { useTierCheck } from "@/hooks/useTierCheck";
 import { normalizeRadius } from "@/lib/validation/normalizeRadius";
-import { FormulaDisplay } from "@/components/studio/FormulaDisplay";
 import { Visualization3DModal } from "@/components/studio/Visualization3DModal";
 import { SignalAnalysisModal } from "@/components/studio/SignalAnalysisModal";
 
@@ -93,9 +87,6 @@ function HomeContent() {
   } = useProjectStore();
   const { user, loading } = useAuth();
   const searchParams = useSearchParams();
-  // Signal processing store used via getState() in effects
-  const { applyFilterToSignal, clearFilter, isFilterApplied } =
-    useFilterStore();
   const { checkLimit } = useTierCheck();
   const toast = useToast();
   const { showOriginalSignal, showNoisySignal, showFilteredSignal, showSpectrum, showDecomposition, showSpectrogram } =
@@ -479,30 +470,6 @@ function HomeContent() {
     setShareId(newShareId);
   };
 
-  const handleApplyFilter = (filterSettings: {
-    type: "butterworth" | "chebyshev1" | "chebyshev2";
-    mode: "lowpass" | "highpass" | "bandpass" | "bandstop";
-    order: number;
-    cutoffFreq: number;
-    enabled: boolean;
-  }) => {
-    // ✅ Use centralized signal from signalProcessingStore
-    const { original, noisy } = useSignalProcessingStore.getState();
-    const signalToFilter = noisy.length > 0 ? noisy : original;
-
-    if (signalToFilter.length === 0) {
-      toast.warning("No signal available. Start animation first!");
-      return;
-    }
-
-    const sampleRate = settings.signalSampleRate || 30;
-    applyFilterToSignal(signalToFilter, filterSettings, sampleRate);
-  };
-
-  const handleClearFilter = () => {
-    clearFilter();
-  };
-
   return (
     <div className="h-screen bg-[#0f0f0f] flex flex-col overflow-hidden">
       <header className="border-b border-[#2a2a2a] flex-shrink-0">
@@ -692,14 +659,6 @@ function HomeContent() {
                 <div className="h-full overflow-y-auto custom-scrollbar">
                   <div className="px-3 pb-3 space-y-3">
                     <NoisePanel />
-                    <FeatureGate feature="canUseFilters" showLockedOverlay>
-                      <DigitalFilterPanel
-                        onApplyFilter={handleApplyFilter}
-                        onClearFilter={handleClearFilter}
-                        isFilterApplied={isFilterApplied}
-                        sampleRate={settings.signalSampleRate || 30}
-                      />
-                    </FeatureGate>
                     <MetricsPanel />
                   </div>
                 </div>
@@ -732,60 +691,6 @@ function HomeContent() {
             </AccordionItem>
           </div>
 
-          {/* Analysis Panel */}
-          <div
-            className={
-              openPanel === "analysis"
-                ? "flex-1 min-h-0 overflow-hidden"
-                : "flex-shrink-0"
-            }
-          >
-            <AccordionItem
-              title="Analysis"
-              icon={<BarChart3 size={16} className="text-[#667eea]" />}
-              isOpen={openPanel === "analysis"}
-              onToggle={() => handleToggle("analysis")}
-            >
-              {openPanel === "analysis" && (
-                <div className="h-full overflow-y-auto custom-scrollbar px-3 pb-3">
-                  <FeatureGate feature="canUseFFT" showLockedOverlay>
-                    <FrequencyPanel />
-                  </FeatureGate>
-                </div>
-              )}
-            </AccordionItem>
-          </div>
-
-          {/* Formula Panel */}
-          <div
-            className={
-              openPanel === "formula"
-                ? "flex-1 min-h-0 overflow-hidden"
-                : "flex-shrink-0"
-            }
-          >
-            <AccordionItem
-              title="Formula"
-              icon={<FunctionSquare size={16} className="text-[#667eea]" />}
-              isOpen={openPanel === "formula"}
-              onToggle={() => handleToggle("formula")}
-            >
-              {openPanel === "formula" && (
-                <div className="h-full overflow-y-auto custom-scrollbar px-3 pb-3">
-                  <FormulaDisplay radii={radii.map((r) => ({
-                    frequency: r.direction === "counterclockwise" ? r.rotationSpeed : -r.rotationSpeed,
-                    amplitude: r.length,
-                    phase: r.initialAngle,
-                    color: r.color,
-                    envelope: r.envelope,
-                    sweep: r.sweep,
-                    lfo: r.lfo,
-                    timeline: r.timeline,
-                  }))} />
-                </div>
-              )}
-            </AccordionItem>
-          </div>
         </ResizableSidebar>
 
         {/* Right workspace - IMPROVED RESPONSIVE */}
