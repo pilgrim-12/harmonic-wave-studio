@@ -1,23 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Activity, Target, Zap, Radio, FunctionSquare, BarChart3, Filter } from "lucide-react";
+import { X, Activity, Target, Zap, Radio, FunctionSquare } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { FrequencyResponsePanel } from "@/components/signal/FrequencyResponsePanel";
 import { ZPlanePanel } from "@/components/signal/ZPlanePanel";
 import { PWMPanel } from "@/components/signal/PWMPanel";
 import { ModulationPanel } from "@/components/signal/ModulationPanel";
 import { FormulaDisplay } from "@/components/studio/FormulaDisplay";
-import { FrequencyPanel } from "@/components/analysis/FrequencyPanel";
-import { DigitalFilterPanel, FilterSettings } from "@/components/signal/DigitalFilterPanel";
 import { useRadiusStore } from "@/store/radiusStore";
-import { useFilterStore } from "@/store/filterStore";
-import { useSimulationStore } from "@/store/simulationStore";
-import { useSignalProcessingStore } from "@/store/signalProcessingStore";
-import { useToast } from "@/contexts/ToastContext";
-import { FeatureGate } from "@/components/tier/FeatureGate";
 
-type AnalysisTab = "formula" | "fft" | "filters" | "frequency" | "zplane" | "pwm" | "modulation";
+type AnalysisTab = "formula" | "frequency" | "zplane" | "pwm" | "modulation";
 
 interface SignalAnalysisModalProps {
   onClose: () => void;
@@ -30,32 +23,10 @@ export const SignalAnalysisModal: React.FC<SignalAnalysisModalProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<AnalysisTab>(defaultTab);
   const { radii } = useRadiusStore();
-  const { applyFilterToSignal, clearFilter, isFilterApplied } = useFilterStore();
-  const { settings } = useSimulationStore();
-  const toast = useToast();
-
-  const handleApplyFilter = (filterSettings: FilterSettings) => {
-    const { original, noisy } = useSignalProcessingStore.getState();
-    const signalToFilter = noisy.length > 0 ? noisy : original;
-
-    if (signalToFilter.length === 0) {
-      toast.warning("No signal available. Start animation first!");
-      return;
-    }
-
-    const sampleRate = settings.signalSampleRate || 30;
-    applyFilterToSignal(signalToFilter, filterSettings, sampleRate);
-  };
-
-  const handleClearFilter = () => {
-    clearFilter();
-  };
 
   const tabs: { id: AnalysisTab; label: string; icon: React.ReactNode }[] = [
     { id: "formula", label: "Formula", icon: <FunctionSquare size={16} /> },
-    { id: "fft", label: "FFT Analysis", icon: <BarChart3 size={16} /> },
-    { id: "filters", label: "Filters", icon: <Filter size={16} /> },
-    { id: "frequency", label: "Frequency Response", icon: <Activity size={16} /> },
+    { id: "frequency", label: "Freq Response", icon: <Activity size={16} /> },
     { id: "zplane", label: "Z-Plane", icon: <Target size={16} /> },
     { id: "pwm", label: "PWM", icon: <Zap size={16} /> },
     { id: "modulation", label: "Modulation", icon: <Radio size={16} /> },
@@ -134,25 +105,6 @@ export const SignalAnalysisModal: React.FC<SignalAnalysisModalProps> = ({
                   lfo: r.lfo,
                   timeline: r.timeline,
                 }))} />
-              </div>
-            )}
-            {activeTab === "fft" && (
-              <div className="h-full max-w-3xl">
-                <FeatureGate feature="canUseFFT" showLockedOverlay>
-                  <FrequencyPanel />
-                </FeatureGate>
-              </div>
-            )}
-            {activeTab === "filters" && (
-              <div className="h-full max-w-md">
-                <FeatureGate feature="canUseFilters" showLockedOverlay>
-                  <DigitalFilterPanel
-                    onApplyFilter={handleApplyFilter}
-                    onClearFilter={handleClearFilter}
-                    isFilterApplied={isFilterApplied}
-                    sampleRate={settings.signalSampleRate || 30}
-                  />
-                </FeatureGate>
               </div>
             )}
             {activeTab === "frequency" && (
