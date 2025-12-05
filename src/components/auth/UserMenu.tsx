@@ -22,14 +22,22 @@ import { useToast } from "@/contexts/ToastContext";
 // Helper function to get tier badge config
 const getTierBadge = (tier: UserTier) => {
   switch (tier) {
+    case "pro":
+      return {
+        label: "PRO",
+        icon: Sparkles,
+        bgColor: "bg-purple-500/20",
+        textColor: "text-purple-400",
+      };
     case "free":
       return {
-        label: "REGISTERED",
-        icon: Sparkles,
+        label: "FREE",
+        icon: UserIcon,
         bgColor: "bg-blue-500/20",
         textColor: "text-blue-400",
       };
     case "anonymous":
+    default:
       return {
         label: "GUEST",
         icon: UserIcon,
