@@ -110,16 +110,17 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
             <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
               <p className="text-sm text-blue-300">
-                ✨ <strong>Currently Free</strong> - No credit card required, no payments
+                ✨ <strong>Currently Free</strong> - Sign in to unlock these features at no cost
               </p>
             </div>
 
             <div className="mt-4 p-4 bg-purple-500/10 border border-purple-500/30 rounded-lg">
               <p className="text-sm text-purple-300">
-                💜 <strong>Support the project</strong> - If you find this useful, consider{" "}
-                <a href="/support" className="underline hover:text-purple-200">
-                  making a donation
-                </a>
+                💜 <strong>Want unlimited access?</strong> - Check out our{" "}
+                <a href="/pricing" className="underline hover:text-purple-200">
+                  Pro plan
+                </a>{" "}
+                for unlimited radii, projects, and more
               </p>
             </div>
           </div>
