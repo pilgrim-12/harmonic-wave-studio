@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Waves, RefreshCcw } from "lucide-react";
+import { RefreshCcw } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 export default function RefundPage() {
@@ -11,7 +11,7 @@ export default function RefundPage() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-md border-b border-gray-800">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <Waves className="text-[#667eea]" size={28} />
+            <span className="text-2xl">🌊</span>
             <span className="text-xl font-bold text-white">
               Harmonic Wave Studio
             </span>
@@ -179,7 +179,7 @@ export default function RefundPage() {
         <div className="container mx-auto max-w-6xl">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <Waves className="text-[#667eea]" size={24} />
+              <span className="text-xl">🌊</span>
               <span className="font-bold text-white">Harmonic Wave Studio</span>
             </div>
             <div className="flex items-center gap-6 text-sm text-gray-400">
