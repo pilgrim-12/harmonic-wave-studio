@@ -14,9 +14,14 @@ export interface SubscriptionInfo {
   plan: "monthly" | "yearly";
   startDate: Date;
   endDate: Date;
-  status: "active" | "cancelled" | "expired";
-  stripeCustomerId?: string;
-  stripeSubscriptionId?: string;
+  status: "active" | "cancelled" | "expired" | "past_due" | "paused";
+  // Paddle identifiers
+  paddleCustomerId?: string;
+  paddleSubscriptionId?: string;
+  paddleTransactionId?: string;
+  // For cancellation tracking
+  cancelledAt?: Date;
+  scheduledToBeCancelledAt?: Date;
 }
 
 export interface UserProfile {

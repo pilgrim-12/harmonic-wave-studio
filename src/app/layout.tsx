@@ -5,6 +5,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { UpgradeModalProvider } from "@/components/tier/UpgradeModalProvider";
 import { DevTools } from "@/components/dev/DevTools";
 import { ToastProvider } from "@/contexts/ToastContext";
+import { PaddleProvider } from "@/lib/paddle";
 import { Analytics } from "@vercel/analytics/react";
 
 const geistSans = Geist({
@@ -81,13 +82,15 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-          <ToastProvider>
-            <UpgradeModalProvider>
-              <DevTools />
-              {children}
-              <Analytics />
-            </UpgradeModalProvider>
-          </ToastProvider>
+          <PaddleProvider>
+            <ToastProvider>
+              <UpgradeModalProvider>
+                <DevTools />
+                {children}
+                <Analytics />
+              </UpgradeModalProvider>
+            </ToastProvider>
+          </PaddleProvider>
         </AuthProvider>
       </body>
     </html>

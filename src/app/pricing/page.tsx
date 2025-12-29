@@ -10,14 +10,28 @@ import {
   User,
   ArrowRight,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { TIER_CONFIG } from "@/config/tiers";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePaddle } from "@/lib/paddle";
 
 export default function PricingPage() {
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
+  const { openCheckout, isLoading: isPaddleLoading, isConfigured: isPaddleConfigured } = usePaddle();
+
+  const isPro = userProfile?.tier === "pro";
+
+  const handleUpgrade = () => {
+    if (!user) {
+      // Redirect to sign in first
+      window.location.href = "/studio?signin=true";
+      return;
+    }
+    openCheckout(billingPeriod);
+  };
 
   const anonymous = TIER_CONFIG.anonymous;
   const free = TIER_CONFIG.free;
@@ -238,10 +252,34 @@ export default function PricingPage() {
                 ))}
               </ul>
 
-              <Button className="w-full bg-[#667eea] hover:bg-[#5a6fd6]">
-                Upgrade to Pro
-                <ArrowRight size={16} />
-              </Button>
+              {isPro ? (
+                <Button variant="secondary" className="w-full" disabled>
+                  <Check size={16} />
+                  Current Plan
+                </Button>
+              ) : (
+                <Button
+                  className="w-full bg-[#667eea] hover:bg-[#5a6fd6]"
+                  onClick={handleUpgrade}
+                  disabled={isPaddleLoading}
+                >
+                  {isPaddleLoading ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : !isPaddleConfigured ? (
+                    <>Coming Soon</>
+                  ) : !user ? (
+                    <>
+                      Sign In to Upgrade
+                      <ArrowRight size={16} />
+                    </>
+                  ) : (
+                    <>
+                      Upgrade to Pro
+                      <ArrowRight size={16} />
+                    </>
+                  )}
+                </Button>
+              )}
 
               {billingPeriod === "yearly" && (
                 <p className="text-center text-xs text-gray-500 mt-3">
