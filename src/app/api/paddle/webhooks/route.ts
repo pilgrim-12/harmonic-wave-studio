@@ -271,21 +271,16 @@ async function handleTransactionCompleted(data: PaddleTransactionData) {
   const priceId = data.items?.[0]?.price?.id;
   const plan = priceId ? getPlanFromPriceId(priceId) : "monthly";
 
-  await userRef.set(
-    {
-      tier: "pro",
-      subscription: {
-        plan,
-        status: "active",
-        paddleCustomerId: data.customer_id,
-        paddleSubscriptionId: data.subscription_id,
-        paddleTransactionId: data.id,
-        startDate: FieldValue.serverTimestamp(),
-      },
-      updatedAt: FieldValue.serverTimestamp(),
-    },
-    { merge: true }
-  );
+  await userRef.update({
+    tier: "pro",
+    "subscription.plan": plan,
+    "subscription.status": "active",
+    "subscription.paddleCustomerId": data.customer_id,
+    "subscription.paddleSubscriptionId": data.subscription_id,
+    "subscription.paddleTransactionId": data.id,
+    "subscription.startDate": FieldValue.serverTimestamp(),
+    updatedAt: FieldValue.serverTimestamp(),
+  });
 
   console.log(`✅ User ${userId} upgraded to Pro via transaction ${data.id}`);
   return { success: true };
