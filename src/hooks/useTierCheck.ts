@@ -56,14 +56,25 @@ export const useTierCheck = (
     }
   }, []);
 
-  // Определяем текущий тарif
+  // Определяем текущий тариф
+  // Важно: userProfile?.tier может быть "pro", "free" или undefined
+  // Если tier не загружен еще, используем "free" как fallback для залогиненных
   let currentTier: UserTier = user
     ? (userProfile?.tier as UserTier) || "free"
     : "anonymous";
 
-  // 🎛️ If feature flag is enabled, override to Free (full access)
+  // 🎛️ If feature flag is enabled, override to Pro (full access for testing)
   if (isAllProEnabled) {
-    currentTier = "free";
+    currentTier = "pro";
+  }
+
+  // Debug: log tier resolution
+  if (featureName === "canUseFFT") {
+    console.log("🎯 useTierCheck FFT:", {
+      user: !!user,
+      userProfileTier: userProfile?.tier,
+      resolvedTier: currentTier,
+    });
   }
 
   const features = getTierFeatures(currentTier);
