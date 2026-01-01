@@ -4,7 +4,14 @@
       "Bash(if exist nul del /F /Q nul 2)",
       "Bash(NUL)",
       "Bash(git add:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(cat:*)",
+      "Bash(del /F \"c:\\GIT\\harmonic-wave-studio\\src\\app\\support\\page.tsx\")",
+      "Bash(dir:*)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []

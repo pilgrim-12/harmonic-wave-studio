@@ -99,7 +99,7 @@ export function PaddleProvider({ children }: PaddleProviderProps) {
         items: [{ priceId, quantity: 1 }],
         customer: user?.email ? { email: user.email } : undefined,
         customData: {
-          userId: user?.uid || "anonymous",
+          user_id: user?.uid || "anonymous",
           source: "pricing_page",
         },
         settings: {
