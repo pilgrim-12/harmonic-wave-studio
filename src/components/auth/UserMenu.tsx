@@ -7,6 +7,8 @@ import {
   FolderOpen,
   MessageSquare,
   Sparkles,
+  CreditCard,
+  Crown,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
@@ -17,6 +19,7 @@ import { UsageIndicator } from "@/components/tier/UsageIndicator";
 import { useUsageStats } from "@/hooks/useUsageStats";
 import { useRadiusStore } from "@/store/radiusStore";
 import { useToast } from "@/contexts/ToastContext";
+import { usePaddle } from "@/lib/paddle";
 
 // Helper function to get tier badge config
 const getTierBadge = (tier: UserTier) => {
@@ -54,8 +57,10 @@ export const UserMenu: React.FC = () => {
   const router = useRouter();
   const { radii } = useRadiusStore();
   const toast = useToast();
+  const { openCustomerPortal } = usePaddle();
 
   const currentTier: UserTier = userProfile?.tier || (user ? "free" : "anonymous");
+  const isPro = currentTier === "pro";
   const tierBadge = getTierBadge(currentTier);
   const BadgeIcon = tierBadge.icon;
 
@@ -190,6 +195,33 @@ export const UserMenu: React.FC = () => {
               <MessageSquare size={16} />
               Send Feedback
             </button>
+
+            <hr className="my-2 border-[#2a2a2a]" />
+
+            {/* Subscription Management */}
+            {isPro ? (
+              <button
+                className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-[#252525] transition-colors flex items-center gap-2"
+                onClick={() => {
+                  setIsOpen(false);
+                  openCustomerPortal();
+                }}
+              >
+                <CreditCard size={16} />
+                Manage Subscription
+              </button>
+            ) : (
+              <button
+                className="w-full px-4 py-2 text-left text-sm text-purple-400 hover:bg-[#252525] transition-colors flex items-center gap-2"
+                onClick={() => {
+                  setIsOpen(false);
+                  router.push("/pricing");
+                }}
+              >
+                <Crown size={16} />
+                Upgrade to Pro
+              </button>
+            )}
 
             <hr className="my-2 border-[#2a2a2a]" />
 

@@ -10,6 +10,7 @@ interface PaddleContextType {
   isLoading: boolean;
   isConfigured: boolean;
   openCheckout: (period: "monthly" | "yearly") => void;
+  openCustomerPortal: () => Promise<void>;
   error: string | null;
 }
 
@@ -18,6 +19,7 @@ const PaddleContext = createContext<PaddleContextType>({
   isLoading: true,
   isConfigured: false,
   openCheckout: () => {},
+  openCustomerPortal: async () => {},
   error: null,
 });
 
@@ -113,6 +115,31 @@ export function PaddleProvider({ children }: PaddleProviderProps) {
     [paddle, user]
   );
 
+  const openCustomerPortal = useCallback(async () => {
+    if (!user?.uid) {
+      setError("Please sign in to manage your subscription");
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/paddle/portal?userId=${user.uid}`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to open customer portal");
+      }
+
+      if (data.url) {
+        window.open(data.url, "_blank");
+      } else {
+        throw new Error("No portal URL received");
+      }
+    } catch (err) {
+      console.error("Failed to open customer portal:", err);
+      setError(err instanceof Error ? err.message : "Failed to open subscription management");
+    }
+  }, [user]);
+
   return (
     <PaddleContext.Provider
       value={{
@@ -120,6 +147,7 @@ export function PaddleProvider({ children }: PaddleProviderProps) {
         isLoading,
         isConfigured,
         openCheckout,
+        openCustomerPortal,
         error,
       }}
     >
