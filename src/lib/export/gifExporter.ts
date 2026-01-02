@@ -1,5 +1,6 @@
 import GIF from "gif.js";
-import { Radius, Point2D, RadiusPosition } from "@/types/radius";
+import { Radius, Point2D } from "@/types/radius";
+import { calculateRadiusPositions } from "@/lib/canvas/calculator";
 
 export interface GifExportOptions {
   /** Duration of the GIF in seconds */
@@ -27,54 +28,6 @@ export interface GifExportOptions {
 export interface GifExportProgress {
   phase: "rendering" | "encoding";
   progress: number; // 0-100
-}
-
-/**
- * Calculate radius positions at a given time
- */
-function calculatePositions(
-  radii: Radius[],
-  centerX: number,
-  centerY: number,
-  time: number
-): RadiusPosition[] {
-  const positions: RadiusPosition[] = [];
-  const sortedRadii = [...radii].sort((a, b) => a.order - b.order);
-  const endPointMap = new Map<string | null, Point2D>();
-  endPointMap.set(null, { x: centerX, y: centerY });
-
-  for (const radius of sortedRadii) {
-    if (!radius.isActive) continue;
-
-    const parentEndPoint = endPointMap.get(radius.parentId);
-    const startPoint = parentEndPoint || { x: centerX, y: centerY };
-
-    let currentAngle: number;
-    if (radius.rotationSpeed === 0) {
-      currentAngle = radius.initialAngle;
-    } else {
-      const direction = radius.direction === "clockwise" ? -1 : 1;
-      const angularVelocity = direction * radius.rotationSpeed * 2 * Math.PI;
-      currentAngle = radius.initialAngle + angularVelocity * time;
-    }
-
-    const endPoint: Point2D = {
-      x: startPoint.x + radius.length * Math.cos(currentAngle),
-      y: startPoint.y + radius.length * Math.sin(currentAngle),
-    };
-
-    positions.push({
-      radiusId: radius.id,
-      startPoint,
-      endPoint,
-      angle: currentAngle,
-      length: radius.length,
-    });
-
-    endPointMap.set(radius.id, endPoint);
-  }
-
-  return positions;
 }
 
 /**
@@ -134,8 +87,8 @@ function drawFrame(
   ctx.scale(options.zoom, options.zoom);
   ctx.translate(-centerX, -centerY);
 
-  // Calculate positions
-  const positions = calculatePositions(radii, centerX, centerY, time);
+  // Calculate positions using full calculator (with LFO, Envelope, Sweep, Timeline support)
+  const positions = calculateRadiusPositions(radii, centerX, centerY, time);
 
   // Update and draw trails
   for (const radiusId of trackedRadiusIds) {
