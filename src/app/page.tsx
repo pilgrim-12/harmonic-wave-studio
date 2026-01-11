@@ -402,10 +402,7 @@ export default function LandingPage() {
           </div>
 
           <div className="mt-12 pt-8 border-t border-gray-800 text-center text-gray-400 text-sm">
-            <p>
-              © {new Date().getFullYear()} Harmonic Wave Studio. Built with ❤️
-              using Next.js and React.
-            </p>
+            <p>© {new Date().getFullYear()} Harmonic Wave Studio. All rights reserved.</p>
           </div>
         </div>
       </footer>
