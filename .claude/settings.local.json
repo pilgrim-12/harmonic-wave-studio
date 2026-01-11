@@ -11,7 +11,9 @@
       "Bash(cat:*)",
       "Bash(del /F \"c:\\GIT\\harmonic-wave-studio\\src\\app\\support\\page.tsx\")",
       "Bash(dir:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(tree:*)",
+      "Bash(xargs cat:*)"
     ],
     "deny": [],
     "ask": []

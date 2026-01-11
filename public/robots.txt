@@ -5,6 +5,8 @@ Allow: /
 # Block admin/sensitive routes
 Disallow: /api/
 Disallow: /admin/
+Disallow: /project/
+Disallow: /shared/
 
-# Sitemap location
+# Sitemap location (generated dynamically by Next.js)
 Sitemap: https://harmonic-wave-studio.vercel.app/sitemap.xml

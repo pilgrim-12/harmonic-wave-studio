@@ -60,6 +60,7 @@ import { normalizeRadius } from "@/lib/validation/normalizeRadius";
 import { FeatureGate } from "@/components/tier/FeatureGate";
 import { Visualization3DModal } from "@/components/studio/Visualization3DModal";
 import { SignalAnalysisModal } from "@/components/studio/SignalAnalysisModal";
+import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
 
 function HomeContent() {
   const [openPanel, setOpenPanel] = useState<string>("radii");
@@ -532,6 +533,7 @@ function HomeContent() {
                 New
               </Button>
               <Button
+                data-tour="save-button"
                 onClick={handleSaveProject}
                 disabled={saving}
                 variant="primary"
@@ -565,6 +567,7 @@ function HomeContent() {
 
               {/* 3D Visualization Button */}
               <Button
+                data-tour="3d-button"
                 onClick={() => setShow3DModal(true)}
                 variant="secondary"
                 className="text-sm"
@@ -608,6 +611,7 @@ function HomeContent() {
         <ResizableSidebar title="Parameters" icon={<Settings size={16} className="text-[#667eea]" />}>
           {/* Radii Panel */}
           <div
+            data-tour="radii-panel"
             className={
               openPanel === "radii"
                 ? "flex-1 min-h-0 overflow-hidden"
@@ -766,12 +770,12 @@ function HomeContent() {
         {/* Right workspace - IMPROVED RESPONSIVE */}
         <div className="flex-1 flex flex-col gap-3 min-w-0 min-h-0">
           {/* Control Panel */}
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0" data-tour="control-panel">
             <ControlPanel />
           </div>
 
           {/* Visualization Canvas - takes remaining space */}
-          <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] flex-1 min-h-[200px] overflow-hidden">
+          <div data-tour="canvas" className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] flex-1 min-h-[200px] overflow-hidden">
             <FullscreenWrapper>
               <VisualizationCanvas />
             </FullscreenWrapper>
@@ -866,6 +870,9 @@ function HomeContent() {
       {showAnalysisModal && (
         <SignalAnalysisModal onClose={() => setShowAnalysisModal(false)} />
       )}
+
+      {/* Onboarding Tour */}
+      <OnboardingTour />
     </div>
   );
 }
