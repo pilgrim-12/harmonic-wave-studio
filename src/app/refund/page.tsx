@@ -1,10 +1,47 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { RefreshCcw } from "lucide-react";
+import { RefreshCcw, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { useTierCheck } from "@/hooks/useTierCheck";
 
 export default function RefundPage() {
+  const [copiedEmail, setCopiedEmail] = useState(false);
+  const [copiedTemplate, setCopiedTemplate] = useState(false);
+  const { currentTier } = useTierCheck();
+  const isPro = currentTier === "pro";
+  const email = "support@harmonicwave.app";
+
+  const emailTemplate = `Subject: Refund Request - Harmonic Wave Studio Pro
+
+Hello,
+
+I would like to request a refund for my Harmonic Wave Studio Pro subscription.
+
+Account email: [Your account email]
+Date of purchase: [Purchase date]
+Reason for refund: [Please describe your reason]
+
+Thank you.`;
+
+  const copyToClipboard = async (text: string, setCopied: (value: boolean) => void) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0a0a0a] via-[#1a1a1a] to-[#0a0a0a]">
       {/* Header */}
@@ -170,6 +207,55 @@ export default function RefundPage() {
                 </a>
               </p>
             </section>
+
+            {/* Request a Refund - Only for Pro users */}
+            {isPro && (
+              <section className="bg-gradient-to-r from-[#667eea]/10 to-[#764ba2]/10 rounded-lg border border-[#667eea]/30 p-6">
+                <h2 className="text-2xl font-semibold text-white mb-4">Request a Refund</h2>
+                <p className="text-gray-300 leading-relaxed mb-6">
+                  If you&apos;re not satisfied with your Pro subscription, you can request a refund
+                  within 14 days of purchase. Please include your account email and reason for
+                  the refund request.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={() => copyToClipboard(email, setCopiedEmail)}
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#2a2a2a] border border-gray-600 text-white font-semibold rounded-lg hover:bg-[#3a3a3a] transition-colors"
+                  >
+                    {copiedEmail ? (
+                      <>
+                        <Check size={18} className="text-green-400" />
+                        <span className="text-green-400">Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy size={18} />
+                        Copy Email
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => copyToClipboard(emailTemplate, setCopiedTemplate)}
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#2a2a2a] border border-gray-600 text-white font-semibold rounded-lg hover:bg-[#3a3a3a] transition-colors"
+                  >
+                    {copiedTemplate ? (
+                      <>
+                        <Check size={18} className="text-green-400" />
+                        <span className="text-green-400">Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy size={18} />
+                        Copy Template
+                      </>
+                    )}
+                  </button>
+                </div>
+                <p className="text-gray-500 text-sm mt-3">
+                  Send to: {email}
+                </p>
+              </section>
+            )}
           </div>
         </div>
       </section>
