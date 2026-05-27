@@ -166,23 +166,30 @@ export const normalizeTier = (tier: string | undefined, isAuthenticated: boolean
   return "registered";
 };
 
+/**
+ * Safely resolve tier config, falling back to "registered" for unknown values.
+ */
+const resolveTier = (tier: string): UserTier => {
+  return tier in TIER_CONFIG ? (tier as UserTier) : "registered";
+};
+
 export const getTierConfig = (tier: UserTier): TierConfig => {
-  return TIER_CONFIG[tier];
+  return TIER_CONFIG[resolveTier(tier)];
 };
 
 export const getTierFeatures = (tier: UserTier): TierFeatures => {
-  return TIER_CONFIG[tier].features;
+  return TIER_CONFIG[resolveTier(tier)].features;
 };
 
 export const getTierMetadata = (tier: UserTier): TierMetadata => {
-  return TIER_CONFIG[tier].metadata;
+  return TIER_CONFIG[resolveTier(tier)].metadata;
 };
 
 export const hasFeatureAccess = (
   tier: UserTier,
   feature: keyof TierFeatures
 ): boolean => {
-  const value = TIER_CONFIG[tier].features[feature];
+  const value = TIER_CONFIG[resolveTier(tier)].features[feature];
 
   if (typeof value === "boolean") {
     return value;
@@ -200,7 +207,7 @@ export const checkLimit = (
   limitKey: "maxRadii" | "maxProjects" | "maxShares",
   currentCount: number
 ): { allowed: boolean; remaining: number; isUnlimited: boolean } => {
-  const limit = TIER_CONFIG[tier].features[limitKey];
+  const limit = TIER_CONFIG[resolveTier(tier)].features[limitKey];
 
   if (limit === -1) {
     return { allowed: true, remaining: -1, isUnlimited: true };

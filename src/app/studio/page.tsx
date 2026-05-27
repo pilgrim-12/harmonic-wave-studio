@@ -90,7 +90,7 @@ function HomeContent() {
     setCurrentProject,
     clearProject,
   } = useProjectStore();
-  const { user, loading } = useAuth();
+  const { user, loading, userProfile } = useAuth();
   const searchParams = useSearchParams();
   const { applyFilterToSignal, clearFilter, isFilterApplied } = useFilterStore();
   const { checkLimit } = useTierCheck();
@@ -561,18 +561,20 @@ function HomeContent() {
                 </Button>
               </Link>
 
-              {/* 3D Visualization Button */}
-              <Button
-                data-tour="3d-button"
-                onClick={() => setShow3DModal(true)}
-                variant="secondary"
-                className="text-sm"
-                title="View 3D Visualization"
-                disabled={radii.length === 0}
-              >
-                <Box size={14} className="mr-1" />
-                3D
-              </Button>
+              {/* 3D Visualization Button (admin only) */}
+              {userProfile?.isAdmin && (
+                <Button
+                  data-tour="3d-button"
+                  onClick={() => setShow3DModal(true)}
+                  variant="secondary"
+                  className="text-sm"
+                  title="View 3D Visualization"
+                  disabled={radii.length === 0}
+                >
+                  <Box size={14} className="mr-1" />
+                  3D
+                </Button>
+              )}
 
               {/* Signal Analysis Button */}
               <Button
@@ -854,8 +856,8 @@ function HomeContent() {
         />
       )}
 
-      {/* 3D Visualization Modal */}
-      {show3DModal && radii.length > 0 && (
+      {/* 3D Visualization Modal (admin only) */}
+      {userProfile?.isAdmin && show3DModal && radii.length > 0 && (
         <Visualization3DModal
           radii={radii}
           onClose={() => setShow3DModal(false)}

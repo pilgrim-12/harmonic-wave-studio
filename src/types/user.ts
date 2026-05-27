@@ -19,4 +19,5 @@ export interface UserProfile {
   preferences: UserPreferences;
   stats: UserStats;
   tier: UserTier;
+  isAdmin?: boolean;
 }
