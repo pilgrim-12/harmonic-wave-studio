@@ -10,6 +10,7 @@ import {
   Users,
   BookOpen,
   Zap,
+  Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
@@ -260,6 +261,26 @@ export default function AboutPage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section className="py-16 px-4 bg-[#0f0f0f]">
+        <div className="container mx-auto max-w-2xl text-center">
+          <Mail className="text-[#667eea] mx-auto mb-4" size={36} />
+          <h2 className="text-2xl font-bold text-white mb-3">
+            Have Ideas, Questions, or Suggestions?
+          </h2>
+          <p className="text-gray-400 mb-6">
+            We&apos;d love to hear from you! Feel free to reach out with any feedback or ideas.
+          </p>
+          <a
+            href="mailto:yurachernov12@gmail.com"
+            className="inline-flex items-center gap-2 text-[#667eea] hover:text-[#8b9ff5] transition-colors text-lg font-medium"
+          >
+            <Mail size={18} />
+            yurachernov12@gmail.com
+          </a>
         </div>
       </section>
 
