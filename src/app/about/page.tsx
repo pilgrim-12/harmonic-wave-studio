@@ -38,12 +38,6 @@ export default function AboutPage() {
             >
               About
             </Link>
-            <Link
-              href="/pricing"
-              className="text-gray-300 hover:text-white transition-colors"
-            >
-              Pricing
-            </Link>
             <Link href="/studio">
               <Button size="sm">Launch Studio</Button>
             </Link>
@@ -314,14 +308,6 @@ export default function AboutPage() {
                 <li>
                   <Link href="/studio" className="hover:text-white transition-colors">
                     Studio
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/pricing"
-                    className="hover:text-white transition-colors"
-                  >
-                    Pricing
                   </Link>
                 </li>
                 <li>

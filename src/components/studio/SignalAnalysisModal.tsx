@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Activity, Target, Zap, Radio, FunctionSquare, Info, Lightbulb, Filter, ArrowRight, Crown } from "lucide-react";
+import { X, Activity, Target, Zap, Radio, FunctionSquare, Info, Lightbulb, Filter, ArrowRight, Lock } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { FrequencyResponsePanel } from "@/components/signal/FrequencyResponsePanel";
 import { ZPlanePanel } from "@/components/signal/ZPlanePanel";
@@ -132,7 +132,7 @@ export const SignalAnalysisModal: React.FC<SignalAnalysisModalProps> = ({
               {tab.icon}
               {tab.label}
               {tab.proOnly && !canUseFilters && (
-                <Crown size={12} className="text-[#feca57] ml-1" />
+                <Lock size={12} className="text-gray-400 ml-1" />
               )}
             </button>
           ))}
@@ -386,22 +386,22 @@ const ProFeatureGate: React.FC<ProFeatureGateProps> = ({ feature }) => (
     <div className="text-center max-w-md">
       <div className="mb-4">
         <div className="w-16 h-16 mx-auto bg-gradient-to-r from-[#667eea]/20 to-[#764ba2]/20 rounded-full flex items-center justify-center">
-          <Crown size={32} className="text-[#feca57]" />
+          <Lock size={32} className="text-blue-400" />
         </div>
       </div>
       <h3 className="text-lg font-semibold text-white mb-2">{feature}</h3>
       <p className="text-sm text-gray-500 mb-6">
-        This advanced analysis tool is available with Pro subscription. Upgrade to unlock powerful signal processing features.
+        Sign in with a free account to unlock advanced signal analysis tools.
       </p>
       <Button
         variant="primary"
         className="bg-gradient-to-r from-[#667eea] to-[#764ba2]"
-        onClick={() => window.location.href = '/pricing'}
+        onClick={() => window.dispatchEvent(new CustomEvent("show-upgrade-modal", {
+          detail: { feature, requiredTier: "registered" }
+        }))}
       >
-        <Crown size={16} className="mr-2" />
-        Upgrade to Pro
+        Sign In Free
       </Button>
-      <p className="text-xs text-gray-600 mt-3">Starting at $5/month</p>
     </div>
   </div>
 );

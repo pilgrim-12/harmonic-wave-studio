@@ -6,34 +6,20 @@ import {
   User as UserIcon,
   FolderOpen,
   MessageSquare,
-  Sparkles,
-  CreditCard,
-  Crown,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { FeedbackModal } from "@/components/feedback/FeedbackModal";
 import { UserTier } from "@/config/tiers";
-import { UsageIndicator } from "@/components/tier/UsageIndicator";
-import { useUsageStats } from "@/hooks/useUsageStats";
-import { useRadiusStore } from "@/store/radiusStore";
 import { useToast } from "@/contexts/ToastContext";
-import { usePaddle } from "@/lib/paddle";
 
 // Helper function to get tier badge config
 const getTierBadge = (tier: UserTier) => {
   switch (tier) {
-    case "pro":
+    case "registered":
       return {
-        label: "PRO",
-        icon: Sparkles,
-        bgColor: "bg-purple-500/20",
-        textColor: "text-purple-400",
-      };
-    case "free":
-      return {
-        label: "FREE",
+        label: "USER",
         icon: UserIcon,
         bgColor: "bg-blue-500/20",
         textColor: "text-blue-400",
@@ -55,17 +41,11 @@ export const UserMenu: React.FC = () => {
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const { radii } = useRadiusStore();
   const toast = useToast();
-  const { openCustomerPortal } = usePaddle();
 
-  const currentTier: UserTier = userProfile?.tier || (user ? "free" : "anonymous");
-  const isPro = currentTier === "pro";
+  const currentTier: UserTier = userProfile?.tier || (user ? "registered" : "anonymous");
   const tierBadge = getTierBadge(currentTier);
   const BadgeIcon = tierBadge.icon;
-
-  // Fetch usage stats
-  const { stats, loading: statsLoading } = useUsageStats(radii.length);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -152,30 +132,6 @@ export const UserMenu: React.FC = () => {
             <p className="text-xs text-gray-400">{user.email}</p>
           </div>
 
-          {/* Usage Indicators */}
-          {!statsLoading && currentTier !== "anonymous" && (
-            <div className="px-4 py-3 border-b border-[#2a2a2a] space-y-2">
-              <div className="text-xs font-semibold text-gray-400 mb-2">
-                Usage
-              </div>
-              <UsageIndicator
-                label="Radii"
-                current={stats.radii.current}
-                limit={stats.radii.limit}
-              />
-              <UsageIndicator
-                label="Projects"
-                current={stats.projects.current}
-                limit={stats.projects.limit}
-              />
-              <UsageIndicator
-                label="Shares"
-                current={stats.shares.current}
-                limit={stats.shares.limit}
-              />
-            </div>
-          )}
-
           <div className="py-2">
             <button
               className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-[#252525] transition-colors flex items-center gap-2"
@@ -195,33 +151,6 @@ export const UserMenu: React.FC = () => {
               <MessageSquare size={16} />
               Send Feedback
             </button>
-
-            <hr className="my-2 border-[#2a2a2a]" />
-
-            {/* Subscription Management */}
-            {isPro ? (
-              <button
-                className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-[#252525] transition-colors flex items-center gap-2"
-                onClick={() => {
-                  setIsOpen(false);
-                  openCustomerPortal();
-                }}
-              >
-                <CreditCard size={16} />
-                Manage Subscription
-              </button>
-            ) : (
-              <button
-                className="w-full px-4 py-2 text-left text-sm text-purple-400 hover:bg-[#252525] transition-colors flex items-center gap-2"
-                onClick={() => {
-                  setIsOpen(false);
-                  router.push("/pricing");
-                }}
-              >
-                <Crown size={16} />
-                Upgrade to Pro
-              </button>
-            )}
 
             <hr className="my-2 border-[#2a2a2a]" />
 

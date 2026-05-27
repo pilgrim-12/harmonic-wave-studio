@@ -32,11 +32,11 @@ export const UpgradeModalProvider: React.FC<UpgradeModalProviderProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [feature, setFeature] = useState<string | undefined>();
-  const [requiredTier, setRequiredTier] = useState<UserTier>("free");
+  const [requiredTier, setRequiredTier] = useState<UserTier>("registered");
 
   const showUpgradeModal = (
     featureName?: string,
-    tier: UserTier = "free"
+    tier: UserTier = "registered"
   ) => {
     setFeature(featureName);
     setRequiredTier(tier);

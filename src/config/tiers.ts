@@ -1,14 +1,10 @@
 /**
- * 🎯 Centralized Tier Configuration
+ * Centralized Tier Configuration
  *
- * Это единственное место, где определяются лимиты и возможности для каждого тарифа.
- * Чтобы добавить новую фичу:
- * 1. Добавьте поле в TierFeatures
- * 2. Определите значения для каждого тарифа в TIER_CONFIG
- * 3. Используйте useTierCheck("featureName") в компонентах
+ * Two tiers: anonymous (not signed in) and registered (signed in, full access).
  */
 
-export type UserTier = "anonymous" | "free" | "pro";
+export type UserTier = "anonymous" | "registered";
 
 export interface TierFeatures {
   // === Radii & Projects ===
@@ -44,26 +40,13 @@ export interface TierFeatures {
 
   // === UI/UX ===
   showAds: boolean;
-  prioritySupport: boolean;
-  hasBadge: boolean;
-  badgeColor?: string;
-  badgeText?: string;
-
-  // === Future Features ===
-  canUseCollaboration?: boolean;
-  canUseAPI?: boolean;
-  canUseTemplates?: boolean;
 }
 
 export interface TierMetadata {
   name: string;
   displayName: string;
-  price: number; // USD per month
-  yearlyPrice?: number; // USD per year
   description: string;
-  color: string; // для UI
-  popular?: boolean; // показывать "Most Popular" badge
-  benefits: string[]; // список преимуществ для Pricing page
+  color: string;
 }
 
 export interface TierConfig {
@@ -72,12 +55,12 @@ export interface TierConfig {
 }
 
 // ============================================
-// 🎨 TIER CONFIGURATIONS
+// TIER CONFIGURATIONS
 // ============================================
 
 export const TIER_CONFIG: Record<UserTier, TierConfig> = {
   // ==========================================
-  // 👤 ANONYMOUS (Незалогиненные)
+  // Anonymous (not signed in)
   // ==========================================
   anonymous: {
     features: {
@@ -112,87 +95,21 @@ export const TIER_CONFIG: Record<UserTier, TierConfig> = {
 
       // UI/UX
       showAds: true,
-      prioritySupport: false,
-      hasBadge: false,
     },
     metadata: {
       name: "anonymous",
       displayName: "Guest",
-      price: 0,
       description: "Try the basics without signing in",
       color: "#6b7280", // gray
-      benefits: [
-        "Up to 3 radii",
-        "Basic visualization",
-        "View gallery & presets",
-        "500 trail points",
-      ],
     },
   },
 
   // ==========================================
-  // 🆓 FREE (Зарегистрированные пользователи)
+  // Registered (signed in, full access)
   // ==========================================
-  free: {
+  registered: {
     features: {
-      // Limits
-      maxRadii: 5,
-      maxProjects: 3,
-      maxShares: 1,
-      maxTrailLength: 1000,
-      maxSampleRate: 500,
-      hasWatermark: false,
-
-      // Features
-      canUsePresets: true,
-      canExport: true,
-      canUseAudio: false,
-      canUseFilters: false,
-      canUseFFT: false,
-      canUseNoise: true,
-
-      // Export
-      canExportJSON: true,
-      canExportCSV: false,
-      canExportPNG: true,
-      canExportHighRes: false,
-      canBatchExport: false,
-      canExportGIF: false,
-
-      // Social
-      canShareToGallery: true,
-      canCommentOnProjects: true,
-      canLikeProjects: true,
-
-      // UI/UX
-      showAds: false,
-      prioritySupport: false,
-      hasBadge: false,
-    },
-    metadata: {
-      name: "free",
-      displayName: "Free",
-      price: 0,
-      description: "Perfect for getting started",
-      color: "#3b82f6", // blue
-      benefits: [
-        "Up to 5 radii",
-        "Save up to 3 projects",
-        "Share 1 project to gallery",
-        "Export as PNG & JSON",
-        "1000 trail points",
-        "Noise simulation",
-        "All presets",
-      ],
-    },
-  },
-
-  // ==========================================
-  // ⭐ PRO (Платная подписка)
-  // ==========================================
-  pro: {
-    features: {
-      // Limits - все unlimited
+      // Limits - all unlimited
       maxRadii: -1,
       maxProjects: -1,
       maxShares: -1,
@@ -200,7 +117,7 @@ export const TIER_CONFIG: Record<UserTier, TierConfig> = {
       maxSampleRate: 2000,
       hasWatermark: false,
 
-      // Features - все доступны
+      // Features - all enabled
       canUsePresets: true,
       canExport: true,
       canUseAudio: true,
@@ -208,7 +125,7 @@ export const TIER_CONFIG: Record<UserTier, TierConfig> = {
       canUseFFT: true,
       canUseNoise: true,
 
-      // Export - все форматы
+      // Export - all formats
       canExportJSON: true,
       canExportCSV: true,
       canExportPNG: true,
@@ -216,85 +133,49 @@ export const TIER_CONFIG: Record<UserTier, TierConfig> = {
       canBatchExport: true,
       canExportGIF: true,
 
-      // Social - все доступно
+      // Social - all enabled
       canShareToGallery: true,
       canCommentOnProjects: true,
       canLikeProjects: true,
 
       // UI/UX
       showAds: false,
-      prioritySupport: true,
-      hasBadge: true,
-      badgeColor: "#667eea",
-      badgeText: "PRO",
     },
     metadata: {
-      name: "pro",
-      displayName: "Pro",
-      price: 5,
-      yearlyPrice: 48, // $4/month billed yearly
-      description: "For professionals and enthusiasts",
-      color: "#667eea", // purple
-      popular: true,
-      benefits: [
-        "Unlimited radii",
-        "Unlimited projects",
-        "Unlimited gallery shares",
-        "Digital Filters (Butterworth, Chebyshev)",
-        "Real-time FFT Analysis",
-        "Audio generation",
-        "4K PNG export",
-        "GIF animation export",
-        "CSV data export",
-        "4000 trail points",
-        "2000 Hz sample rate",
-        "Priority support",
-        "PRO badge",
-      ],
+      name: "registered",
+      displayName: "Registered",
+      description: "Full access to all features",
+      color: "#3b82f6", // blue
     },
   },
 };
 
 // ============================================
-// 🛠️ HELPER FUNCTIONS
+// HELPER FUNCTIONS
 // ============================================
 
-/**
- * Получить конфигурацию для тарифа
- */
 export const getTierConfig = (tier: UserTier): TierConfig => {
   return TIER_CONFIG[tier];
 };
 
-/**
- * Получить фичи для тарифа
- */
 export const getTierFeatures = (tier: UserTier): TierFeatures => {
   return TIER_CONFIG[tier].features;
 };
 
-/**
- * Получить метаданные для тарифа
- */
 export const getTierMetadata = (tier: UserTier): TierMetadata => {
   return TIER_CONFIG[tier].metadata;
 };
 
-/**
- * Проверить, есть ли доступ к фиче
- */
 export const hasFeatureAccess = (
   tier: UserTier,
   feature: keyof TierFeatures
 ): boolean => {
   const value = TIER_CONFIG[tier].features[feature];
 
-  // Для boolean полей
   if (typeof value === "boolean") {
     return value;
   }
 
-  // Для числовых лимитов (если > 0 или -1, то доступно)
   if (typeof value === "number") {
     return value !== 0;
   }
@@ -302,9 +183,6 @@ export const hasFeatureAccess = (
   return false;
 };
 
-/**
- * Проверить лимит (сколько осталось)
- */
 export const checkLimit = (
   tier: UserTier,
   limitKey: "maxRadii" | "maxProjects" | "maxShares",
@@ -324,16 +202,6 @@ export const checkLimit = (
   };
 };
 
-/**
- * Получить список всех тарифов
- */
 export const getAllTiers = (): TierConfig[] => {
-  return [TIER_CONFIG.anonymous, TIER_CONFIG.free, TIER_CONFIG.pro];
-};
-
-/**
- * Получить платные тарифы
- */
-export const getPaidTiers = (): TierConfig[] => {
-  return [TIER_CONFIG.pro];
+  return [TIER_CONFIG.anonymous, TIER_CONFIG.registered];
 };

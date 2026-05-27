@@ -127,7 +127,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
 
         if (!actualCheck.allowed) {
           toast.warning(
-            `You have ${userSharesCount} shared project${userSharesCount !== 1 ? "s" : ""}. Upgrade to Pro for unlimited shares!`,
+            `You have ${userSharesCount} shared project${userSharesCount !== 1 ? "s" : ""}. Sign in for free to share unlimited projects!`,
             "Share Limit Reached"
           );
           return;

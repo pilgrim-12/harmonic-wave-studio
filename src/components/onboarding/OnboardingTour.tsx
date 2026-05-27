@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { X, ChevronRight, ChevronLeft, Sparkles, Play, Sliders, Activity, Box, Share2, Crown } from "lucide-react";
+import { X, ChevronRight, ChevronLeft, Sparkles, Play, Sliders, Activity, Box, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 interface TourStep {
@@ -62,10 +62,10 @@ const TOUR_STEPS: TourStep[] = [
     highlight: "[data-tour='save-button']",
   },
   {
-    id: "pro",
-    title: "Unlock Pro Features",
-    description: "Upgrade to Pro for advanced tools: FFT analysis, digital filters, audio generation, GIF export, and unlimited everything. Start free and upgrade when you're ready!",
-    icon: <Crown size={24} className="text-[#feca57]" />,
+    id: "signin",
+    title: "Sign In for Full Access",
+    description: "Create a free account to save projects, export in all formats, use filters, FFT analysis, audio generation, and unlock unlimited everything!",
+    icon: <Sparkles size={24} className="text-[#667eea]" />,
     position: "center",
   },
 ];

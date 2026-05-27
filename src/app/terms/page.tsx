@@ -29,12 +29,6 @@ export default function TermsPage() {
             >
               About
             </Link>
-            <Link
-              href="/pricing"
-              className="text-gray-300 hover:text-white transition-colors"
-            >
-              Pricing
-            </Link>
             <Link href="/studio">
               <Button size="sm">Launch Studio</Button>
             </Link>
@@ -103,26 +97,9 @@ export default function TermsPage() {
               </ul>
             </section>
 
-            {/* Subscription and Payments */}
-            <section className="bg-[#1a1a1a] rounded-lg border border-gray-800 p-6">
-              <h2 className="text-2xl font-semibold text-white mb-4">5. Subscription and Payments</h2>
-              <p className="text-gray-300 leading-relaxed mb-4">
-                Harmonic Wave Studio offers both free and paid subscription plans. By subscribing to a paid plan:
-              </p>
-              <ul className="list-disc list-inside text-gray-300 space-y-2 ml-4">
-                <li>You authorize us to charge your payment method on a recurring basis</li>
-                <li>Subscriptions automatically renew unless cancelled before the renewal date</li>
-                <li>Refunds are handled according to our refund policy</li>
-                <li>Prices may change with reasonable notice</li>
-              </ul>
-              <p className="text-gray-300 leading-relaxed mt-4">
-                Payments are processed securely through Paddle, our payment provider. Your payment information is handled according to Paddle's terms and privacy policy.
-              </p>
-            </section>
-
             {/* Acceptable Use */}
             <section className="bg-[#1a1a1a] rounded-lg border border-gray-800 p-6">
-              <h2 className="text-2xl font-semibold text-white mb-4">6. Acceptable Use</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">5. Acceptable Use</h2>
               <p className="text-gray-300 leading-relaxed mb-4">
                 You agree not to:
               </p>
@@ -138,7 +115,7 @@ export default function TermsPage() {
 
             {/* Intellectual Property */}
             <section className="bg-[#1a1a1a] rounded-lg border border-gray-800 p-6">
-              <h2 className="text-2xl font-semibold text-white mb-4">7. Intellectual Property</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">6. Intellectual Property</h2>
               <p className="text-gray-300 leading-relaxed mb-4">
                 The Harmonic Wave Studio service, including its original content, features, and functionality, is owned by us and is protected by international copyright, trademark, and other intellectual property laws.
               </p>
@@ -149,7 +126,7 @@ export default function TermsPage() {
 
             {/* Disclaimer of Warranties */}
             <section className="bg-[#1a1a1a] rounded-lg border border-gray-800 p-6">
-              <h2 className="text-2xl font-semibold text-white mb-4">8. Disclaimer of Warranties</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">7. Disclaimer of Warranties</h2>
               <p className="text-gray-300 leading-relaxed">
                 The service is provided "as is" and "as available" without warranties of any kind, either express or implied. We do not guarantee that the service will be uninterrupted, secure, or error-free. Use of the service is at your own risk.
               </p>
@@ -157,7 +134,7 @@ export default function TermsPage() {
 
             {/* Limitation of Liability */}
             <section className="bg-[#1a1a1a] rounded-lg border border-gray-800 p-6">
-              <h2 className="text-2xl font-semibold text-white mb-4">9. Limitation of Liability</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">8. Limitation of Liability</h2>
               <p className="text-gray-300 leading-relaxed">
                 To the maximum extent permitted by law, we shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly, or any loss of data, use, goodwill, or other intangible losses.
               </p>
@@ -165,7 +142,7 @@ export default function TermsPage() {
 
             {/* Termination */}
             <section className="bg-[#1a1a1a] rounded-lg border border-gray-800 p-6">
-              <h2 className="text-2xl font-semibold text-white mb-4">10. Termination</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">9. Termination</h2>
               <p className="text-gray-300 leading-relaxed">
                 We may terminate or suspend your account and access to the service immediately, without prior notice, for conduct that we believe violates these Terms or is harmful to other users, us, or third parties. You may also terminate your account at any time through your account settings.
               </p>
@@ -173,7 +150,7 @@ export default function TermsPage() {
 
             {/* Changes to Terms */}
             <section className="bg-[#1a1a1a] rounded-lg border border-gray-800 p-6">
-              <h2 className="text-2xl font-semibold text-white mb-4">11. Changes to Terms</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">10. Changes to Terms</h2>
               <p className="text-gray-300 leading-relaxed">
                 We reserve the right to modify these Terms at any time. We will notify users of any material changes by posting the new Terms on this page and updating the "Last updated" date. Your continued use of the service after changes constitutes acceptance of the new Terms.
               </p>
@@ -181,7 +158,7 @@ export default function TermsPage() {
 
             {/* Governing Law */}
             <section className="bg-[#1a1a1a] rounded-lg border border-gray-800 p-6">
-              <h2 className="text-2xl font-semibold text-white mb-4">12. Governing Law</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">11. Governing Law</h2>
               <p className="text-gray-300 leading-relaxed">
                 These Terms shall be governed by and construed in accordance with applicable laws, without regard to conflict of law principles.
               </p>
@@ -189,7 +166,7 @@ export default function TermsPage() {
 
             {/* Contact Information */}
             <section className="bg-[#1a1a1a] rounded-lg border border-gray-800 p-6">
-              <h2 className="text-2xl font-semibold text-white mb-4">13. Contact Us</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">12. Contact Us</h2>
               <p className="text-gray-300 leading-relaxed">
                 If you have any questions about these Terms of Service, please contact us at{" "}
                 <a href="mailto:support@harmonicwave.app" className="text-[#667eea] hover:underline">

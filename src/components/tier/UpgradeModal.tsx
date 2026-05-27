@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { X, Crown, Check, Zap } from "lucide-react";
-import { UserTier, getTierMetadata } from "@/config/tiers";
+import { X, Check, Zap } from "lucide-react";
+import { UserTier } from "@/config/tiers";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/contexts/ToastContext";
@@ -18,7 +18,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   isOpen,
   onClose,
   feature,
-  requiredTier = "free",
+  requiredTier = "registered",
 }) => {
   const { user, signInWithGoogle } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -43,7 +43,6 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
   if (!isOpen) return null;
 
-  const tierMetadata = getTierMetadata(requiredTier ?? "free");
   const isSignInRequired = !user;
 
   const handleAction = async () => {
@@ -100,7 +99,14 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
             </p>
 
             <div className="space-y-3">
-              {getTierMetadata("free").benefits.map((benefit, idx) => (
+              {[
+                "Unlimited radii & projects",
+                "All export formats (PNG, CSV, JSON, GIF, 4K)",
+                "Digital Filters & FFT Analysis",
+                "Audio generation",
+                "Unlimited gallery shares",
+                "No watermark, no ads",
+              ].map((benefit, idx) => (
                 <div key={idx} className="flex items-start gap-3">
                   <Check size={20} className="text-green-400 flex-shrink-0 mt-0.5" />
                   <span className="text-gray-300">{benefit}</span>
@@ -110,17 +116,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
             <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
               <p className="text-sm text-blue-300">
-                ✨ <strong>Currently Free</strong> - Sign in to unlock these features at no cost
-              </p>
-            </div>
-
-            <div className="mt-4 p-4 bg-purple-500/10 border border-purple-500/30 rounded-lg">
-              <p className="text-sm text-purple-300">
-                💜 <strong>Want unlimited access?</strong> - Check out our{" "}
-                <a href="/pricing" className="underline hover:text-purple-200">
-                  Pro plan
-                </a>{" "}
-                for unlimited radii, projects, and more
+                <strong>Completely Free</strong> — Sign in to unlock all features at no cost
               </p>
             </div>
           </div>

@@ -338,11 +338,7 @@ function HomeContent() {
 
     if (!allowed) {
       toast.warning(
-        `You can't add more radii on your current plan. ${
-          user
-            ? "Upgrade to Pro for unlimited radii!"
-            : "Sign in for free to get 5 radii!"
-        }`,
+        "Sign in for free to unlock unlimited radii!",
         "Radii Limit Reached"
       );
       return;
@@ -371,7 +367,7 @@ function HomeContent() {
     if (!isUnlimited && remaining <= 1 && remaining > 0) {
       setTimeout(() => {
         toast.warning(
-          `Only ${remaining} radius slot left. Upgrade to Pro for unlimited radii.`,
+          `Only ${remaining} radius slot left. Sign in for free to unlock unlimited radii.`,
           "Almost at Limit"
         );
       }, 500);
@@ -398,7 +394,7 @@ function HomeContent() {
 
         if (!actualCheck.allowed) {
           toast.warning(
-            `You have ${userProjects.length} projects. Upgrade to Pro for unlimited projects!`,
+            `You have ${userProjects.length} projects. Sign in for free to save unlimited projects!`,
             "Project Limit Reached"
           );
           return;

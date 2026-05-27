@@ -9,7 +9,6 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@paddle/paddle-js": "^1.6.1",
     "@types/gif.js": "^0.2.5",
     "@types/three": "^0.181.0",
     "@vercel/analytics": "^1.5.0",

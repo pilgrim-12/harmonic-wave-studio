@@ -10,20 +10,6 @@ export interface UserStats {
   lastLoginAt: Date | null;
 }
 
-export interface SubscriptionInfo {
-  plan: "monthly" | "yearly";
-  startDate: Date;
-  endDate: Date;
-  status: "active" | "cancelled" | "expired" | "past_due" | "paused";
-  // Paddle identifiers
-  paddleCustomerId?: string;
-  paddleSubscriptionId?: string;
-  paddleTransactionId?: string;
-  // For cancellation tracking
-  cancelledAt?: Date;
-  scheduledToBeCancelledAt?: Date;
-}
-
 export interface UserProfile {
   displayName: string;
   email: string;
@@ -32,8 +18,5 @@ export interface UserProfile {
   updatedAt: Date | null;
   preferences: UserPreferences;
   stats: UserStats;
-
-  // Tier system
   tier: UserTier;
-  subscription?: SubscriptionInfo;
 }

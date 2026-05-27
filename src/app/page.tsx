@@ -9,7 +9,6 @@ import {
   Download,
   Users,
   Zap,
-  Crown,
   ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -38,12 +37,6 @@ export default function LandingPage() {
               className="text-gray-300 hover:text-white transition-colors"
             >
               About
-            </Link>
-            <Link
-              href="/pricing"
-              className="text-gray-300 hover:text-white transition-colors"
-            >
-              Pricing
             </Link>
             <Link href="/studio">
               <Button size="sm">Launch Studio</Button>
@@ -282,13 +275,13 @@ export default function LandingPage() {
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-4xl text-center">
           <div className="bg-gradient-to-r from-[#667eea] to-[#764ba2] rounded-2xl p-12">
-            <Crown className="text-white mx-auto mb-4" size={48} />
+            <Zap className="text-white mx-auto mb-4" size={48} />
             <h2 className="text-4xl font-bold text-white mb-4">
               Ready to Get Started?
             </h2>
             <p className="text-white/90 text-lg mb-8">
-              Start creating beautiful harmonic visualizations for free. Upgrade
-              to Pro for unlimited creativity.
+              Start creating beautiful harmonic visualizations. Sign in for free
+              to unlock all features.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/studio">
@@ -298,15 +291,6 @@ export default function LandingPage() {
                 >
                   Launch Studio
                   <ArrowRight size={20} />
-                </Button>
-              </Link>
-              <Link href="/pricing">
-                <Button
-                  size="lg"
-                  variant="secondary"
-                  className="bg-white/10 text-white border-white/20 hover:bg-white/20"
-                >
-                  View Pricing
                 </Button>
               </Link>
             </div>
@@ -336,14 +320,6 @@ export default function LandingPage() {
                 <li>
                   <Link href="/studio" className="hover:text-white transition-colors">
                     Studio
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/pricing"
-                    className="hover:text-white transition-colors"
-                  >
-                    Pricing
                   </Link>
                 </li>
                 <li>

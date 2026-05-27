@@ -29,12 +29,6 @@ export default function PrivacyPage() {
             >
               About
             </Link>
-            <Link
-              href="/pricing"
-              className="text-gray-300 hover:text-white transition-colors"
-            >
-              Pricing
-            </Link>
             <Link href="/studio">
               <Button size="sm">Launch Studio</Button>
             </Link>
@@ -103,7 +97,6 @@ export default function PrivacyPage() {
               </p>
               <ul className="list-disc list-inside text-gray-300 space-y-2 ml-4">
                 <li>Provide and maintain our service</li>
-                <li>Process your subscription and payments</li>
                 <li>Send you important updates about the service</li>
                 <li>Respond to your inquiries and support requests</li>
                 <li>Improve our service and develop new features</li>
@@ -119,7 +112,7 @@ export default function PrivacyPage() {
                 We do not sell your personal information. We may share your information with:
               </p>
               <ul className="list-disc list-inside text-gray-300 space-y-2 ml-4">
-                <li><strong>Service Providers:</strong> Third parties that help us operate our service (e.g., Paddle for payments, Firebase for authentication and storage)</li>
+                <li><strong>Service Providers:</strong> Third parties that help us operate our service (e.g., Firebase for authentication and storage)</li>
                 <li><strong>Legal Requirements:</strong> When required by law or to protect our rights</li>
                 <li><strong>Business Transfers:</strong> In connection with a merger, acquisition, or sale of assets</li>
               </ul>
@@ -133,7 +126,6 @@ export default function PrivacyPage() {
               </p>
               <ul className="list-disc list-inside text-gray-300 space-y-2 ml-4">
                 <li><strong>Firebase:</strong> Authentication and data storage</li>
-                <li><strong>Paddle:</strong> Payment processing</li>
                 <li><strong>Google Analytics:</strong> Usage analytics</li>
               </ul>
               <p className="text-gray-300 leading-relaxed mt-4">
