@@ -1,7 +1,18 @@
 "use client";
 
 import React from "react";
-import { Play, Pause, Square, RotateCcw } from "lucide-react";
+import Link from "next/link";
+import {
+  Play,
+  Pause,
+  Square,
+  RotateCcw,
+  FilePlus,
+  Save,
+  Activity,
+  LayoutGrid,
+  Box,
+} from "lucide-react";
 import { useSimulationStore } from "@/store/simulationStore";
 import { useSignalProcessingStore } from "@/store/signalProcessingStore";
 import { Button } from "@/components/ui/Button";
@@ -10,90 +21,164 @@ import { PresetPanel } from "./PresetPanel";
 import { ProjectPanel } from "./ProjectPanel";
 import { TrailLengthControl } from "@/components/settings/TrailLengthControl";
 import { GraphVisibilityPanel } from "./GraphVisibilityPanel";
+import { ShareButton } from "@/components/share/ShareButton";
+import { User } from "firebase/auth";
+import { UserProfile } from "@/types/user";
+import { Radius } from "@/types/radius";
 
-export const ControlPanel: React.FC = () => {
+export interface ControlPanelProps {
+  // Auth
+  user: User | null;
+  userProfile: UserProfile | null;
+  // Project actions
+  onNewProject: () => void;
+  onSaveProject: () => void;
+  saving: boolean;
+  currentProjectId: string | null;
+  projectName: string;
+  // Share
+  shareId: string | null;
+  onShareSuccess: (shareId: string) => void;
+  // Tools
+  onOpenAnalysis: () => void;
+  onOpen3D: () => void;
+  // Data
+  radii: Radius[];
+}
+
+export const ControlPanel: React.FC<ControlPanelProps> = ({
+  user,
+  userProfile,
+  onNewProject,
+  onSaveProject,
+  saving,
+  currentProjectId,
+  projectName,
+  shareId,
+  onShareSuccess,
+  onOpenAnalysis,
+  onOpen3D,
+  radii,
+}) => {
   const { isPlaying, isPaused, play, pause, stop, clearTrails } =
     useSimulationStore();
 
   const handleClearTrails = () => {
-    // Clear trails and graphs without stopping simulation
     clearTrails();
-    // Clear signal processing graphs
     useSignalProcessingStore.getState().resetSignal();
   };
 
+  const groupClass =
+    "flex items-center gap-0.5 bg-[#1a1a1a] rounded-lg border border-[#2a2a2a] p-1";
+
   return (
-    <div className="flex items-center gap-1.5 p-1.5 bg-[#1a1a1a] rounded-lg border border-[#2a2a2a] flex-wrap">
-      {/* Playback controls */}
-      <div className="flex gap-1">
+    <div className="flex items-center gap-2 px-2 py-1.5 bg-[#0f0f0f] border-b border-[#2a2a2a] flex-wrap">
+      {/* Group 1: Playback */}
+      <div className={groupClass}>
         {!isPlaying ? (
-          <Button
-            onClick={play}
-            variant="primary"
-            size="sm"
-            title="Start animation"
-          >
-            <Play size={16} className="mr-1" />
+          <Button onClick={play} variant="primary" size="sm">
+            <Play size={14} className="mr-1" />
             {isPaused ? "Resume" : "Start"}
           </Button>
         ) : (
-          <Button onClick={pause} variant="secondary" size="sm" title="Pause">
-            <Pause size={16} className="mr-1" />
+          <Button onClick={pause} variant="secondary" size="sm">
+            <Pause size={14} className="mr-1" />
             Pause
           </Button>
         )}
-
         <Button
           onClick={stop}
           variant="secondary"
-          size="sm"
+          size="icon"
           title="Stop"
           disabled={!isPlaying && !isPaused}
         >
-          <Square size={16} className="mr-1" />
-          Stop
+          <Square size={14} />
         </Button>
-
         <Button
           onClick={handleClearTrails}
           variant="secondary"
-          size="sm"
-          title="Clear trails and graphs"
+          size="icon"
+          title="Reset trails & graphs"
         >
-          <RotateCcw size={16} className="mr-1" />
-          Reset
+          <RotateCcw size={14} />
         </Button>
       </div>
 
-      {/* Divider */}
-      <div className="w-px h-6 bg-[#333]" />
+      {/* Group 2: Project (auth-gated) */}
+      {user && (
+        <div className={groupClass}>
+          <Button onClick={onNewProject} variant="secondary" size="sm">
+            <FilePlus size={14} className="mr-1" />
+            New
+          </Button>
+          <Button
+            data-tour="save-button"
+            onClick={onSaveProject}
+            disabled={saving}
+            variant="primary"
+            size="sm"
+          >
+            <Save size={14} className="mr-1" />
+            {saving ? "Saving..." : currentProjectId ? "Update" : "Save"}
+          </Button>
+          {currentProjectId && (
+            <ShareButton
+              projectId={currentProjectId}
+              projectName={projectName}
+              isShared={!!shareId}
+              shareId={shareId}
+              onShareSuccess={onShareSuccess}
+            />
+          )}
+        </div>
+      )}
 
-      {/* Presets */}
-      <PresetPanel />
+      {/* Group 3: Files */}
+      <div className={groupClass}>
+        <PresetPanel />
+        <ProjectPanel />
+        <ExportPanel />
+      </div>
 
-      {/* Divider */}
-      <div className="w-px h-6 bg-[#333]" />
+      {/* Group 4: Tools */}
+      <div className={groupClass}>
+        <Button
+          onClick={onOpenAnalysis}
+          variant="secondary"
+          size="icon"
+          title="Signal Analysis"
+        >
+          <Activity size={14} />
+        </Button>
+        <Link href="/gallery">
+          <Button
+            variant="secondary"
+            size="icon"
+            title="Community Gallery"
+          >
+            <LayoutGrid size={14} />
+          </Button>
+        </Link>
+        {userProfile?.isAdmin && (
+          <Button
+            data-tour="3d-button"
+            onClick={onOpen3D}
+            variant="secondary"
+            size="icon"
+            title="3D Visualization"
+            disabled={radii.length === 0}
+          >
+            <Box size={14} />
+          </Button>
+        )}
+      </div>
 
-      {/* Projects (Save/Load JSON) */}
-      <ProjectPanel />
-
-      {/* Divider */}
-      <div className="w-px h-6 bg-[#333]" />
-
-      {/* Export (CSV, PNG) */}
-      <ExportPanel />
-
-      {/* Divider */}
-      <div className="w-px h-6 bg-[#333]" />
-
-      {/* Graph Visibility Controls */}
+      {/* Group 5: View */}
       <GraphVisibilityPanel />
 
-      {/* Divider */}
-      <div className="w-px h-6 bg-[#333]" />
-
-      {/* Trail Controls */}
-      <div className="flex-1 min-w-[200px]">
+      {/* Trail: flexible */}
+      <div className="flex-1 min-w-[180px]">
         <TrailLengthControl />
       </div>
     </div>

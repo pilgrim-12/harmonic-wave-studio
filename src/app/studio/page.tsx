@@ -24,12 +24,8 @@ import { CollapsibleBottomPanel } from "@/components/ui/CollapsibleBottomPanel";
 import {
   Settings,
   Plus,
-  Save,
-  FilePlus,
   Activity,
-  LayoutGrid,
   Sliders,
-  Box,
   BarChart3,
   Filter,
 } from "lucide-react";
@@ -49,7 +45,6 @@ import { SignInButton } from "@/components/auth/SignInButton";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { useAuth } from "@/contexts/AuthContext";
 import { createProject, updateProject, getUserProjects, checkProjectNameExists } from "@/services/projectService";
-import { ShareButton } from "@/components/share/ShareButton";
 import { useToast } from "@/contexts/ToastContext";
 import {
   calculateRadiusPositions,
@@ -498,17 +493,16 @@ function HomeContent() {
   return (
     <div className="h-screen bg-[#0f0f0f] flex flex-col overflow-hidden">
       <header className="border-b border-[#2a2a2a] flex-shrink-0">
-        <div className="flex items-center justify-between h-11 px-3 gap-2">
+        <div className="flex items-center justify-between h-11 px-3 gap-3">
+          {/* Left: Logo + Project Name */}
           <div className="flex items-center gap-2">
             <Link href="/" className="flex items-center gap-1.5">
-              <span className="text-xl">🌊</span>
-              <span className="font-bold text-white text-sm">
-                Harmonic Wave Studio
+              <span className="text-lg">🌊</span>
+              <span className="font-bold text-white text-sm hidden sm:inline">
+                HWS
               </span>
             </Link>
-
-            <div className="h-6 w-px bg-[#2a2a2a]" />
-
+            <div className="h-5 w-px bg-[#2a2a2a]" />
             <input
               type="text"
               value={projectName}
@@ -518,87 +512,18 @@ function HomeContent() {
             />
           </div>
 
-          {!loading && user && (
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={handleNewProject}
-                variant="secondary"
-                className="text-sm"
-              >
-                <FilePlus size={14} className="mr-1" />
-                New
-              </Button>
-              <Button
-                data-tour="save-button"
-                onClick={handleSaveProject}
-                disabled={saving}
-                variant="primary"
-                className="text-sm"
-              >
-                <Save size={14} className="mr-1" />
-                {saving ? "Saving..." : currentProjectId ? "Update" : "Save"}
-              </Button>
-
-              {currentProjectId && (
-                <ShareButton
-                  projectId={currentProjectId}
-                  projectName={projectName}
-                  isShared={!!shareId}
-                  shareId={shareId}
-                  onShareSuccess={handleShareSuccess}
-                />
+          {/* Right: Undo/Redo + User */}
+          <div className="flex items-center gap-3">
+            <UndoRedoIndicator />
+            <div className="flex items-center">
+              {loading ? (
+                <div className="w-8 h-8 border-2 border-[#667eea] border-t-transparent rounded-full animate-spin" />
+              ) : user ? (
+                <UserMenu />
+              ) : (
+                <SignInButton />
               )}
-
-              {/* Gallery Button */}
-              <Link href="/gallery">
-                <Button
-                  variant="secondary"
-                  className="text-sm"
-                  title="Browse community projects"
-                >
-                  <LayoutGrid size={14} className="mr-1" />
-                  Gallery
-                </Button>
-              </Link>
-
-              {/* 3D Visualization Button (admin only) */}
-              {userProfile?.isAdmin && (
-                <Button
-                  data-tour="3d-button"
-                  onClick={() => setShow3DModal(true)}
-                  variant="secondary"
-                  className="text-sm"
-                  title="View 3D Visualization"
-                  disabled={radii.length === 0}
-                >
-                  <Box size={14} className="mr-1" />
-                  3D
-                </Button>
-              )}
-
-              {/* Signal Analysis Button */}
-              <Button
-                onClick={() => setShowAnalysisModal(true)}
-                variant="secondary"
-                className="text-sm"
-                title="Signal Analysis Tools"
-              >
-                <Activity size={14} className="mr-1" />
-                Analysis
-              </Button>
             </div>
-          )}
-
-          <UndoRedoIndicator />
-
-          <div className="flex items-center">
-            {loading ? (
-              <div className="w-8 h-8 border-2 border-[#667eea] border-t-transparent rounded-full animate-spin" />
-            ) : user ? (
-              <UserMenu />
-            ) : (
-              <SignInButton />
-            )}
           </div>
         </div>
       </header>
@@ -769,7 +694,20 @@ function HomeContent() {
         <div className="flex-1 flex flex-col gap-3 min-w-0 min-h-0">
           {/* Control Panel */}
           <div className="flex-shrink-0" data-tour="control-panel">
-            <ControlPanel />
+            <ControlPanel
+              user={user}
+              userProfile={userProfile}
+              onNewProject={handleNewProject}
+              onSaveProject={handleSaveProject}
+              saving={saving}
+              currentProjectId={currentProjectId}
+              projectName={projectName}
+              shareId={shareId}
+              onShareSuccess={handleShareSuccess}
+              onOpenAnalysis={() => setShowAnalysisModal(true)}
+              onOpen3D={() => setShow3DModal(true)}
+              radii={radii}
+            />
           </div>
 
           {/* Visualization Canvas - takes remaining space */}
