@@ -11,7 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { FeedbackModal } from "@/components/feedback/FeedbackModal";
-import { UserTier } from "@/config/tiers";
+import { UserTier, normalizeTier } from "@/config/tiers";
 import { useToast } from "@/contexts/ToastContext";
 
 // Helper function to get tier badge config
@@ -43,7 +43,7 @@ export const UserMenu: React.FC = () => {
   const router = useRouter();
   const toast = useToast();
 
-  const currentTier: UserTier = userProfile?.tier || (user ? "registered" : "anonymous");
+  const currentTier: UserTier = normalizeTier(userProfile?.tier, !!user);
   const tierBadge = getTierBadge(currentTier);
   const BadgeIcon = tierBadge.icon;
 

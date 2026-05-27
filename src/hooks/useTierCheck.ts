@@ -13,6 +13,7 @@ import {
   getTierFeatures,
   hasFeatureAccess,
   checkLimit,
+  normalizeTier,
 } from "@/config/tiers";
 import { useCallback } from "react";
 
@@ -37,9 +38,7 @@ export const useTierCheck = (
 ): TierCheckResult => {
   const { user, userProfile } = useAuth();
 
-  const currentTier: UserTier = user
-    ? (userProfile?.tier as UserTier) || "registered"
-    : "anonymous";
+  const currentTier: UserTier = normalizeTier(userProfile?.tier, !!user);
 
   const features = getTierFeatures(currentTier);
 

@@ -154,6 +154,18 @@ export const TIER_CONFIG: Record<UserTier, TierConfig> = {
 // HELPER FUNCTIONS
 // ============================================
 
+/**
+ * Normalize legacy tier values from Firestore.
+ * Old users may have "free" or "pro" — map them to "registered".
+ */
+export const normalizeTier = (tier: string | undefined, isAuthenticated: boolean): UserTier => {
+  if (!isAuthenticated) return "anonymous";
+  if (tier === "anonymous") return "anonymous";
+  if (tier === "registered") return "registered";
+  // Legacy values: "free", "pro", or anything else → registered
+  return "registered";
+};
+
 export const getTierConfig = (tier: UserTier): TierConfig => {
   return TIER_CONFIG[tier];
 };
