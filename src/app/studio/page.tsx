@@ -495,20 +495,20 @@ function HomeContent() {
       <header className="border-b border-[#2a2a2a] flex-shrink-0">
         <div className="flex items-center justify-between h-11 px-3 gap-3">
           {/* Left: Logo + Project Name */}
-          <div className="flex items-center gap-2">
-            <Link href="/" className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2 min-w-0">
+            <Link href="/" className="flex items-center gap-1.5 flex-shrink-0">
               <span className="text-lg">🌊</span>
               <span className="font-bold text-white text-sm hidden sm:inline">
                 HWS
               </span>
             </Link>
-            <div className="h-5 w-px bg-[#2a2a2a]" />
+            <div className="h-5 w-px bg-[#2a2a2a] flex-shrink-0" />
             <input
               type="text"
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
-              placeholder="Project name..."
-              className="px-2 py-1 text-xs bg-[#1a1a1a] border border-[#2a2a2a] rounded-md text-gray-300 placeholder-gray-500 focus:outline-none focus:border-[#667eea] w-40"
+              placeholder="Project..."
+              className="px-2 py-1 text-xs bg-[#1a1a1a] border border-[#2a2a2a] rounded-md text-gray-300 placeholder-gray-500 focus:outline-none focus:border-[#667eea] w-24 sm:w-40 min-w-0"
             />
           </div>
 
@@ -529,7 +529,7 @@ function HomeContent() {
       </header>
 
       {/* Main layout */}
-      <div className="flex gap-3 flex-1 min-h-0">
+      <div className="flex gap-1 md:gap-3 flex-1 min-h-0">
         {/* Left panel */}
         <ResizableSidebar title="Parameters" icon={<Settings size={16} className="text-[#667eea]" />}>
           {/* Radii Panel */}
@@ -724,7 +724,7 @@ function HomeContent() {
             minHeight={100}
             maxHeight={400}
           >
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-2 h-full p-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 h-full p-2">
               {/* Original Signal */}
               {showOriginalSignal && (
                 <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] overflow-hidden">

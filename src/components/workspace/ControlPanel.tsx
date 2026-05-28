@@ -72,18 +72,20 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
     "flex items-center gap-0.5 bg-[#1a1a1a] rounded-lg border border-[#2a2a2a] p-1";
 
   return (
-    <div className="flex items-center gap-2 px-2 py-1.5 bg-[#0f0f0f] border-b border-[#2a2a2a] flex-wrap">
+    <div className="flex items-center gap-1.5 md:gap-2 px-1.5 md:px-2 py-1 md:py-1.5 bg-[#0f0f0f] border-b border-[#2a2a2a] flex-wrap">
       {/* Group 1: Playback */}
       <div className={groupClass}>
         {!isPlaying ? (
           <Button onClick={play} variant="primary" size="sm">
-            <Play size={14} className="mr-1" />
-            {isPaused ? "Resume" : "Start"}
+            <Play size={14} className="md:mr-1" />
+            <span className="hidden md:inline">
+              {isPaused ? "Resume" : "Start"}
+            </span>
           </Button>
         ) : (
           <Button onClick={pause} variant="secondary" size="sm">
-            <Pause size={14} className="mr-1" />
-            Pause
+            <Pause size={14} className="md:mr-1" />
+            <span className="hidden md:inline">Pause</span>
           </Button>
         )}
         <Button
@@ -108,19 +110,23 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
       {/* Group 2: Project (auth-gated) */}
       {user && (
         <div className={groupClass}>
-          <Button onClick={onNewProject} variant="secondary" size="sm">
-            <FilePlus size={14} className="mr-1" />
-            New
+          <Button onClick={onNewProject} variant="secondary" size="icon" title="New project" className="md:!px-3 md:!py-1.5">
+            <FilePlus size={14} />
+            <span className="hidden md:inline ml-1">New</span>
           </Button>
           <Button
             data-tour="save-button"
             onClick={onSaveProject}
             disabled={saving}
             variant="primary"
-            size="sm"
+            size="icon"
+            title={saving ? "Saving..." : currentProjectId ? "Update project" : "Save project"}
+            className="md:!px-3 md:!py-1.5"
           >
-            <Save size={14} className="mr-1" />
-            {saving ? "Saving..." : currentProjectId ? "Update" : "Save"}
+            <Save size={14} />
+            <span className="hidden md:inline ml-1">
+              {saving ? "..." : currentProjectId ? "Update" : "Save"}
+            </span>
           </Button>
           {currentProjectId && (
             <ShareButton
@@ -177,8 +183,8 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
       {/* Group 5: View */}
       <GraphVisibilityPanel />
 
-      {/* Trail: flexible */}
-      <div className="flex-1 min-w-[180px]">
+      {/* Trail: flexible, hidden on very small screens */}
+      <div className="hidden sm:flex flex-1 min-w-[140px]">
         <TrailLengthControl />
       </div>
     </div>

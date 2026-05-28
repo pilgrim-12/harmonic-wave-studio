@@ -29,44 +29,38 @@ export const TrailLengthControl: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex items-center gap-2 min-w-[100px]">
-        <PenLine size={16} className="text-gray-400" />
-        <span className="text-xs text-gray-300 whitespace-nowrap">
-          Trail Points
-        </span>
-      </div>
+    <div className="flex items-center gap-2 w-full">
+      <PenLine size={14} className="text-gray-400 flex-shrink-0" />
+      <span className="text-[10px] text-gray-500 whitespace-nowrap hidden lg:inline">
+        Trail
+      </span>
 
-      <div className="flex-1 flex items-center gap-3">
-        <input
-          type="range"
-          min={50}
-          max={4000}
-          step={50}
-          value={settings.trailLength}
-          onChange={handleChange}
-          className="flex-1 h-1.5 bg-[#252525] rounded-lg appearance-none cursor-pointer accent-[#667eea]"
-          style={{
-            background: `linear-gradient(to right, #667eea 0%, #667eea ${
-              ((settings.trailLength - 50) / (4000 - 50)) * 100
-            }%, #252525 ${
-              ((settings.trailLength - 50) / (4000 - 50)) * 100
-            }%, #252525 100%)`,
-          }}
-        />
+      <input
+        type="range"
+        min={50}
+        max={4000}
+        step={50}
+        value={settings.trailLength}
+        onChange={handleChange}
+        className="flex-1 h-1.5 bg-[#252525] rounded-lg appearance-none cursor-pointer accent-[#667eea] min-w-[60px]"
+        style={{
+          background: `linear-gradient(to right, #667eea 0%, #667eea ${
+            ((settings.trailLength - 50) / (4000 - 50)) * 100
+          }%, #252525 ${
+            ((settings.trailLength - 50) / (4000 - 50)) * 100
+          }%, #252525 100%)`,
+        }}
+      />
 
-        <input
-          type="number"
-          min={50}
-          max={4000}
-          step={50}
-          value={settings.trailLength}
-          onChange={handleChange}
-          className="w-20 px-2 py-1 text-xs bg-[#252525] border border-[#2a2a2a] rounded text-[#667eea] font-semibold text-center focus:outline-none focus:border-[#667eea]"
-        />
-
-        <span className="text-xs text-gray-500 w-8">pts</span>
-      </div>
+      <input
+        type="number"
+        min={50}
+        max={4000}
+        step={50}
+        value={settings.trailLength}
+        onChange={handleChange}
+        className="w-14 px-1 py-0.5 text-[10px] bg-[#252525] border border-[#2a2a2a] rounded text-[#667eea] font-semibold text-center focus:outline-none focus:border-[#667eea]"
+      />
     </div>
   );
 };
