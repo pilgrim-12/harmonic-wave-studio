@@ -12,6 +12,7 @@ import {
   Activity,
   LayoutGrid,
   Box,
+  Info,
 } from "lucide-react";
 import { useSimulationStore } from "@/store/simulationStore";
 import { useSignalProcessingStore } from "@/store/signalProcessingStore";
@@ -164,6 +165,15 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             title="Community Gallery"
           >
             <LayoutGrid size={14} />
+          </Button>
+        </Link>
+        <Link href="/about">
+          <Button
+            variant="secondary"
+            size="icon"
+            title="About"
+          >
+            <Info size={14} />
           </Button>
         </Link>
         {userProfile?.isAdmin && (
