@@ -11,6 +11,7 @@ import {
   Zap,
   ArrowRight,
   Mail,
+  Linkedin,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
@@ -239,7 +240,7 @@ export default function LandingPage() {
                 </h3>
                 <p className="text-gray-400">
                   Start with classic waveforms like Square, Sawtooth, Triangle.
-                  Export as JSON, CSV, or PNG images.
+                  Export your projects as JSON or signal data as CSV.
                 </p>
               </div>
             </div>
@@ -304,18 +305,29 @@ export default function LandingPage() {
         <div className="container mx-auto max-w-2xl text-center">
           <Mail className="text-[#667eea] mx-auto mb-4" size={36} />
           <h2 className="text-2xl font-bold text-white mb-3">
-            Have Ideas, Questions, or Suggestions?
+            Have Questions or Suggestions?
           </h2>
           <p className="text-gray-400 mb-6">
-            We&apos;d love to hear from you! Feel free to reach out with any feedback or ideas.
+            If you have any ideas, questions, or suggestions — please let me know. I&apos;m always happy to chat!
           </p>
-          <a
-            href="mailto:yurachernov12@gmail.com"
-            className="inline-flex items-center gap-2 text-[#667eea] hover:text-[#8b9ff5] transition-colors text-lg font-medium"
-          >
-            <Mail size={18} />
-            yurachernov12@gmail.com
-          </a>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a
+              href="mailto:yurachernov12@gmail.com"
+              className="inline-flex items-center gap-2 text-[#667eea] hover:text-[#8b9ff5] transition-colors text-lg font-medium"
+            >
+              <Mail size={18} />
+              yurachernov12@gmail.com
+            </a>
+            <a
+              href="https://www.linkedin.com/in/yurii-chernov/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-[#667eea] hover:text-[#8b9ff5] transition-colors text-lg font-medium"
+            >
+              <Linkedin size={18} />
+              LinkedIn
+            </a>
+          </div>
         </div>
       </section>
 
@@ -381,6 +393,11 @@ export default function LandingPage() {
                 <li>
                   <a href="mailto:yurachernov12@gmail.com" className="hover:text-white transition-colors">
                     yurachernov12@gmail.com
+                  </a>
+                </li>
+                <li>
+                  <a href="https://www.linkedin.com/in/yurii-chernov/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                    LinkedIn
                   </a>
                 </li>
               </ul>

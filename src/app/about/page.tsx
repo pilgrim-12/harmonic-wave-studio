@@ -11,6 +11,7 @@ import {
   BookOpen,
   Zap,
   Mail,
+  Linkedin,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
@@ -71,12 +72,12 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Why We Built This */}
+      {/* Why I Built This */}
       <section className="py-20 px-4 bg-[#0f0f0f]">
         <div className="container mx-auto max-w-4xl">
           <div className="flex items-center gap-3 mb-6">
             <Target className="text-[#667eea]" size={32} />
-            <h2 className="text-3xl font-bold text-white">Why We Built This</h2>
+            <h2 className="text-3xl font-bold text-white">Why I Built This</h2>
           </div>
 
           <div className="space-y-6 text-gray-300 text-lg leading-relaxed">
@@ -96,7 +97,7 @@ export default function AboutPage() {
             </p>
 
             <p>
-              We created Harmonic Wave Studio to bridge this gap—to make
+              I created Harmonic Wave Studio to bridge this gap — to make
               abstract mathematics tangible, interactive, and beautiful.
             </p>
           </div>
@@ -167,12 +168,12 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* What We've Built */}
+      {/* What's Inside */}
       <section className="py-20 px-4 bg-[#0f0f0f]">
         <div className="container mx-auto max-w-4xl">
           <div className="flex items-center gap-3 mb-6">
             <CheckCircle2 className="text-[#667eea]" size={32} />
-            <h2 className="text-3xl font-bold text-white">What We've Built</h2>
+            <h2 className="text-3xl font-bold text-white">What&apos;s Inside</h2>
           </div>
 
           <div className="space-y-4">
@@ -185,7 +186,6 @@ export default function AboutPage() {
               "Drawing mode: Create custom waveforms with your mouse",
               "Project export/import as JSON files",
               "Signal data export as CSV for further analysis",
-              "Visualization export as PNG images",
               "Real-time noise simulation and filtering",
               "Multiple trail tracking for complex visualizations",
               "Graph visibility controls for focused analysis",
@@ -212,8 +212,8 @@ export default function AboutPage() {
 
           <div className="space-y-6 text-gray-300 text-lg leading-relaxed mb-8">
             <p>
-              We're constantly working to improve Harmonic Wave Studio and add
-              new features. Here's what's on our roadmap:
+              I&apos;m constantly working to improve Harmonic Wave Studio and add
+              new features. Here&apos;s what&apos;s on the roadmap:
             </p>
           </div>
 
@@ -269,18 +269,29 @@ export default function AboutPage() {
         <div className="container mx-auto max-w-2xl text-center">
           <Mail className="text-[#667eea] mx-auto mb-4" size={36} />
           <h2 className="text-2xl font-bold text-white mb-3">
-            Have Ideas, Questions, or Suggestions?
+            Have Questions or Suggestions?
           </h2>
           <p className="text-gray-400 mb-6">
-            We&apos;d love to hear from you! Feel free to reach out with any feedback or ideas.
+            If you have any ideas, questions, or suggestions — please let me know. I&apos;m always happy to chat!
           </p>
-          <a
-            href="mailto:yurachernov12@gmail.com"
-            className="inline-flex items-center gap-2 text-[#667eea] hover:text-[#8b9ff5] transition-colors text-lg font-medium"
-          >
-            <Mail size={18} />
-            yurachernov12@gmail.com
-          </a>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a
+              href="mailto:yurachernov12@gmail.com"
+              className="inline-flex items-center gap-2 text-[#667eea] hover:text-[#8b9ff5] transition-colors text-lg font-medium"
+            >
+              <Mail size={18} />
+              yurachernov12@gmail.com
+            </a>
+            <a
+              href="https://www.linkedin.com/in/yurii-chernov/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-[#667eea] hover:text-[#8b9ff5] transition-colors text-lg font-medium"
+            >
+              <Linkedin size={18} />
+              LinkedIn
+            </a>
+          </div>
         </div>
       </section>
 
@@ -364,6 +375,11 @@ export default function AboutPage() {
                 <li>
                   <a href="mailto:yurachernov12@gmail.com" className="hover:text-white transition-colors">
                     yurachernov12@gmail.com
+                  </a>
+                </li>
+                <li>
+                  <a href="https://www.linkedin.com/in/yurii-chernov/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                    LinkedIn
                   </a>
                 </li>
               </ul>
